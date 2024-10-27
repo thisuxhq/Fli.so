@@ -2,16 +2,17 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Install required packages and download PocketBase
-RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.22/pocketbase_0.22.22_linux_amd64.zip \
-    && unzip pocketbase_0.22.22_linux_amd64.zip \
-    && rm pocketbase_0.22.22_linux_amd64.zip
+# Copy the entire pocketbase directory from your project
+COPY pocketbase /app/pocketbase
 
-# Copy migrations and initial data
-COPY pocketbase/pb_migrations ./pb_migrations
-
-# Create a startup script
+# Make the startup script executable
 COPY scripts/start-pocketbase.sh ./
 RUN chmod +x start-pocketbase.sh
+
+# Create necessary directories with proper permissions
+RUN mkdir -p /app/pocketbase/pb_data && \
+    chmod -R 755 /app/pocketbase
+
+EXPOSE 8090
 
 CMD ["./start-pocketbase.sh"]

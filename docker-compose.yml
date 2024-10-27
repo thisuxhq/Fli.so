@@ -1,22 +1,18 @@
 version: "3.8"
 
 services:
-  web-dev:
-    container_name: blink-web-dev
+  web:
+    container_name: blink-web
     build:
       context: .
       dockerfile: Dockerfile.sveltekit
     ports:
-      - "5173:5173"
-    volumes:
-      - .:/app
-      - /app/node_modules
-      # Add Bun cache volume for faster builds
-      - bun-cache:/root/.bun
+      - "3000:3000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
+      - PORT=3000
+      - ORIGIN=http://localhost:3000
       - PUBLIC_APPLICATION_NAME=your-app-name.com
-      - ORIGIN=http://localhost:5173
       - POCKETBASE_URL=http://pocketbase:8090
     networks:
       - blink-network
@@ -32,8 +28,11 @@ services:
     ports:
       - "8090:8090"
     volumes:
-      - pocketbase_data:/pb/pb_data
-      - ./pocketbase/pb_migrations:/pb/pb_migrations
+      - pocketbase_data:/app/pocketbase/pb_data
+      - ./pocketbase/pb_migrations:/app/pocketbase/pb_migrations
+    environment:
+      - POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL:-admin@example.com}
+      - POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD:-your-secure-password}
     networks:
       - blink-network
     healthcheck:
@@ -42,6 +41,7 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
+    restart: unless-stopped
 
 networks:
   blink-network:
@@ -49,6 +49,4 @@ networks:
 
 volumes:
   pocketbase_data:
-    driver: local
-  bun-cache:
     driver: local
