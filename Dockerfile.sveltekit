@@ -1,28 +1,24 @@
-# Build stage
-FROM oven/bun:latest as builder
+# Step 1: Build the application
+FROM oven/bun:latest AS builder
+
+# Set the working directory in the container
 WORKDIR /app
 
-# Install dependencies
-COPY package.json bun.lockb ./
-RUN bun install --frozen-lockfile
-
-# Copy source files and build
+# Copy all the application files to the container
 COPY . .
+
+# Run your build process
+RUN bun i
 RUN bun run build
 
-# Production stage
-FROM oven/bun:latest
-WORKDIR /app
+# Step 2: Create a smaller image for running the application
+FROM oven/bun
 
-# Copy production dependencies and built files
-COPY --from=builder /app/package.json /app/bun.lockb ./
-COPY --from=builder /app/build ./build
+# Copy only the necessary files from the builder image to the final image
+COPY --from=builder /app/build .
 
-# Install only production dependencies
-RUN bun install --frozen-lockfile --production
+# Expose the port the application will run on
+EXPOSE 3000
 
-# Expose the port the app runs on
-EXPOSE 5173
-
-# Start the application
-CMD ["bun", "build/index.js"]
+#Start the BUN server
+CMD ["bun", "run", "start:prod"]
