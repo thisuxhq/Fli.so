@@ -11,6 +11,8 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      # Add Bun cache volume for faster builds
+      - bun-cache:/root/.bun
     environment:
       - NODE_ENV=development
       - PUBLIC_APPLICATION_NAME=your-app-name.com
@@ -19,7 +21,8 @@ services:
     networks:
       - blink-network
     depends_on:
-      - pocketbase
+      pocketbase:
+        condition: service_healthy
 
   pocketbase:
     container_name: blink-pocketbase
@@ -30,8 +33,15 @@ services:
       - "8090:8090"
     volumes:
       - pocketbase_data:/pb/pb_data
+      - ./pocketbase/pb_migrations:/pb/pb_migrations
     networks:
       - blink-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
 
 networks:
   blink-network:
@@ -39,4 +49,6 @@ networks:
 
 volumes:
   pocketbase_data:
+    driver: local
+  bun-cache:
     driver: local

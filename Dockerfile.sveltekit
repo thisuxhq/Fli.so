@@ -1,10 +1,28 @@
-FROM oven/bun:1
+# Build stage
+FROM oven/bun:latest as builder
 WORKDIR /app
 
+# Install dependencies
 COPY package.json bun.lockb ./
-RUN bun install
+RUN bun install --frozen-lockfile
 
+# Copy source files and build
 COPY . .
+RUN bun run build
 
-# Development stage is default
-CMD ["bun", "run", "dev", "--host"]
+# Production stage
+FROM oven/bun:latest
+WORKDIR /app
+
+# Copy production dependencies and built files
+COPY --from=builder /app/package.json /app/bun.lockb ./
+COPY --from=builder /app/build ./build
+
+# Install only production dependencies
+RUN bun install --frozen-lockfile --production
+
+# Expose the port the app runs on
+EXPOSE 5173
+
+# Start the application
+CMD ["bun", "build/index.js"]
