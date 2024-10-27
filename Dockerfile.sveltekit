@@ -1,24 +1,23 @@
-# Step 1: Build the application
-FROM oven/bun:latest AS builder
+# Use a lightweight official Node image with Bun
+FROM oven/bun:latest
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy all the application files to the container
+# Copy the package and lock files
+COPY package.json bun.lockb /app/
+
+# Install dependencies
+RUN bun install
+
+# Copy the rest of the application code
 COPY . .
 
-# Run your build process
-RUN bun i
+# Build the SvelteKit app
 RUN bun run build
 
-# Step 2: Create a smaller image for running the application
-FROM oven/bun
+# Expose the port SvelteKit runs on (default is 3000)
+EXPOSE 5173
 
-# Copy only the necessary files from the builder image to the final image
-COPY --from=builder /app/build .
-
-# Expose the port the application will run on
-EXPOSE 3000
-
-#Start the BUN server
+# Run the app
 CMD ["bun", "run", "start:prod"]
