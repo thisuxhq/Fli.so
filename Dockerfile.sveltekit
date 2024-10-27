@@ -1,16 +1,10 @@
-FROM oven/bun:latest as base
+FROM oven/bun:1
 WORKDIR /app
 
-# Development stage (used for development only)
-FROM base as builder
 COPY package.json bun.lockb ./
 RUN bun install
-COPY . .
-RUN bun run build
 
-# Production stage
-FROM base as production
-COPY package.json bun.lockb ./
-RUN bun install --production
-COPY --from=builder /app/build ./build
-CMD ["bun", "start"]
+COPY . .
+
+# Development stage is default
+CMD ["bun", "run", "dev", "--host"]

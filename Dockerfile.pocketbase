@@ -3,10 +3,9 @@ FROM alpine:latest
 WORKDIR /pb
 
 # Download and setup PocketBase in a single layer
-RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.22/pocketbase_0.22.22_linux_amd64.zip \
-    && unzip pocketbase_0.22.22_linux_amd64.zip \
-    && rm pocketbase_0.22.22_linux_amd64.zip \
-    && chmod +x /pb/pocketbase
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.21.3/pocketbase_0.21.3_linux_amd64.zip \
+    && unzip pocketbase_0.21.3_linux_amd64.zip \
+    && rm pocketbase_0.21.3_linux_amd64.zip
 
 # Create directory for the database
 RUN mkdir /pb/pb_data
