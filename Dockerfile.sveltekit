@@ -14,17 +14,22 @@ RUN bun run build
 FROM oven/bun:latest
 WORKDIR /app
 
-# Copy production dependencies and built files
-COPY --from=builder /app/package.json /app/bun.lockb ./
-COPY --from=builder /app/build ./build
+# Copy the entire app for PocketBase access
+COPY --from=builder /app .
 
-# Install only production dependencies
+# Install production dependencies
 RUN bun install --frozen-lockfile --production
 
-# Expose the port the app runs on
-EXPOSE 3000
+# Download PocketBase if not exists
+RUN cd pocketbase && \
+    if [ ! -f "pocketbase" ]; then \
+    wget https://github.com/pocketbase/pocketbase/releases/download/v0.21.3/pocketbase_0.21.3_linux_amd64.zip && \
+    unzip pocketbase_0.21.3_linux_amd64.zip && \
+    rm pocketbase_0.21.3_linux_amd64.zip && \
+    chmod +x pocketbase; \
+    fi
 
-# Start the application using adapter-node
-ENV NODE_ENV=production
-ENV PORT=3000
-CMD ["bun", "build/index.js"]
+EXPOSE 3000 8090
+
+# Start both services using the start script
+CMD ["bun", "run", "start"]

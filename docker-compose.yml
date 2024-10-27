@@ -1,32 +1,19 @@
 version: "3.8"
 
 services:
-  web:
-    container_name: blink-web
+  app:
+    container_name: blink-app
     build:
       context: .
       dockerfile: Dockerfile.sveltekit
     ports:
       - "3000:3000"
+      - "8090:8090"
     environment:
       - NODE_ENV=production
       - PORT=3000
       - ORIGIN=http://localhost:3000
       - PUBLIC_APPLICATION_NAME=your-app-name.com
-      - POCKETBASE_URL=http://pocketbase:8090
-    networks:
-      - blink-network
-    depends_on:
-      - pocketbase
-    restart: unless-stopped
-
-  pocketbase:
-    container_name: blink-pocketbase
-    build:
-      context: .
-      dockerfile: Dockerfile.pocketbase
-    ports:
-      - "8090:8090"
     volumes:
       - pocketbase_data:/app/pocketbase/pb_data
       - ./pocketbase/pb_migrations:/app/pocketbase/pb_migrations
