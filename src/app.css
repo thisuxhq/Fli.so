@@ -1,3 +1,14 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+
+:root {
+  --background: 210 40% 98%; /* Cool light background */
+  --card: 0 0% 100%;        /* Pure white */
+  --ring: 215 25% 92%;      /* Subtle blue-gray ring */
+  --border: 215 20% 92%;    /* Subtle blue-gray border */
+}
+
+body {
+  background-color: #F8FAFC;  /* Matches the background variable */
+}

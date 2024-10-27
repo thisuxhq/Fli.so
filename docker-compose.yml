@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  web-dev:
+    container_name: blink-web-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.sveltekit
+      target: builder
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: bun run dev
+    environment:
+      - NODE_ENV=development
+      - PUBLIC_APPLICATION_NAME=your-app-name.com
+      - ORIGIN=http://localhost:5173
+      - POCKETBASE_URL=http://pocketbase:8090
+    networks:
+      - blink-network
+    depends_on:
+      - pocketbase
+
+  web-prod:
+    container_name: blink-web-prod
+    build:
+      context: .
+      dockerfile: Dockerfile.sveltekit
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PUBLIC_APPLICATION_NAME=your-app-name.com
+      - ORIGIN=http://localhost:5173
+      - POCKETBASE_URL=http://pocketbase:8090
+    networks:
+      - blink-network
+    depends_on:
+      - pocketbase
+
+  pocketbase:
+    container_name: blink-pocketbase
+    build:
+      context: .
+      dockerfile: Dockerfile.pocketbase
+    ports:
+      - "8090:8090"
+    volumes:
+      - pocketbase_data:/pb/pb_data
+    networks:
+      - blink-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8090/api/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  blink-network:
+    driver: bridge
+
+volumes:
+  pocketbase_data:
+    driver: local

@@ -1,0 +1,32 @@
+FROM oven/bun:latest as builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json bun.lockb ./
+RUN bun install --frozen-lockfile
+
+# Copy source
+COPY . .
+
+# Build the application
+RUN bun run build
+
+# Production stage
+FROM oven/bun:1-slim
+
+WORKDIR /app
+
+# Copy built assets from builder
+COPY --from=builder /app/build build/
+COPY --from=builder /app/package.json ./
+
+# Install production dependencies only
+RUN bun install --production --frozen-lockfile
+
+# Expose the port the app runs on
+EXPOSE 5173
+
+# Start the application
+CMD ["bun", "start"]
+

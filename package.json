@@ -6,6 +6,11 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
+    "pocketbase": "pocketbase/pocketbase serve",
+    "pocketbase:dev": "pocketbase/pocketbase serve --http=127.0.0.1:8090 --dir=pocketbase/pocketbase/pb_data",
+    "pocketbase:export": "pocketbase schema export pb_schema.json",
+    "typegen": "pocketbase-typegen --db pocketbase/pb_data/data.db --out ./src/lib/types/generated-types.ts",
+    "start": "bun run pocketbase & bun run dev",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test:e2e": "playwright test",
@@ -29,15 +34,21 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.36.0",
     "globals": "^15.0.0",
+    "pocketbase-typegen": "^1.2.1",
     "prettier": "^3.3.2",
     "prettier-plugin-svelte": "^3.2.6",
     "prettier-plugin-tailwindcss": "^0.6.5",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "tailwindcss": "^3.4.9",
+    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.0.0",
     "vite": "^5.0.3",
     "vitest": "^2.0.4"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.7",
+    "pocketbase": "^0.21.5"
   }
 }
