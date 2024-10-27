@@ -2,15 +2,11 @@ FROM alpine:latest
 
 WORKDIR /pb
 
-# Install required packages and download PocketBase
-RUN apk add --no-cache \
-    unzip \
-    ca-certificates \
-    wget \
-    && wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.22/pocketbase_0.22.22_linux_amd64.zip \
+# Download and setup PocketBase in a single layer
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.22/pocketbase_0.22.22_linux_amd64.zip \
     && unzip pocketbase_0.22.22_linux_amd64.zip \
-    && chmod +x /pb/pocketbase \
-    && rm pocketbase_0.22.22_linux_amd64.zip
+    && rm pocketbase_0.22.22_linux_amd64.zip \
+    && chmod +x /pb/pocketbase
 
 # Create directory for the database
 RUN mkdir /pb/pb_data
@@ -18,4 +14,3 @@ RUN mkdir /pb/pb_data
 EXPOSE 8090
 
 CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]
-
