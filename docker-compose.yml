@@ -17,8 +17,8 @@ services:
     networks:
       - blink-network
     depends_on:
-      pocketbase:
-        condition: service_healthy
+      - pocketbase
+    restart: unless-stopped
 
   pocketbase:
     container_name: blink-pocketbase
@@ -30,17 +30,8 @@ services:
     volumes:
       - pocketbase_data:/app/pocketbase/pb_data
       - ./pocketbase/pb_migrations:/app/pocketbase/pb_migrations
-    environment:
-      - POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL:-admin@example.com}
-      - POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD:-your-secure-password}
     networks:
       - blink-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-      start_period: 5s
     restart: unless-stopped
 
 networks:

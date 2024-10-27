@@ -2,6 +2,9 @@ FROM alpine:latest
 
 WORKDIR /app
 
+# Install necessary tools
+RUN apk add --no-cache wget
+
 # Copy the entire pocketbase directory from your project
 COPY pocketbase /app/pocketbase
 
