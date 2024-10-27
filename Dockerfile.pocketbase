@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-WORKDIR /pb
+WORKDIR /app
 
 # Install required packages and download PocketBase
 RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.22/pocketbase_0.22.22_linux_amd64.zip \
