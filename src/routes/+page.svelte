@@ -112,12 +112,11 @@
   });
 </script>
 
-<!-- Add a subtle gradient background -->
 <div
   class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 transition-colors duration-300 dark:from-slate-900 dark:to-slate-800"
 >
   <div class="mx-auto max-w-3xl p-6 transition-all duration-150 ease-in-out">
-    <!-- Header with new design -->
+    <!-- Header -->
     <div class="mb-12 flex items-center justify-between">
       <div class="space-y-1">
         <h1
@@ -189,7 +188,7 @@
       </div>
     </div>
 
-    <!-- URL Form with new design -->
+    <!-- URL Form -->
     {#if showAddForm}
       <div
         in:fly={{ y: -10, duration: 150, easing: quintOut }}
@@ -344,7 +343,7 @@
       </div>
     {/if}
 
-    <!-- Success Message with new design -->
+    <!-- Success Message -->
     {#if shortUrl}
       <div
         class="mb-8 overflow-hidden rounded-2xl bg-emerald-50/80 shadow-lg shadow-emerald-500/25 ring-1 ring-emerald-500/25 backdrop-blur-sm dark:bg-emerald-950/80 dark:ring-emerald-500/25"
