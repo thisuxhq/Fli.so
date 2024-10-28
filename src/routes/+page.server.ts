@@ -1,8 +1,12 @@
 import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { generateSlug } from "$lib";
+import { redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ locals }) => {
+  if (!locals.pb.authStore.isValid) {
+    throw redirect(302, "/login");
+  }
   const urls = await locals.pb.collection("urls").getFullList();
   return { urls };
 };
@@ -91,5 +95,9 @@ export const actions: Actions = {
       status: 200,
       message: "URL deleted successfully",
     };
+  },
+  logout: async ({ locals }) => {
+    await locals.pb.authStore.clear();
+    throw redirect(302, "/login");
   },
 };

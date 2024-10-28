@@ -26,6 +26,8 @@
   // Reference for the long URL input
   let longUrlInput: HTMLInputElement;
 
+  let hoveredUrl = $state<string | null>(null);
+
   const suggestSlug = () => {
     customSlug = generateSlug();
   };
@@ -82,6 +84,11 @@
         // Spacebar to suggest new slug (only when add form is open)
         event.preventDefault();
         suggestSlug();
+      } else if (event.key === "e" && hoveredUrl) {
+        // 'e' to edit hovered URL
+        event.preventDefault();
+        const url = data.urls.find((u) => u.id === hoveredUrl);
+        if (url) startEdit(url);
       }
     }
   }
@@ -118,42 +125,30 @@
   <div class="mx-auto max-w-3xl p-6 transition-all duration-150 ease-in-out">
     <!-- Header -->
     <div class="mb-12 flex items-center justify-between">
-      <div class="space-y-1">
+      <div>
         <h1
           class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-4xl font-bold tracking-tight text-transparent"
           in:fly={{ y: -20, duration: 150, delay: 100 }}
         >
           Blink
         </h1>
-        <p class="text-sm text-slate-600 dark:text-slate-400">
-          Shorten links with style
-        </p>
       </div>
 
       <div class="flex items-center gap-3">
-        <button
-          class="rounded-full p-2 text-slate-600 transition-colors hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-700/50"
-          onclick={() => (isDark = !isDark)}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+        <!-- Logout Button -->
+        <form action="?/logout" method="POST" use:enhance>
+          <button
+            type="submit"
+            class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300 dark:hover:bg-slate-700/50"
           >
-            {#if isDark}
-              <path
-                fill-rule="evenodd"
-                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                clip-rule="evenodd"
-              />
-            {:else}
-              <path
-                d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
-              />
-            {/if}
-          </svg>
-        </button>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg>
+            <span>Logout</span>
+          </button>
+        </form>
+
+        <!-- Add URL Button -->
         <button
           class="group relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/25 transition-all hover:translate-y-[-1px] hover:shadow-indigo-500/40 active:translate-y-[1px]"
           onclick={() => (showAddForm = !showAddForm)}
@@ -255,7 +250,7 @@
                     type="text"
                     bind:value={customSlug}
                     placeholder="custom-name"
-                    class="flex-1 bg-white/50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500"
+                    class="flex-1 ml-2 bg-white/50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
                     pattern="[a-zA-Z0-9-]+"
                     title="Only letters, numbers, and hyphens are allowed"
                   />
@@ -374,7 +369,7 @@
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
-                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                <path d="M8 3a1 1 0 011-1h2a1 1 0 100 2H9a1 1 0 01-1-1z" />
                 <path
                   d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
                 />
@@ -392,7 +387,9 @@
         in:fly|local={{ y: 20, duration: 200 }}
         out:fly|local={{ y: 20, duration: 150 }}
       >
-        <div class="flex items-center justify-between">
+        <div
+          class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+        >
           <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100">
             Your URLs
           </h2>
@@ -401,7 +398,12 @@
               type="text"
               bind:value={searchQuery}
               placeholder="Search URLs..."
-              class="rounded-lg border border-slate-200 bg-white/80 py-2 pl-9 pr-16 text-sm backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900"
+              onkeydown={(e) => {
+                if (e.key === "Escape") {
+                  e.currentTarget.blur();
+                }
+              }}
+              class="w-full rounded-lg border border-slate-200 bg-white/80 py-2 pl-9 pr-16 text-sm backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900"
             />
             <kbd
               class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 sm:inline-block dark:border-slate-700 dark:text-slate-500"
@@ -427,9 +429,13 @@
           <div class="grid gap-4 sm:grid-cols-2">
             {#each filteredUrls as url (url.id)}
               <div
-                class="group overflow-hidden rounded-xl bg-white/80 p-4 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm transition-all duration-200 hover:shadow-xl hover:shadow-slate-200/50 dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50 dark:hover:shadow-slate-900/50"
+                class="group overflow-hidden rounded-xl bg-white/80 p-4 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
                 in:fly|local={{ y: 10, duration: 200, delay: 50 }}
                 out:fade|local={{ duration: 150 }}
+                onmouseenter={() => (hoveredUrl = url.id)}
+                onmouseleave={() => (hoveredUrl = null)}
+                aria-label={`${url.url} (${url.clicks} clicks)`}
+                role="article"
               >
                 {#if editingId === url.id}
                   <form
@@ -582,11 +588,13 @@
                             d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
                           />
                         </svg>
-                        <kbd
-                          class="absolute -bottom-8 right-0 hidden rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 group-hover/btn:inline-block dark:border-slate-700 dark:text-slate-500"
-                        >
-                          E
-                        </kbd>
+                        {#if hoveredUrl === url.id}
+                          <kbd
+                            class="absolute -top-8 right-0 hidden rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 group-hover/btn:inline-block dark:border-slate-700 dark:text-slate-500"
+                          >
+                            E
+                          </kbd>
+                        {/if}
                       </button>
                       <form method="POST" action="?/delete" use:enhance>
                         <input type="hidden" name="id" value={url.id} />
@@ -633,7 +641,7 @@
     <!-- Add a keyboard shortcuts help dialog -->
     <div class="fixed bottom-4 right-4">
       <button
-        class="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+        class="inline-flex items-center gap-2 z-10 rounded-lg bg-white px-3 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
         onclick={() => (showShortcutsDialog = true)}
       >
         <svg
@@ -715,6 +723,26 @@
         </div>
       </button>
     {/if}
+
+    <!-- Footer -->
+    <footer class="mt-16 pt-8 border-t border-slate-200/50 dark:border-slate-700/50">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          <a
+            href="https://thisux.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="decoration-wavy decoration-slate-300 underline underline-offset-4 font-medium text-slate-700 hover:text-indigo-600 dark:decoration-slate-700 dark:text-slate-300 dark:hover:text-indigo-400"
+          >
+            ThisUX
+          </a>
+          , a forward-thinking product studio
+        </p>
+        <p class="mt-2 text-sm text-slate-500 sm:mt-0 dark:text-slate-400">
+          © {new Date().getFullYear()} All rights reserved.
+        </p>
+      </div>
+    </footer>
   </div>
 </div>
 
