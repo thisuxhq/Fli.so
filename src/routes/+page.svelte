@@ -42,6 +42,9 @@
     ),
   );
 
+  // Add new state for deletion confirmation
+  let deletingId = $state<string | null>(null);
+
   const suggestSlug = () => {
     customSlug = generateSlug();
   };
@@ -68,6 +71,9 @@
         cancelEdit();
       } else if (showAddForm) {
         showAddForm = false;
+      } else if (deletingId) {
+        // Cancel deletion
+        deletingId = null;
       }
       return;
     }
@@ -93,8 +99,20 @@
       } else if (event.key === "e" && hoveredUrl) {
         // 'e' to edit hovered URL
         event.preventDefault();
-        const url = data.urls.find((u) => u.id === hoveredUrl);
+        const url = urls.find((u) => u.id === hoveredUrl);
         if (url) startEdit(url);
+      } else if (event.key === "d" && hoveredUrl) {
+        // 'd' to start delete confirmation
+        event.preventDefault();
+        if (deletingId === hoveredUrl) {
+          // If already confirming, submit the delete
+          const form = document.querySelector(`form[data-delete-id="${hoveredUrl}"]`);
+          form?.dispatchEvent(new Event('submit', { cancelable: true }));
+          deletingId = null;
+        } else {
+          // Start confirmation
+          deletingId = hoveredUrl;
+        }
       }
     }
   }
@@ -163,7 +181,7 @@
     <div class="mb-12 flex items-center justify-between">
       <div>
         <h1
-          class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-4xl font-bold tracking-tight text-transparent"
+          class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-4xl font-semibold tracking-tight text-transparent"
           in:fly={{ y: -20, duration: 150, delay: 100 }}
         >
           Blink
@@ -641,11 +659,44 @@
                           </kbd>
                         {/if}
                       </button>
-                      <form method="POST" action="?/delete" use:enhance>
-                        <input type="hidden" name="id" value={url.id} />
+                      
+                      {#if deletingId === url.id}
+                        <!-- Delete Confirmation -->
+                        <div 
+                          class="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 dark:bg-red-950/50"
+                          transition:fly={{ x: 10, duration: 150 }}
+                        >
+                          <span class="text-sm font-medium text-red-600 dark:text-red-400">
+                            Delete URL?
+                          </span>
+                          <form 
+                            method="POST" 
+                            action="?/delete" 
+                            use:enhance
+                            data-delete-id={url.id}
+                            class="flex items-center gap-2"
+                          >
+                            <input type="hidden" name="id" value={url.id} />
+                            <button
+                              type="submit"
+                              class="rounded-lg bg-red-100 px-2 py-1 text-sm font-medium text-red-600 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              class="rounded-lg px-2 py-1 text-sm font-medium text-red-600/75 hover:bg-red-100 dark:text-red-400/75 dark:hover:bg-red-900/50"
+                              onclick={() => deletingId = null}
+                            >
+                              No
+                            </button>
+                          </form>
+                        </div>
+                      {:else}
+                        <!-- Delete Button -->
                         <button
-                          type="submit"
-                          class="rounded-lg p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
+                          class="group/btn relative rounded-lg p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
+                          onclick={() => deletingId = url.id}
                           title="Delete URL"
                           aria-label="Delete URL"
                         >
@@ -661,8 +712,15 @@
                               clip-rule="evenodd"
                             />
                           </svg>
+                          {#if hoveredUrl === url.id}
+                            <kbd
+                              class="absolute -top-8 right-0 hidden rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 group-hover/btn:inline-block dark:border-slate-700 dark:text-slate-500"
+                            >
+                              D
+                            </kbd>
+                          {/if}
                         </button>
-                      </form>
+                      {/if}
                     </div>
                   </div>
                 {/if}
@@ -762,6 +820,20 @@
               <kbd
                 class="rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400"
                 >↵</kbd
+              >
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-600">Edit URL</span>
+              <kbd
+                class="rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400"
+                >E</kbd
+              >
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-600">Delete URL</span>
+              <kbd
+                class="rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400"
+                >D</kbd
               >
             </div>
           </div>
