@@ -1,131 +1,76 @@
-Here's a consolidated PRD for your URL shortener MVP, including mockups for the UI components.
+# Blink - URL Shortener
 
----
+Blink is a URL shortener built with SvelteKit and PocketBase. It provides a clean and simple interface for shortening long URLs into short, memorable links.
 
-# **Product Requirements Document (PRD): URL Shortener MVP**
+## Features
 
----
+- **URL Shortening:** Shorten long URLs using a custom or automatically generated slug.
+- **Customizable Slugs:** Create your own short URLs.
+- **Click Tracking:** Track the number of clicks on each shortened URL.
+- **Clean UI:** Modern and user-friendly interface.
+- **Dark Mode:** Toggle between light and dark themes.
+- **Keyboard Shortcuts:** Efficient navigation and actions using keyboard shortcuts. (See the help dialog for details).
 
-## **1. Overview**
+## Tech Stack
 
-- **Objective**: Launch a simple, efficient URL shortener to enable users to create, manage, and share shortened links with basic analytics.
-- **Target Audience**: Individuals, businesses, and developers seeking to share and track shortened URLs.
+- **Frontend:** SvelteKit
+- **Backend:** PocketBase (self-hosted)
+- **Styling:** Tailwind CSS
+- **State Management:** SvelteKit's Runes API for reactivity
+- **Package Manager:** Bun
 
----
+## Setup
 
-## **2. Product Scope**
+1. **Clone the repository:**
 
-### **Core Features**
-- **URL Shortening**: Input a long URL and generate a shortened version.
-- **Redirection**: Automatically redirect users to the original URL upon clicking the short link.
-- **Basic Analytics**: Track the total clicks for each shortened link.
-- **Shortened Links Management**: View, edit, and delete shortened links.
+   ```bash
+   git clone <repository_url>
+   ```
 
----
+2. **Install dependencies:**
 
-## **3. Functional Requirements**
+   ```bash
+   bun install
+   ```
 
-1. **URL Shortening Service**
-   - Validate URLs to ensure proper formatting.
-   - Generate unique slugs for each shortened URL.
+3. **Start PocketBase (if not already running):** This project uses a self-hosted PocketBase instance. You can start it using:
 
-2. **Redirection**
-   - Efficiently redirect to the original URL using a 301 redirect.
+   ```bash
+   npm run pocketbase:dev  # or the equivalent Bun command if available.  Check your package.json. Or you can skip this step and check the step 5.
+   ```
 
-3. **Analytics**
-   - Track total clicks for each shortened URL.
+   (This command starts PocketBase in development mode on `http://localhost:8090`. Adjust the port if necessary.)
 
-4. **Management**
-   - CRUD operations for managing shortened links.
+4. **Generate PocketBase types:**
 
----
+   ```bash
+   bun run typegen
+   ```
 
-## **4. Technical Requirements**
+   This will generate the types for the PocketBase collections and save them in the `types` folder.
 
-### **Backend**
-- **Database**: PostgreSQL or MongoDB for storing URL mappings and click counts.
-- **API Endpoints**:
-  - POST `/shorten`: Accepts a long URL and returns a shortened URL.
-  - GET `/r/:slug`: Redirects to the original URL based on the slug.
-  - GET `/analytics/:slug`: Returns the total click count for the short URL.
+5. **Run the development server:**
 
-### **Frontend**
-- **Web UI**: Minimalistic design to input URLs, view links, and track clicks.
-- **Responsive Design**: Ensure mobile compatibility.
+   ```bash
+   bun run start # this will start the SvelteKit app and the PocketBase server on different ports together.
+   ```
 
-### **Security**
-- Implement basic rate limiting and URL validation.
+6. **Visit:** `http://localhost:5173`
+7. **For admin access to PocketBase, visit:** `http://localhost:8090/_/`
+   1. Create an admin user.
+   2. Now you will be able to see tables already created in the `collections` folder.
+   3. You can also create new collections from the UI.
 
-### **Infrastructure**
-- Host on a cloud platform (e.g., Vercel, DigitalOcean) with HTTPS support.
+## Deployment
 
----
+Deployment instructions will be added later.
 
-## **5. User Stories**
+## Contributing
 
-1. **As a user,** I want to shorten a long URL quickly so I can share it easily.
-2. **As a user,** I want to track the number of clicks for my shortened URL to measure engagement.
+Contributions are welcome! Please open an issue or submit a pull request.
 
----
+## License and Copyright
 
-## **6. Success Metrics**
+Copyright 2024 THISUX PRIVATE LIMITED
 
-- **User Engagement**: Number of links shortened and total clicks.
-- **Performance**: Response times for shortening and redirection.
-- **Reliability**: Successful redirects and uptime.
-
----
-
-## **7. UI Mockups**
-
-### **Main Page**
-
-```
-------------------------------------------------------------
-|                         URL Shortener                     |
-------------------------------------------------------------
-|                                                          |
-| [ Input Long URL: _______________________________ ]     |
-|                                                          |
-| [ Generate Short Link ]                                  |
-|                                                          |
-------------------------------------------------------------
-|                       Shortened Links                    |
-------------------------------------------------------------
-|  Shortened URL           |  Clicks  |  Custom Alias     |
-------------------------------------------------------------
-|  https://short.ly/abc123 |   10     |  [Edit] [Delete]  |
-|  https://short.ly/def456 |    5     |  [Edit] [Delete]  |
-|  https://short.ly/ghi789 |    3     |  [Edit] [Delete]  |
-------------------------------------------------------------
-|  [ View Analytics ]                                      |
-------------------------------------------------------------
-```
-
-### **Analytics Page (Optional)**
-
-```
-------------------------------------------------------------
-|                     Analytics for:                       |
-|                     https://short.ly/abc123             |
-------------------------------------------------------------
-|                    Total Clicks: 10                      |
-------------------------------------------------------------
-|  Clicks Over Time (Graph)                                |
-|                                                          |
-|  [ Graph Placeholder ]                                   |
-|                                                          |
-------------------------------------------------------------
-|   Click Details                                           |
-------------------------------------------------------------
-|  Date       |  Count  |  Referrer                       |
-------------------------------------------------------------
-|  2024-10-01 |    5    |  direct                         |
-|  2024-10-02 |    3    |  google.com                     |
-|  2024-10-03 |    2    |  twitter.com                    |
-------------------------------------------------------------
-```
-
----
-
-This PRD provides a comprehensive overview of the URL shortener MVP, including the essential features, technical requirements, user stories, success metrics, and UI mockups. This structured approach will guide the development process and ensure a focus on delivering a functional MVP. If you need further details or modifications, feel free to ask!
+Licensed under the Affero General Public License (AGPL-3.0)
