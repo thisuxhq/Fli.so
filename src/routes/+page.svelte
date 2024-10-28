@@ -3,8 +3,9 @@
   import { fade, fly, scale } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import { generateSlug } from "$lib";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { env } from "$env/dynamic/public";
+  import { pb } from "$lib/pocketbase"; // Ensure this import exists
 
   let { data } = $props();
   let longUrl = $state("");
@@ -28,6 +29,19 @@
 
   let hoveredUrl = $state<string | null>(null);
 
+  // Add state for realtime updates
+  let unsubscribe: (() => void) | null = null;
+
+  // Modify the derived URLs to work with realtime updates
+  let urls = $state(data.urls);
+  let filteredUrls = $derived(
+    urls.filter(
+      (url) =>
+        url.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        url.slug.toLowerCase().includes(searchQuery.toLowerCase()),
+    ),
+  );
+
   const suggestSlug = () => {
     customSlug = generateSlug();
   };
@@ -43,14 +57,6 @@
     editUrl = "";
     editSlug = "";
   };
-
-  let filteredUrls = $derived(
-    data.urls.filter(
-      (url) =>
-        url.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        url.slug.toLowerCase().includes(searchQuery.toLowerCase()),
-    ),
-  );
 
   // Keyboard shortcuts
   function handleKeyboard(event: KeyboardEvent) {
@@ -93,11 +99,41 @@
     }
   }
 
-  onMount(() => {
-    window.addEventListener("keydown", handleKeyboard);
-    return () => {
-      window.removeEventListener("keydown", handleKeyboard);
-    };
+  // Setup realtime subscription
+  onMount(async () => {
+    try {
+      // Await the subscription setup
+      unsubscribe = await pb.collection('urls').subscribe('*', (e) => {
+        switch (e.action) {
+          case 'create':
+            urls = [...urls, e.record];
+            break;
+          case 'update':
+            urls = urls.map(url => 
+              url.id === e.record.id ? e.record : url
+            );
+            break;
+          case 'delete':
+            urls = urls.filter(url => url.id !== e.record.id);
+            break;
+        }
+      });
+
+      // Existing keyboard event listener setup
+      window.addEventListener("keydown", handleKeyboard);
+      return () => {
+        window.removeEventListener("keydown", handleKeyboard);
+      };
+    } catch (error) {
+      console.error('Failed to setup realtime subscription:', error);
+    }
+  });
+
+  // Cleanup subscription on component destroy
+  onDestroy(() => {
+    if (unsubscribe) {
+      unsubscribe();
+    }
   });
 
   // Add timeout to hide shortUrl
@@ -141,8 +177,17 @@
             type="submit"
             class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300 dark:hover:bg-slate-700/50"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z"
+                clip-rule="evenodd"
+              />
             </svg>
             <span>Logout</span>
           </button>
@@ -250,7 +295,7 @@
                     type="text"
                     bind:value={customSlug}
                     placeholder="custom-name"
-                    class="flex-1 ml-2 bg-white/50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
+                    class="ml-2 flex-1 border border-gray-200 bg-white/50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
                     pattern="[a-zA-Z0-9-]+"
                     title="Only letters, numbers, and hyphens are allowed"
                   />
@@ -494,7 +539,7 @@
                           type="text"
                           name="slug"
                           bind:value={editSlug}
-                          class="flex-1 bg-white/50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:ring-indigo-800"
+                          class="ml-2 flex-1 border border-gray-200 bg-white/50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
                           pattern="[a-zA-Z0-9-]+"
                           title="Only letters, numbers, and hyphens are allowed"
                           required
@@ -524,11 +569,11 @@
                     <!-- Short URL -->
                     <div class="flex items-start justify-between gap-4">
                       <a
-                        href={`https://dun.sh/${url.slug}`}
+                        href={`${env.PUBLIC_APPLICATION_URL}/${url.slug}`}
                         target="_blank"
                         class="group/link flex items-center gap-2 font-medium text-slate-900 hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400"
                       >
-                        dun.sh/{url.slug}
+                        {env.PUBLIC_APPLICATION_NAME}/{url.slug}
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           class="h-4 w-4 opacity-0 transition-opacity group-hover/link:opacity-100"
@@ -641,7 +686,7 @@
     <!-- Add a keyboard shortcuts help dialog -->
     <div class="fixed bottom-4 right-4">
       <button
-        class="inline-flex items-center gap-2 z-10 rounded-lg bg-white px-3 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+        class="z-10 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
         onclick={() => (showShortcutsDialog = true)}
       >
         <svg
@@ -725,14 +770,16 @@
     {/if}
 
     <!-- Footer -->
-    <footer class="mt-16 pt-8 border-t border-slate-200/50 dark:border-slate-700/50">
+    <footer
+      class="mt-16 border-t border-slate-200/50 pt-8 dark:border-slate-700/50"
+    >
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-slate-500 dark:text-slate-400">
           <a
             href="https://thisux.com"
             target="_blank"
             rel="noopener noreferrer"
-            class="decoration-wavy decoration-slate-300 underline underline-offset-4 font-medium text-slate-700 hover:text-indigo-600 dark:decoration-slate-700 dark:text-slate-300 dark:hover:text-indigo-400"
+            class="font-medium text-slate-700 underline decoration-slate-300 decoration-wavy underline-offset-4 hover:text-indigo-600 dark:text-slate-300 dark:decoration-slate-700 dark:hover:text-indigo-400"
           >
             ThisUX
           </a>
@@ -772,3 +819,4 @@
     background-color: #0056b3;
   }
 </style>
+
