@@ -10,7 +10,6 @@ services:
       PUBLIC_POCKETBASE_URL: ${PUBLIC_POCKETBASE_URL}
       PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
       PUBLIC_APPLICATION_URL: ${PUBLIC_APPLICATION_URL}
-      HOST: "0.0.0.0"
     depends_on:
       pocketbase:
         condition: service_healthy
