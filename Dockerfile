@@ -1,18 +1,21 @@
-FROM oven/bun:latest
+# Use Bun as the base image
+FROM oven/bun
 
+# Set the working directory
 WORKDIR /app
 
-COPY package.json bun.lockb ./
-
-# Install dependencies first for better caching
+# Copy package.json and install dependencies
+COPY package.json ./
 RUN bun install
 
+# Copy the rest of the application files
 COPY . .
 
-# Configure Vite to listen on all interfaces
-ENV HOST=0.0.0.0
+# Build the application
+RUN bun run build
 
+# Expose port 5173
 EXPOSE 5173
 
-# Use development mode
-CMD ["bun", "run", "dev", "--host"]
+# Set the entry point to run the built application
+ENTRYPOINT ["bun", "./build"]
