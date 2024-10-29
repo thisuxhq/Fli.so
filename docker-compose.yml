@@ -1,20 +1,19 @@
 version: "3.7"
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
     ports:
       - "4173:4173"
-    volumes:
-      - ./:/app
-      - /app/node_modules
-    depends_on:
-      pocketbase:
-        condition: service_healthy
     environment:
       PUBLIC_POCKETBASE_URL: ${PUBLIC_POCKETBASE_URL}
       PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
       PUBLIC_APPLICATION_URL: ${PUBLIC_APPLICATION_URL}
       HOST: "0.0.0.0"
+    depends_on:
+      pocketbase:
+        condition: service_healthy
     networks:
       - app-network
     healthcheck:
@@ -22,6 +21,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    restart: unless-stopped
 
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
