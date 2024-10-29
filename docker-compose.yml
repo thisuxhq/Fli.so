@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "4173:4173"
+      - "3000:3000"
     environment:
       PUBLIC_POCKETBASE_URL: ${PUBLIC_POCKETBASE_URL}
       PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
@@ -17,7 +17,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:4173 || exit 1
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
       interval: 10s
       timeout: 5s
       retries: 3
