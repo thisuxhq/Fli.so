@@ -29,8 +29,8 @@ COPY --from=builder /app/bun.lockb ./
 # Install only production dependencies
 RUN bun install --production
 
-# Expose port 5173 (or whatever port your production server uses)
-EXPOSE 5173
+# Expose port 4173 (or whatever port your production server uses)
+EXPOSE 4173
 
 # Start the production server
 CMD ["bun", "run", "preview"] 
