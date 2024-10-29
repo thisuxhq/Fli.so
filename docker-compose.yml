@@ -5,15 +5,23 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - .:/app
+      - ./:/app
+      - /app/node_modules
     depends_on:
-      - pocketbase
+      pocketbase:
+        condition: service_healthy
     environment:
       PUBLIC_POCKETBASE_URL: ${PUBLIC_POCKETBASE_URL}
       PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
       PUBLIC_APPLICATION_URL: ${PUBLIC_APPLICATION_URL}
+      HOST: "0.0.0.0"
     networks:
       - app-network
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5173 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
