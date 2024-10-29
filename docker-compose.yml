@@ -30,6 +30,7 @@ services:
     command:
       - serve
       - --http=0.0.0.0:8090
+      - --debug
     environment:
       ENCRYPTION: ${ENCRYPTION}
     ports:
@@ -40,10 +41,11 @@ services:
       - ./pocketbase/pb_hooks:/pb_hooks
       - ./pocketbase/pb_migrations:/pb_migrations
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
     networks:
       - app-network
 
