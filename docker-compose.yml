@@ -17,6 +17,11 @@ services:
       HOST: "0.0.0.0"
     networks:
       - app-network
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5173 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
@@ -34,6 +39,11 @@ services:
       - ./pocketbase/pb_public:/pb_public
       - ./pocketbase/pb_hooks:/pb_hooks
       - ./pocketbase/pb_migrations:/pb_migrations
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - app-network
 
