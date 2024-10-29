@@ -1,0 +1,36 @@
+# Use Bun as the base image
+FROM oven/bun:latest as builder
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lockb ./
+
+# Install dependencies
+RUN bun install
+
+# Copy the rest of the application files
+COPY . .
+
+# Build the application
+RUN bun run build
+
+# Production stage
+FROM oven/bun:latest
+
+WORKDIR /app
+
+# Copy only the built files and necessary runtime dependencies
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/bun.lockb ./
+
+# Install only production dependencies
+RUN bun install --production
+
+# Expose port 5173 (or whatever port your production server uses)
+EXPOSE 5173
+
+# Start the production server
+CMD ["bun", "run", "preview"] 
