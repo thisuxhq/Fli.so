@@ -8,17 +8,22 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(302, "/login");
   }
   const urls = await locals.pb.collection("urls").getFullList();
-  return { urls };
+  return { urls, user: locals.pb.authStore.model };
 };
 
 export const actions: Actions = {
   shorten: async ({ request, locals }) => {
+    if (!locals.pb.authStore.isValid) {
+      throw redirect(302, "/login");
+    }
+
     const formData = await request.formData();
     const url = formData.get("url") as string;
     let slug = formData.get("slug") as string;
+    const created_by = formData.get("created_by") as string;
 
-    if (!url) {
-      return fail(400, { message: "URL is required" });
+    if (!url || !created_by) {
+      return fail(400, { message: "URL and created_by are required" });
     }
 
     // If no custom slug provided, generate one
@@ -46,7 +51,12 @@ export const actions: Actions = {
         });
       }
 
-      await locals.pb.collection("urls").create({ url, slug, clicks: 0 });
+      await locals.pb.collection("urls").create({
+        url,
+        slug,
+        clicks: 0,
+        created_by,
+      });
 
       return {
         type: "success",
@@ -62,16 +72,21 @@ export const actions: Actions = {
   },
 
   update: async ({ request, locals }) => {
+    if (!locals.pb.authStore.isValid) {
+      throw redirect(302, "/login");
+    }
+
     const formData = await request.formData();
     const id = formData.get("id") as string;
     const url = formData.get("url") as string;
     const slug = formData.get("slug") as string;
+    const created_by = formData.get("created_by") as string;
 
-    if (!id || !url || !slug) {
+    if (!id || !url || !slug || !created_by) {
       return fail(400, { message: "ID, URL, and slug are required" });
     }
 
-    await locals.pb.collection("urls").update(id, { url, slug });
+    await locals.pb.collection("urls").update(id, { url, slug, created_by });
 
     return {
       type: "success",
@@ -81,13 +96,25 @@ export const actions: Actions = {
   },
 
   delete: async ({ request, locals }) => {
+    if (!locals.pb.authStore.isValid) {
+      throw redirect(302, "/login");
+    }
+
     const formData = await request.formData();
     const id = formData.get("id") as string;
+    const created_by = formData.get("created_by") as string;
 
-    if (!id) {
+    if (!id || !created_by) {
       return fail(400, { message: "ID is required" });
     }
 
+    // check if the user is the owner of the URL
+    const url = await locals.pb.collection("urls").getOne(id);
+    if (url.created_by !== created_by) {
+      return fail(403, { message: "You are not the owner of this URL" });
+    }
+
+    // delete the URL
     await locals.pb.collection("urls").delete(id);
 
     return {

@@ -5,9 +5,12 @@
   import { generateSlug } from "$lib";
   import { onMount, onDestroy } from "svelte";
   import { env } from "$env/dynamic/public";
-  import { pb } from "$lib/pocketbase"; // Ensure this import exists
+  import { pb } from "$lib/pocketbase";
+  import { toast } from "svelte-sonner";
+  import type { UrlsResponse, UsersResponse } from "$lib/types";
 
-  let { data } = $props();
+  let { data }: { data: { urls: UrlsResponse[]; user: UsersResponse } } =
+    $props();
   let longUrl = $state("");
   let customSlug = $state("");
   let shortUrl = $state("");
@@ -17,9 +20,6 @@
   let showAddForm = $state(false);
   let searchQuery = $state("");
   let showShortcutsDialog = $state(false);
-
-  // Add new state for theme
-  let isDark = $state(false);
 
   // Add editSlug state
   let editSlug = $state("");
@@ -106,8 +106,10 @@
         event.preventDefault();
         if (deletingId === hoveredUrl) {
           // If already confirming, submit the delete
-          const form = document.querySelector(`form[data-delete-id="${hoveredUrl}"]`);
-          form?.dispatchEvent(new Event('submit', { cancelable: true }));
+          const form = document.querySelector(
+            `form[data-delete-id="${hoveredUrl}"]`,
+          );
+          form?.dispatchEvent(new Event("submit", { cancelable: true }));
           deletingId = null;
         } else {
           // Start confirmation
@@ -121,18 +123,18 @@
   onMount(async () => {
     try {
       // Await the subscription setup
-      unsubscribe = await pb.collection('urls').subscribe('*', (e) => {
+      unsubscribe = await pb.collection("urls").subscribe("*", (e) => {
         switch (e.action) {
-          case 'create':
-            urls = [...urls, e.record];
+          case "create":
+            urls = [...urls, e.record as UrlsResponse];
             break;
-          case 'update':
-            urls = urls.map(url => 
-              url.id === e.record.id ? e.record : url
+          case "update":
+            urls = urls.map((url) =>
+              url.id === e.record.id ? (e.record as UrlsResponse) : url,
             );
             break;
-          case 'delete':
-            urls = urls.filter(url => url.id !== e.record.id);
+          case "delete":
+            urls = urls.filter((url) => url.id !== e.record.id);
             break;
         }
       });
@@ -143,7 +145,7 @@
         window.removeEventListener("keydown", handleKeyboard);
       };
     } catch (error) {
-      console.error('Failed to setup realtime subscription:', error);
+      console.error("Failed to setup realtime subscription:", error);
     }
   });
 
@@ -174,15 +176,14 @@
 </script>
 
 <div
-  class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 transition-colors duration-300 dark:from-slate-900 dark:to-slate-800"
+  class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black"
 >
-  <div class="mx-auto max-w-3xl p-6 transition-all duration-150 ease-in-out">
+  <div class="mx-auto max-w-3xl p-6">
     <!-- Header -->
     <div class="mb-12 flex items-center justify-between">
       <div>
         <h1
-          class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-4xl font-semibold tracking-tight text-transparent"
-          in:fly={{ y: -20, duration: 150, delay: 100 }}
+          class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
         >
           Blink
         </h1>
@@ -193,7 +194,7 @@
         <form action="?/logout" method="POST" use:enhance>
           <button
             type="submit"
-            class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/50 px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300 dark:hover:bg-slate-700/50"
+            class="inline-flex items-center gap-2 rounded-full bg-white/50 px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-100 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -213,7 +214,7 @@
 
         <!-- Add URL Button -->
         <button
-          class="group relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/25 transition-all hover:translate-y-[-1px] hover:shadow-indigo-500/40 active:translate-y-[1px]"
+          class="group relative inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
           onclick={() => (showAddForm = !showAddForm)}
         >
           <svg
@@ -237,11 +238,19 @@
             {/if}
           </svg>
           <span>{showAddForm ? "Cancel" : "Add URL"}</span>
-          <kbd
-            class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
-          >
-            C
-          </kbd>
+          {#if showAddForm}
+            <kbd
+              class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+            >
+              Esc
+            </kbd>
+          {:else}
+            <kbd
+              class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+            >
+              C
+            </kbd>
+          {/if}
         </button>
       </div>
     </div>
@@ -267,11 +276,14 @@
                 longUrl = "";
                 customSlug = "";
                 showAddForm = false;
+
+                toast.success("URL shortened successfully!");
               }
             };
           }}
-          class="overflow-hidden rounded-2xl bg-white/80 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50"
+          class="overflow-hidden rounded-2xl bg-white/80 shadow-xl ring-1 ring-gray-200 backdrop-blur-sm dark:bg-gray-800/80 dark:ring-gray-700"
         >
+          <input type="hidden" name="created_by" value={data.user.id} />
           <div class="p-6">
             <div class="space-y-4">
               <div>
@@ -336,7 +348,7 @@
                     </svg>
                     <span class="hidden sm:inline">Suggest</span>
                     <kbd
-                      class="ml-1 hidden rounded-md bg-slate-200/50 px-1.5 py-0.5 text-xs font-light text-slate-500 sm:inline-block dark:bg-slate-600/50 dark:text-slate-400"
+                      class="ml-1 hidden rounded-md bg-gray-200/50 px-1.5 py-0.5 text-xs font-light text-gray-500 sm:inline-block dark:bg-gray-600/50 dark:text-gray-400"
                     >
                       Space
                     </kbd>
@@ -349,12 +361,14 @@
           <div
             class="flex items-center justify-between gap-4 border-t border-slate-200/50 bg-slate-50/50 px-6 py-4 dark:border-slate-700/50 dark:bg-slate-800/50"
           >
-            <p class="text-sm text-slate-600 dark:text-slate-400">
+            <p
+              class="hidden text-sm text-slate-600 md:block dark:text-slate-400"
+            >
               Create your custom short URL in seconds
             </p>
             <button
               type="submit"
-              class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/25 transition-all hover:translate-y-[-1px] hover:shadow-indigo-500/40 active:translate-y-[1px] disabled:from-slate-400 disabled:to-slate-500 disabled:shadow-none disabled:hover:translate-y-0"
+              class="inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 disabled:bg-gray-400 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
               disabled={isLoading}
             >
               {#if isLoading}
@@ -404,242 +418,381 @@
     <!-- Success Message -->
     {#if shortUrl}
       <div
-        class="mb-8 overflow-hidden rounded-2xl bg-emerald-50/80 shadow-lg shadow-emerald-500/25 ring-1 ring-emerald-500/25 backdrop-blur-sm dark:bg-emerald-950/80 dark:ring-emerald-500/25"
+        class="mb-8 overflow-hidden rounded-xl bg-white/50 p-4 shadow-lg ring-1 ring-black/5 backdrop-blur-sm transition-all dark:bg-slate-800/50 dark:ring-white/5"
         transition:scale={{ duration: 150, easing: quintOut }}
       >
-        <div class="p-4">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <p class="font-medium text-emerald-800 dark:text-emerald-300">
-                URL shortened successfully!
-              </p>
-              <a
-                href={shortUrl}
-                target="_blank"
-                class="mt-1 block text-emerald-700 hover:underline dark:text-emerald-400"
-              >
-                {shortUrl}
-              </a>
-            </div>
-            <button
-              class="rounded-lg bg-emerald-100/80 p-2 text-emerald-700 transition-colors hover:bg-emerald-200/80 dark:bg-emerald-900/80 dark:text-emerald-400 dark:hover:bg-emerald-800/80"
-              onclick={() => navigator.clipboard.writeText(shortUrl)}
-              aria-label="Copy to clipboard"
-            >
+        <div class="flex items-center justify-between gap-4">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
               <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5"
+                class="h-4 w-4 text-emerald-500 dark:text-emerald-400"
                 viewBox="0 0 20 20"
                 fill="currentColor"
               >
-                <path d="M8 3a1 1 0 011-1h2a1 1 0 100 2H9a1 1 0 01-1-1z" />
                 <path
-                  d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
                 />
               </svg>
-            </button>
+              <p
+                class="text-sm font-medium text-emerald-600 dark:text-emerald-400"
+              >
+                URL shortened successfully
+              </p>
+            </div>
+            <a
+              href={shortUrl}
+              target="_blank"
+              class="mt-1 block truncate text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+            >
+              {shortUrl}
+            </a>
           </div>
+          <button
+            class="group rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
+            onclick={() => {
+              navigator.clipboard.writeText(shortUrl);
+              toast.success("Copied to clipboard");
+            }}
+            aria-label="Copy to clipboard"
+          >
+            <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
+              <path
+                d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm12 14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1h1.586a1 1 0 00.707-.293l.121-.121A2 2 0 017.828 3h2.344a2 2 0 011.414.586l.121.121c.187.187.441.293.707.293H14a1 1 0 011 1v14z"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     {/if}
 
-    {#if data.urls.length > 0 && !isLoading}
+    <div
+      id="urls"
+      class="space-y-4"
+      in:fly|local={{ y: 20, duration: 200 }}
+      out:fly|local={{ y: 20, duration: 150 }}
+    >
       <div
-        id="urls"
-        class="space-y-4"
-        in:fly|local={{ y: 20, duration: 200 }}
-        out:fly|local={{ y: 20, duration: 150 }}
+        class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
-        <div
-          class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100">
-            Your URLs
-          </h2>
-          <div class="relative">
-            <input
-              type="text"
-              bind:value={searchQuery}
-              placeholder="Search URLs..."
-              onkeydown={(e) => {
-                if (e.key === "Escape") {
-                  e.currentTarget.blur();
-                }
-              }}
-              class="w-full rounded-lg border border-slate-200 bg-white/80 py-2 pl-9 pr-16 text-sm backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900"
+        <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100">
+          Your URLs
+        </h2>
+        <div class="relative">
+          <input
+            type="text"
+            bind:value={searchQuery}
+            placeholder="Search URLs..."
+            onkeydown={(e) => {
+              if (e.key === "Escape") {
+                e.currentTarget.blur();
+              }
+            }}
+            class="w-full rounded-full border border-slate-200 bg-white/80 py-2 pl-9 pr-16 text-sm backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900"
+          />
+          <kbd
+            class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 sm:inline-block dark:border-slate-700 dark:text-slate-500"
+          >
+            /
+          </kbd>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+              clip-rule="evenodd"
             />
-            <kbd
-              class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 sm:inline-block dark:border-slate-700 dark:text-slate-500"
-            >
-              /
-            </kbd>
+          </svg>
+        </div>
+      </div>
+
+      {#if urls.length === 0}
+        <div
+          class="rounded-2xl bg-white/80 px-8 py-12 text-center shadow-xl ring-1 ring-slate-200/50 backdrop-blur-sm dark:bg-slate-800/80 dark:ring-slate-700/50"
+          in:fly|local={{ y: 10, duration: 200, easing: quintOut }}
+          out:fade|local={{ duration: 150 }}
+        >
+          <div class="mx-auto max-w-md">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+              class="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
               <path
-                fill-rule="evenodd"
-                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                clip-rule="evenodd"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
               />
             </svg>
+
+            <h3
+              class="mt-4 text-lg font-medium text-slate-900 dark:text-slate-100"
+            >
+              Start Shortening URLs
+            </h3>
+
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              Create your first shortened URL and make sharing links easier than
+              ever.
+            </p>
+
+            <button
+              class="mt-6 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+              onclick={() => (showAddForm = true)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span>Create Your First Short URL</span>
+              <kbd
+                class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block dark:bg-black/20"
+              >
+                C
+              </kbd>
+            </button>
           </div>
         </div>
+      {:else if filteredUrls.length > 0}
+        <div class="grid gap-4 sm:grid-cols-2">
+          {#each filteredUrls as url (url.id)}
+            <div
+              class="group overflow-hidden rounded-3xl bg-white/80 p-4 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
+              in:fly|local={{ y: 10, duration: 200, delay: 50 }}
+              out:fade|local={{ duration: 150 }}
+              onmouseenter={() => (hoveredUrl = url.id)}
+              onmouseleave={() => (hoveredUrl = null)}
+              aria-label={`${url.url} (${url.clicks} clicks)`}
+              role="article"
+            >
+              {#if editingId === url.id}
+                <form
+                  method="POST"
+                  action="?/update"
+                  class="space-y-4"
+                  use:enhance={() => {
+                    return async ({ result, update }) => {
+                      await update();
+                      if (result.type === "success") {
+                        editingId = null;
+                        editUrl = "";
+                        editSlug = "";
+                        toast.success("URL updated successfully");
+                      }
+                    };
+                  }}
+                >
+                  <input type="hidden" name="created_by" value={data.user.id} />
+                  <input type="hidden" name="id" value={url.id} />
 
-        {#if filteredUrls.length > 0}
-          <div class="grid gap-4 sm:grid-cols-2">
-            {#each filteredUrls as url (url.id)}
-              <div
-                class="group overflow-hidden rounded-xl bg-white/80 p-4 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
-                in:fly|local={{ y: 10, duration: 200, delay: 50 }}
-                out:fade|local={{ duration: 150 }}
-                onmouseenter={() => (hoveredUrl = url.id)}
-                onmouseleave={() => (hoveredUrl = null)}
-                aria-label={`${url.url} (${url.clicks} clicks)`}
-                role="article"
-              >
-                {#if editingId === url.id}
-                  <form
-                    method="POST"
-                    action="?/update"
-                    class="space-y-4"
-                    use:enhance={() => {
-                      return async ({ result, update }) => {
-                        await update();
-                        if (result.type === "success") {
-                          editingId = null;
-                          editUrl = "";
-                          editSlug = "";
-                        }
-                      };
-                    }}
-                  >
-                    <input type="hidden" name="id" value={url.id} />
+                  <!-- URL Input -->
+                  <div>
+                    <label
+                      for="edit-url-{url.id}"
+                      class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                    >
+                      Long URL
+                    </label>
+                    <input
+                      id="edit-url-{url.id}"
+                      type="url"
+                      name="url"
+                      bind:value={editUrl}
+                      class="w-full rounded-full border border-slate-200 bg-white/50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
+                      required
+                    />
+                  </div>
 
-                    <!-- URL Input -->
-                    <div>
-                      <label
-                        for="edit-url-{url.id}"
-                        class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  <!-- Slug Input -->
+                  <div>
+                    <label
+                      for="edit-slug-{url.id}"
+                      class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                    >
+                      Short URL
+                    </label>
+                    <div
+                      class="relative flex overflow-hidden rounded-full border border-slate-200 bg-slate-50/50 dark:border-slate-600 dark:bg-slate-700/50"
+                    >
+                      <span
+                        class="flex items-center pl-3 text-sm text-slate-600 dark:text-slate-400"
                       >
-                        Long URL
-                      </label>
+                        {env.PUBLIC_APPLICATION_NAME}/
+                      </span>
                       <input
-                        id="edit-url-{url.id}"
-                        type="url"
-                        name="url"
-                        bind:value={editUrl}
-                        class="w-full rounded-lg border border-slate-200 bg-white/50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
+                        id="edit-slug-{url.id}"
+                        type="text"
+                        name="slug"
+                        bind:value={editSlug}
+                        class="ml-2 flex-1 rounded-r-full border border-gray-200 bg-white/50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
+                        pattern="[a-zA-Z0-9-]+"
+                        title="Only letters, numbers, and hyphens are allowed"
                         required
                       />
                     </div>
+                  </div>
 
-                    <!-- Slug Input -->
-                    <div>
-                      <label
-                        for="edit-slug-{url.id}"
-                        class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                  <!-- Action Buttons -->
+                  <div class="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      class="inline-flex items-center justify-center rounded-full bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
+                      onclick={cancelEdit}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      class="inline-flex items-center justify-center rounded-full bg-gray-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              {:else}
+                <div class="space-y-3">
+                  <!-- Short URL -->
+                  <div class="flex items-start justify-between gap-4">
+                    <a
+                      href={`${env.PUBLIC_APPLICATION_URL}/${url.slug}`}
+                      target="_blank"
+                      class="group/link flex items-center gap-2 font-medium text-slate-900 hover:text-red-600 dark:text-slate-100 dark:hover:text-gray-900"
+                    >
+                      {env.PUBLIC_APPLICATION_NAME}/{url.slug}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 opacity-0 transition-opacity group-hover/link:opacity-100"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
                       >
-                        Short URL
-                      </label>
+                        <path
+                          d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"
+                        />
+                        <path
+                          d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"
+                        />
+                      </svg>
+                    </a>
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-3 w-3"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path
+                          fill-rule="evenodd"
+                          d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      {url.clicks} clicks
+                    </span>
+                  </div>
+
+                  <!-- Original URL -->
+                  <p
+                    class="truncate text-sm text-slate-500 dark:text-slate-400"
+                    title={url.url}
+                  >
+                    {url.url}
+                  </p>
+
+                  <!-- Actions -->
+                  <div class="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      onclick={() => startEdit(url)}
+                      class="group/btn relative rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                      title="Edit URL"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                        />
+                      </svg>
+                      {#if hoveredUrl === url.id}
+                        <kbd
+                          class="absolute -top-8 right-0 hidden rounded-md border border-gray-200 px-1.5 py-0.5 text-xs font-light text-gray-400 group-hover/btn:inline-block dark:border-gray-700 dark:text-gray-500"
+                        >
+                          E
+                        </kbd>
+                      {/if}
+                    </button>
+
+                    {#if deletingId === url.id}
+                      <!-- Delete Confirmation -->
                       <div
-                        class="relative flex overflow-hidden rounded-lg border border-slate-200 bg-slate-50/50 dark:border-slate-600 dark:bg-slate-700/50"
+                        class="flex items-center gap-2 rounded-full bg-red-50 px-3 py-2 dark:bg-red-950/50"
+                        transition:fly={{ x: 10, duration: 150 }}
                       >
                         <span
-                          class="flex items-center pl-3 text-sm text-slate-600 dark:text-slate-400"
+                          class="text-sm font-medium text-red-600 dark:text-red-400"
                         >
-                          dun.sh/
+                          Delete URL?
                         </span>
-                        <input
-                          id="edit-slug-{url.id}"
-                          type="text"
-                          name="slug"
-                          bind:value={editSlug}
-                          class="ml-2 flex-1 border border-gray-200 bg-white/50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
-                          pattern="[a-zA-Z0-9-]+"
-                          title="Only letters, numbers, and hyphens are allowed"
-                          required
-                        />
+                        <form
+                          method="POST"
+                          action="?/delete"
+                          use:enhance={() => {
+                            return async ({ result, update }) => {
+                              await update();
+                              if (result.type === "success") {
+                                toast.success("URL deleted successfully");
+                              }
+                            };
+                          }}
+                          data-delete-id={url.id}
+                          class="flex items-center gap-2"
+                        >
+                          <input type="hidden" name="created_by" value={data.user.id} />
+                          <input type="hidden" name="id" value={url.id} />
+                          <button
+                            type="submit"
+                            class="rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            class="rounded-full px-3 py-1 text-sm font-medium text-red-600/75 hover:bg-red-100 dark:text-red-400/75 dark:hover:bg-red-900/50"
+                            onclick={() => (deletingId = null)}
+                          >
+                            No
+                          </button>
+                        </form>
                       </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex items-center justify-end gap-2 pt-2">
+                    {:else}
+                      <!-- Delete Button -->
                       <button
-                        type="button"
-                        class="inline-flex items-center justify-center rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
-                        onclick={cancelEdit}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        class="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-2 text-sm font-medium text-white shadow-sm shadow-indigo-500/25 transition-all hover:translate-y-[-1px] hover:shadow-indigo-500/40 active:translate-y-[1px]"
-                      >
-                        Save Changes
-                      </button>
-                    </div>
-                  </form>
-                {:else}
-                  <div class="space-y-3">
-                    <!-- Short URL -->
-                    <div class="flex items-start justify-between gap-4">
-                      <a
-                        href={`${env.PUBLIC_APPLICATION_URL}/${url.slug}`}
-                        target="_blank"
-                        class="group/link flex items-center gap-2 font-medium text-slate-900 hover:text-indigo-600 dark:text-slate-100 dark:hover:text-indigo-400"
-                      >
-                        {env.PUBLIC_APPLICATION_NAME}/{url.slug}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-4 w-4 opacity-0 transition-opacity group-hover/link:opacity-100"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"
-                          />
-                          <path
-                            d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"
-                          />
-                        </svg>
-                      </a>
-                      <span
-                        class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-3 w-3"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                          <path
-                            fill-rule="evenodd"
-                            d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                            clip-rule="evenodd"
-                          />
-                        </svg>
-                        {url.clicks} clicks
-                      </span>
-                    </div>
-
-                    <!-- Original URL -->
-                    <p
-                      class="truncate text-sm text-slate-500 dark:text-slate-400"
-                      title={url.url}
-                    >
-                      {url.url}
-                    </p>
-
-                    <!-- Actions -->
-                    <div class="flex items-center justify-end gap-2 pt-2">
-                      <button
-                        onclick={() => startEdit(url)}
-                        class="group/btn relative rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-300"
-                        title="Edit URL"
+                        class="group/btn relative rounded-full p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
+                        onclick={() => (deletingId = url.id)}
+                        title="Delete URL"
+                        aria-label="Delete URL"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -648,103 +801,67 @@
                           fill="currentColor"
                         >
                           <path
-                            d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                            fill-rule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clip-rule="evenodd"
                           />
                         </svg>
                         {#if hoveredUrl === url.id}
                           <kbd
                             class="absolute -top-8 right-0 hidden rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 group-hover/btn:inline-block dark:border-slate-700 dark:text-slate-500"
                           >
-                            E
+                            D
                           </kbd>
                         {/if}
                       </button>
-                      
-                      {#if deletingId === url.id}
-                        <!-- Delete Confirmation -->
-                        <div 
-                          class="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 dark:bg-red-950/50"
-                          transition:fly={{ x: 10, duration: 150 }}
-                        >
-                          <span class="text-sm font-medium text-red-600 dark:text-red-400">
-                            Delete URL?
-                          </span>
-                          <form 
-                            method="POST" 
-                            action="?/delete" 
-                            use:enhance
-                            data-delete-id={url.id}
-                            class="flex items-center gap-2"
-                          >
-                            <input type="hidden" name="id" value={url.id} />
-                            <button
-                              type="submit"
-                              class="rounded-lg bg-red-100 px-2 py-1 text-sm font-medium text-red-600 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900"
-                            >
-                              Yes
-                            </button>
-                            <button
-                              type="button"
-                              class="rounded-lg px-2 py-1 text-sm font-medium text-red-600/75 hover:bg-red-100 dark:text-red-400/75 dark:hover:bg-red-900/50"
-                              onclick={() => deletingId = null}
-                            >
-                              No
-                            </button>
-                          </form>
-                        </div>
-                      {:else}
-                        <!-- Delete Button -->
-                        <button
-                          class="group/btn relative rounded-lg p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
-                          onclick={() => deletingId = url.id}
-                          title="Delete URL"
-                          aria-label="Delete URL"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-4 w-4"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                              clip-rule="evenodd"
-                            />
-                          </svg>
-                          {#if hoveredUrl === url.id}
-                            <kbd
-                              class="absolute -top-8 right-0 hidden rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 group-hover/btn:inline-block dark:border-slate-700 dark:text-slate-500"
-                            >
-                              D
-                            </kbd>
-                          {/if}
-                        </button>
-                      {/if}
-                    </div>
+                    {/if}
                   </div>
-                {/if}
-              </div>
-            {/each}
-          </div>
-        {:else}
-          <div
-            class="rounded-lg bg-white/50 px-4 py-8 text-center backdrop-blur-sm dark:bg-slate-800/50"
-            in:fly|local={{ y: 10, duration: 200, easing: quintOut }}
-            out:fade|local={{ duration: 150 }}
-          >
-            <p class="text-sm text-slate-600 dark:text-slate-400">
-              {searchQuery ? "No URLs match your search" : "No URLs yet"}
+                </div>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {:else}
+        <div
+          class="rounded-2xl bg-white/80 px-8 py-12 text-center shadow-xl ring-1 ring-slate-200/50 backdrop-blur-sm dark:bg-slate-800/80 dark:ring-slate-700/50"
+          in:fly|local={{ y: 10, duration: 200, easing: quintOut }}
+          out:fade|local={{ duration: 150 }}
+        >
+          <div class="mx-auto max-w-md">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+
+            <h3
+              class="mt-4 text-lg font-medium text-slate-900 dark:text-slate-100"
+            >
+              No URLs match your search
+            </h3>
+
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              Try adjusting your search terms or clear the search to see all
+              your URLs.
             </p>
           </div>
-        {/if}
-      </div>
-    {/if}
+        </div>
+      {/if}
+    </div>
 
     <!-- Add a keyboard shortcuts help dialog -->
     <div class="fixed bottom-4 right-4">
       <button
-        class="z-10 inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50"
+        class="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-700 dark:hover:bg-gray-700"
         onclick={() => (showShortcutsDialog = true)}
       >
         <svg
@@ -761,7 +878,7 @@
         </svg>
         <span>Keyboard Shortcuts</span>
         <kbd
-          class="rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400"
+          class="rounded-md border border-gray-200 px-1.5 py-0.5 text-xs font-light text-gray-400 dark:border-gray-700 dark:text-gray-500"
           >?</kbd
         >
       </button>
@@ -891,4 +1008,3 @@
     background-color: #0056b3;
   }
 </style>
-

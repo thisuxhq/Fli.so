@@ -9,39 +9,36 @@
 </script>
 
 <div
-  class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 transition-colors duration-300 dark:from-slate-900 dark:to-slate-800"
+  class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black"
 >
-  <div class="mx-auto max-w-md p-6 transition-all duration-150 ease-in-out">
+  <div class="mx-auto max-w-md p-6">
     <!-- Header -->
-    <div class="mb-12 text-center">
+    <div class="mb-5 text-center">
       <h1
-        class="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-4xl font-bold tracking-tight text-transparent"
+        class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
         in:fly={{ y: -20, duration: 150, delay: 100 }}
       >
-        Welcome Back
+        {isLogin ? "Welcome Back" : "Join Blink"}
       </h1>
-      <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-        {isLogin ? "Sign in to your account" : "Create your account"}
-      </p>
     </div>
 
     <!-- Auth Toggle -->
     <div class="mb-8 flex justify-center gap-2">
       <button
-        class:active={isLogin}
-        class="relative px-4 py-2 text-sm font-medium text-slate-700 transition-colors dark:text-slate-300 {isLogin
-          ? 'after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-gradient-to-r after:from-indigo-600 after:to-violet-600'
-          : ''}"
+        class="relative rounded-full px-4 py-2 text-sm font-medium transition-colors
+        {isLogin 
+          ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
+          : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}"
         onclick={() => (isLogin = true)}
         type="button"
       >
         Log in
       </button>
       <button
-        class:active={!isLogin}
-        class="relative px-4 py-2 text-sm font-medium text-slate-700 transition-colors dark:text-slate-300 {!isLogin
-          ? 'after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-gradient-to-r after:from-indigo-600 after:to-violet-600'
-          : ''}"
+        class="relative rounded-full px-4 py-2 text-sm font-medium transition-colors
+        {!isLogin 
+          ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
+          : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}"
         onclick={() => (isLogin = false)}
         type="button"
       >
@@ -60,7 +57,7 @@
           isLoading = false;
         };
       }}
-      class="overflow-hidden rounded-2xl bg-white/80 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50"
+      class="overflow-hidden rounded-2xl bg-white/80 shadow-xl ring-1 ring-gray-200 backdrop-blur-sm dark:bg-gray-800/80 dark:ring-gray-700"
     >
       <div class="space-y-4 p-6">
         <!-- Email Input -->
@@ -109,7 +106,7 @@
           {isLogin ? "Don't have an account?" : "Already have an account?"}
           <button
             type="button"
-            class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+            class="rounded-full text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-800"
             onclick={() => (isLogin = !isLogin)}
           >
             {isLogin ? "Sign up" : "Log in"}
@@ -117,7 +114,7 @@
         </p>
         <button
           type="submit"
-          class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/25 transition-all hover:translate-y-[-1px] hover:shadow-indigo-500/40 active:translate-y-[1px] disabled:from-slate-400 disabled:to-slate-500 disabled:shadow-none disabled:hover:translate-y-0"
+          class="inline-flex items-center justify-center gap-2 rounded-full bg-gray-900 px-6 py-2 text-sm font-medium text-white transition-all hover:bg-gray-800 disabled:bg-gray-400 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
           disabled={isLoading}
         >
           {#if isLoading}

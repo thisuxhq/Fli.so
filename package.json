@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "nanoid": "^5.0.7",
-    "pocketbase": "^0.21.5"
+    "pocketbase": "^0.21.5",
+    "svelte-sonner": "^0.3.28"
   }
 }

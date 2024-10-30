@@ -3,12 +3,50 @@
 @import "tailwindcss/utilities";
 
 :root {
-  --background: 210 40% 98%; /* Cool light background */
-  --card: 0 0% 100%;        /* Pure white */
-  --ring: 215 25% 92%;      /* Subtle blue-gray ring */
-  --border: 215 20% 92%;    /* Subtle blue-gray border */
+  --background: 0 0% 98%;    /* Almost white */
+  --foreground: 0 0% 12%;    /* Dark gray for text */
+  --card: 0 0% 100%;         /* Pure white */
+  --card-foreground: 0 0% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 12%;
+  --primary: 0 0% 12%;       /* Dark gray */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96%;     /* Light gray */
+  --secondary-foreground: 0 0% 12%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 12%;
+  --destructive: 0 84% 60%;  /* Red for destructive actions */
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89%;        /* Gray border */
+  --input: 0 0% 89%;
+  --ring: 0 0% 82%;
+}
+
+.dark {
+  --background: 0 0% 5%;     /* Almost black */
+  --foreground: 0 0% 98%;    /* Almost white */
+  --card: 0 0% 8%;           /* Dark gray */
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 0% 98%;       /* Almost white */
+  --primary-foreground: 0 0% 5%;
+  --secondary: 0 0% 12%;     /* Darker gray */
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 63%;
+  --accent: 0 0% 12%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 84% 60%;  /* Keep red for destructive actions */
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
+  --ring: 0 0% 22%;
 }
 
 body {
-  background-color: #F8FAFC;  /* Matches the background variable */
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
