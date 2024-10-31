@@ -194,7 +194,7 @@
         <form action="?/logout" method="POST" use:enhance>
           <button
             type="submit"
-            class="inline-flex items-center gap-2 rounded-full bg-white/50 px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-100 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50"
+            class="inline-flex items-center gap-2 rounded-full bg-white/50 px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-100 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50 border border-gray-200 dark:border-gray-700"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
