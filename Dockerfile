@@ -1,5 +1,8 @@
 FROM oven/bun
 
+ARG VERSION
+ENV APP_VERSION=$VERSION
+
 WORKDIR /app
 COPY package.json package.json
 RUN bun install
