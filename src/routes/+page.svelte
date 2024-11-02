@@ -7,10 +7,22 @@
   import { env } from "$env/dynamic/public";
   import { pb } from "$lib/pocketbase";
   import { toast } from "svelte-sonner";
-  import type { UrlsResponse, UsersResponse } from "$lib/types";
+  import type {
+    UrlsResponseWithTags,
+    UsersResponse,
+    TagsResponse,
+  } from "$lib/types";
+  import TagSelector from "$lib/components/tag-selector.svelte";
 
-  let { data }: { data: { urls: UrlsResponse[]; user: UsersResponse } } =
-    $props();
+  let {
+    data,
+  }: {
+    data: {
+      urls: UrlsResponseWithTags[];
+      user: UsersResponse;
+      tags: TagsResponse[];
+    };
+  } = $props();
   let longUrl = $state("");
   let customSlug = $state("");
   let shortUrl = $state("");
@@ -20,6 +32,7 @@
   let showAddForm = $state(false);
   let searchQuery = $state("");
   let showShortcutsDialog = $state(false);
+  let selectedTags = $state<string[]>([]);
 
   // Add editSlug state
   let editSlug = $state("");
@@ -44,6 +57,10 @@
 
   // Add new state for deletion confirmation
   let deletingId = $state<string | null>(null);
+
+  let showTagForm = $state(false);
+  let tagName = $state("");
+  let tagColor = $state("#000000");
 
   const suggestSlug = () => {
     customSlug = generateSlug();
@@ -123,14 +140,29 @@
   onMount(async () => {
     try {
       // Await the subscription setup
-      unsubscribe = await pb.collection("urls").subscribe("*", (e) => {
+      unsubscribe = await pb.collection("urls").subscribe("*", async (e) => {
         switch (e.action) {
-          case "create":
-            urls = [...urls, e.record as UrlsResponse];
+          case "create": {
+            urls = [...urls, e.record as UrlsResponseWithTags];
+
+            // Fetch the tags from the server
+            const tags = await fetch("/api/tags", {
+              method: "POST",
+              body: JSON.stringify({ tags_ids: e?.record?.tags }),
+            });
+
+            const data = await tags.json();
+
+            // Update the urls with the new tags
+            urls = urls.map((url) =>
+              url.id === e.record.id ? { ...url, expand: { tags: data } } : url,
+            );
+
             break;
+          }
           case "update":
             urls = urls.map((url) =>
-              url.id === e.record.id ? (e.record as UrlsResponse) : url,
+              url.id === e.record.id ? (e.record as UrlsResponseWithTags) : url,
             );
             break;
           case "delete":
@@ -194,7 +226,7 @@
         <form action="?/logout" method="POST" use:enhance>
           <button
             type="submit"
-            class="inline-flex items-center gap-2 rounded-full bg-white/50 px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-100 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50 border border-gray-200 dark:border-gray-700"
+            class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/50 px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -354,6 +386,106 @@
                     </kbd>
                   </button>
                 </div>
+              </div>
+
+              <div>
+                <label
+                  for="tags"
+                  class="mb-2 flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Tags (optional)
+                  <button
+                    type="button"
+                    class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
+                    onclick={() => (showTagForm = !showTagForm)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-3.5 w-3.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    New Tag
+                  </button>
+                </label>
+                {#if showTagForm}
+                  <div class="mb-3">
+                    <form
+                      method="POST"
+                      action="?/createTag"
+                      use:enhance={() => {
+                        return async ({ result, update }) => {
+                          await update();
+                          if (result.type === "success") {
+                            showTagForm = false;
+                            tagName = "";
+                            tagColor = "#000000";
+                            toast.success("Tag created successfully");
+                          }
+                        };
+                      }}
+                      transition:fly={{
+                        y: -10,
+                        duration: 150,
+                        easing: quintOut,
+                      }}
+                    >
+                      <div
+                        class="space-y-3 rounded-lg border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-700 dark:bg-slate-800/50"
+                      >
+                        <div class="flex items-center gap-3">
+                          <div class="flex-1">
+                            <input
+                              type="text"
+                              name="name"
+                              bind:value={tagName}
+                              placeholder="Tag name"
+                              class="w-full rounded-lg border border-slate-200 bg-white/50 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-slate-600 dark:bg-slate-700/50 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-800"
+                              required
+                            />
+                          </div>
+                          <div class="flex-shrink-0">
+                            <input
+                              type="color"
+                              name="color"
+                              bind:value={tagColor}
+                              class="h-8 w-8 cursor-pointer rounded-lg border border-slate-200 bg-white/50 p-0.5 dark:border-slate-600 dark:bg-slate-700/50"
+                              title="Choose tag color"
+                            />
+                          </div>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            class="rounded-full px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-slate-700/50"
+                            onclick={() => {
+                              showTagForm = false;
+                              tagName = "";
+                              tagColor = "#000000";
+                            }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            class="inline-flex items-center rounded-full bg-gray-900 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+                          >
+                            Create Tag
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                {/if}
+
+                <TagSelector tags={data.tags} {selectedTags} />
               </div>
             </div>
           </div>
@@ -571,10 +703,13 @@
           </div>
         </div>
       {:else if filteredUrls.length > 0}
-        <div class="grid gap-4 sm:grid-cols-2">
+        <div class="grid auto-rows-fr gap-4 sm:grid-cols-2">
           {#each filteredUrls as url (url.id)}
             <div
-              class="group overflow-hidden rounded-3xl bg-white/80 p-4 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
+              class="group overflow-hidden rounded-3xl bg-white/80 p-4 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50 {editingId ===
+              url.id
+                ? 'row-span-2'
+                : ''}"
               in:fly|local={{ y: 10, duration: 200, delay: 50 }}
               out:fade|local={{ duration: 150 }}
               onmouseenter={() => (hoveredUrl = url.id)}
@@ -718,6 +853,20 @@
                     {url.url}
                   </p>
 
+                  <!-- Add Tags Display Here -->
+                  {#if url.expand?.tags}
+                    <div class="flex flex-wrap gap-1.5">
+                      {#each url.expand.tags as tag}
+                        <span
+                          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs"
+                          style="background-color: {tag.color}20; color: {tag.color}; border: 1px solid {tag.color}40;"
+                        >
+                          {tag.name}
+                        </span>
+                      {/each}
+                    </div>
+                  {/if}
+
                   <!-- Actions -->
                   <div class="flex items-center justify-end gap-2 pt-2">
                     <button
@@ -769,7 +918,11 @@
                           data-delete-id={url.id}
                           class="flex items-center gap-2"
                         >
-                          <input type="hidden" name="created_by" value={data.user.id} />
+                          <input
+                            type="hidden"
+                            name="created_by"
+                            value={data.user.id}
+                          />
                           <input type="hidden" name="id" value={url.id} />
                           <button
                             type="submit"

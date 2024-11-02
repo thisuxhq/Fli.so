@@ -2,13 +2,28 @@ import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { generateSlug } from "$lib";
 import { redirect } from "@sveltejs/kit";
+import type { UrlsResponseWithTags, TagsResponse } from "$lib/types";
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.pb.authStore.isValid) {
     throw redirect(302, "/login");
   }
-  const urls = await locals.pb.collection("urls").getFullList();
-  return { urls, user: locals.pb.authStore.model };
+
+  // Fetch URLs with expanded tags and user's tags in parallel
+  const [urls, tags] = await Promise.all([
+    locals.pb.collection("urls").getFullList<UrlsResponseWithTags[]>({
+      expand: "tags",
+    }),
+    locals.pb.collection("tags").getFullList<TagsResponse[]>({
+      filter: `created_by = "${locals.user?.id}"`,
+    }),
+  ]);
+
+  return {
+    urls,
+    tags,
+    user: locals.pb.authStore.model,
+  };
 };
 
 export const actions: Actions = {
@@ -38,6 +53,8 @@ export const actions: Actions = {
       });
     }
 
+    const tags = formData.getAll("tags") as string[];
+
     try {
       // Check if slug already exists
       const exists = await locals.pb
@@ -56,6 +73,7 @@ export const actions: Actions = {
         slug,
         clicks: 0,
         created_by,
+        tags,
       });
 
       return {
@@ -86,7 +104,14 @@ export const actions: Actions = {
       return fail(400, { message: "ID, URL, and slug are required" });
     }
 
-    await locals.pb.collection("urls").update(id, { url, slug, created_by });
+    const tags = formData.getAll("tags") as string[];
+
+    await locals.pb.collection("urls").update(id, {
+      url,
+      slug,
+      created_by,
+      tags,
+    });
 
     return {
       type: "success",
@@ -126,5 +151,41 @@ export const actions: Actions = {
   logout: async ({ locals }) => {
     await locals.pb.authStore.clear();
     throw redirect(302, "/login");
+  },
+
+  createTag: async ({ request, locals }) => {
+    if (!locals.pb.authStore.isValid) {
+      throw redirect(302, "/login");
+    }
+
+    const formData = await request.formData();
+    const name = formData.get("name") as string;
+    const color = formData.get("color") as string;
+    const created_by = formData.get("created_by") as string;
+
+    if (!name || !color) {
+      console.error("Missing required fields for creating a tag");
+      return fail(400, { message: "Name and color are required" });
+    }
+
+    try {
+      await locals.pb.collection("tags").create({
+        name,
+        color,
+        created_by: locals.user?.id,
+      });
+
+      console.log(`Tag created successfully: ${name}, ${color}, ${created_by}`);
+      return {
+        type: "success",
+        status: 201,
+        message: "Tag created successfully",
+      };
+    } catch (error) {
+      console.error(`Failed to create tag: ${error}`);
+      return fail(500, {
+        message: "Failed to create tag: " + error,
+      });
+    }
   },
 };
