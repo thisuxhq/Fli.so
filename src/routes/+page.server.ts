@@ -13,9 +13,11 @@ export const load: PageServerLoad = async ({ locals }) => {
   const [urls, tags] = await Promise.all([
     locals.pb.collection("urls").getFullList<UrlsResponseWithTags[]>({
       expand: "tags",
+      sort: "-created",
     }),
     locals.pb.collection("tags").getFullList<TagsResponse[]>({
       filter: `created_by = "${locals.user?.id}"`,
+      sort: "-created",
     }),
   ]);
 
@@ -99,25 +101,37 @@ export const actions: Actions = {
     const url = formData.get("url") as string;
     const slug = formData.get("slug") as string;
     const created_by = formData.get("created_by") as string;
+    const tags = formData.getAll("tags") as string[];
 
     if (!id || !url || !slug || !created_by) {
       return fail(400, { message: "ID, URL, and slug are required" });
     }
 
-    const tags = formData.getAll("tags") as string[];
+    try {
+      await locals.pb.collection("urls").update(id, {
+        url,
+        slug,
+        created_by,
+        tags,
+      });
 
-    await locals.pb.collection("urls").update(id, {
-      url,
-      slug,
-      created_by,
-      tags,
-    });
+      // Fetch the updated record with expanded tags
+      const updatedRecord = await locals.pb.collection("urls").getOne(id, {
+        expand: "tags",
+      });
 
-    return {
-      type: "success",
-      status: 200,
-      message: "URL updated successfully",
-    };
+      return {
+        type: "success",
+        status: 200,
+        message: "URL updated successfully",
+        data: updatedRecord,
+      };
+    } catch (error) {
+      console.error("Failed to update URL:", error);
+      return fail(500, {
+        message: "Failed to update URL",
+      });
+    }
   },
 
   delete: async ({ request, locals }) => {

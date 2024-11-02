@@ -1,23 +1,17 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
   import type { TagsResponse } from "$lib/types";
-  import { enhance } from "$app/forms";
 
   let { tags, selectedTags = [] } = $props<{
     tags: TagsResponse[];
     selectedTags?: string[];
   }>();
 
-  let isCreatingTag = $state(false);
-  let newTagName = $state("");
-  let newTagColor = $state("#3b82f6"); // Default blue color
-
   function toggleTag(tagId: string) {
     const index = selectedTags.indexOf(tagId);
     if (index === -1) {
       selectedTags = [...selectedTags, tagId];
     } else {
-      selectedTags = selectedTags.filter((id) => id !== tagId);
+      selectedTags = selectedTags.filter((id: string) => id !== tagId);
     }
   }
 </script>

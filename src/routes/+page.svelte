@@ -48,11 +48,18 @@
   // Modify the derived URLs to work with realtime updates
   let urls = $state(data.urls);
   let filteredUrls = $derived(
-    urls.filter(
-      (url) =>
-        url.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        url.slug.toLowerCase().includes(searchQuery.toLowerCase()),
-    ),
+    urls.filter((url) => {
+      const searchLower = searchQuery.toLowerCase();
+      // Check URL and slug
+      const urlMatch = url.url.toLowerCase().includes(searchLower);
+      const slugMatch = url.slug.toLowerCase().includes(searchLower);
+      // Check tags
+      const tagMatch = url.expand?.tags?.some(tag => 
+        tag.name.toLowerCase().includes(searchLower)
+      );
+      
+      return urlMatch || slugMatch || tagMatch;
+    }),
   );
 
   // Add new state for deletion confirmation
@@ -70,12 +77,14 @@
     editingId = url.id;
     editUrl = url.url;
     editSlug = url.slug;
+    selectedTags = url.expand?.tags?.map((t) => t.id) || [];
   };
 
   const cancelEdit = () => {
     editingId = null;
     editUrl = "";
     editSlug = "";
+    selectedTags = [];
   };
 
   // Keyboard shortcuts
@@ -161,10 +170,25 @@
             break;
           }
           case "update":
-            urls = urls.map((url) =>
+            { urls = urls.map((url) =>
               url.id === e.record.id ? (e.record as UrlsResponseWithTags) : url,
             );
-            break;
+
+            // Fetch the tags from the server
+            const tags = await fetch("/api/tags", {
+              method: "POST",
+              body: JSON.stringify({ tags_ids: e?.record?.tags }),
+            });
+
+            const data = await tags.json();
+
+            urls = urls.map((url) =>
+              url.id === e.record.id ? { ...url, expand: { tags: data } } : url,
+            );
+
+            console.log("update", e.record);
+
+            break; }
           case "delete":
             urls = urls.filter((url) => url.id !== e.record.id);
             break;
@@ -616,7 +640,7 @@
           <input
             type="text"
             bind:value={searchQuery}
-            placeholder="Search URLs..."
+            placeholder="Search URLs by URL, slug, or tag"
             onkeydown={(e) => {
               if (e.key === "Escape") {
                 e.currentTarget.blur();
@@ -729,6 +753,7 @@
                         editingId = null;
                         editUrl = "";
                         editSlug = "";
+                        selectedTags = [];
                         toast.success("URL updated successfully");
                       }
                     };
@@ -782,6 +807,17 @@
                         required
                       />
                     </div>
+                  </div>
+
+                  <!-- Tags Input -->
+                  <div>
+                    <label
+                      for="edit-tags-{url.id}"
+                      class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                    >
+                      Tags
+                    </label>
+                    <TagSelector tags={data.tags} {selectedTags} />
                   </div>
 
                   <!-- Action Buttons -->
