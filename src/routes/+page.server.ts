@@ -21,15 +21,6 @@ export const load: PageServerLoad = async ({ locals }) => {
     }),
   ]);
 
-  // Return empty lists if either urls or tags is empty
-  if (urls.length === 0 || tags.length === 0) {
-    return {
-      urls: [],
-      tags: [],
-      user: locals.pb.authStore.model,
-    };
-  }
-
   return {
     urls: urls,
     tags: tags,
