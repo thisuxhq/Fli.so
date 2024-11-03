@@ -6,18 +6,20 @@ import { createInstance } from "$lib/pocketbase";
 
 export const handle: Handle = async ({ event, resolve }) => {
   event.locals.pb = createInstance();
-  const cookie = event.request.headers.get("cookie") || "";
-  event.locals.pb.authStore.loadFromCookie(cookie);
+
+
+  // load the store data from the request cookie string
+  event.locals.pb.authStore.loadFromCookie(
+    event.request.headers.get("cookie") || "",
+  );
 
   try {
+    // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
     if (event.locals.pb.authStore.isValid) {
       await event.locals.pb.collection("users").authRefresh();
-      event.locals.user = event.locals.pb.authStore.model;
-    } else {
-      console.log("Auth not valid");
     }
-  } catch (error) {
-    console.error("Error refreshing auth:", error);
+  } catch (_) {
+    // clear the auth store on failed refresh
     event.locals.pb.authStore.clear();
   }
 
