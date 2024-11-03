@@ -18,9 +18,9 @@
     data,
   }: {
     data: {
-      urls: UrlsResponseWithTags[];
+      urls: UrlsResponseWithTags[] | [];
       user: UsersResponse;
-      tags: TagsResponse[];
+      tags: TagsResponse[] | [];
     };
   } = $props();
   let longUrl = $state("");
