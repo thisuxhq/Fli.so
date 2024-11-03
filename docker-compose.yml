@@ -1,28 +1,5 @@
 version: "3.7"
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      HOST: 0.0.0.0
-      PUBLIC_POCKETBASE_URL: ${PUBLIC_POCKETBASE_URL}
-      PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
-      PUBLIC_APPLICATION_URL: ${PUBLIC_APPLICATION_URL}
-    depends_on:
-      pocketbase:
-        condition: service_healthy
-    networks:
-      - app-network
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    restart: unless-stopped
-
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
     container_name: pocketbase
@@ -45,6 +22,29 @@ services:
       retries: 5
     networks:
       - app-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      HOST: 0.0.0.0
+      PUBLIC_POCKETBASE_URL: ${PUBLIC_POCKETBASE_URL}
+      PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
+      PUBLIC_APPLICATION_URL: ${PUBLIC_APPLICATION_URL}
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
 
 networks:
   app-network:
