@@ -12,8 +12,7 @@ services:
       PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
       PUBLIC_APPLICATION_URL: ${PUBLIC_APPLICATION_URL}
     depends_on:
-      pocketbase:
-        condition: service_healthy
+      - pocketbase
     networks:
       - app-network
     healthcheck:
