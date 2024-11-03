@@ -1,4 +1,5 @@
-FROM oven/bun
+# Build stage
+FROM oven/bun AS builder
 
 WORKDIR /app
 
@@ -11,6 +12,18 @@ COPY . .
 
 # Build the application
 RUN bun run build
+
+# Production stage
+FROM oven/bun AS runner
+
+WORKDIR /app
+
+# Copy only necessary files from builder
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/package.json ./
+
+# Install only production dependencies
+RUN bun install --production
 
 # Expose the port
 EXPOSE 3000
