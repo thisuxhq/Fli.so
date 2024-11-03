@@ -8,10 +8,13 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # HOST: 0.0.0.0
+      HOST: 0.0.0.0
+      PORT: 3000
+      NODE_ENV: production
       PUBLIC_POCKETBASE_URL: ${PUBLIC_POCKETBASE_URL}
       PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
       PUBLIC_APPLICATION_URL: ${PUBLIC_APPLICATION_URL}
+      NITRO_DEBUG: 1
     depends_on:
       pocketbase:
         condition: service_healthy
@@ -33,6 +36,7 @@ services:
       - ENCRYPTION
     environment:
       ENCRYPTION: ${ENCRYPTION}
+      PB_HEALTH_CHECK_ENABLED: "true"
     ports:
       - "8090:8090"
     volumes:
