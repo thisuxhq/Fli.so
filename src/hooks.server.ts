@@ -1,12 +1,9 @@
 export let requestIp: string;
-
 import { type Handle } from "@sveltejs/kit";
-import { dev } from "$app/environment";
 import { createInstance } from "$lib/pocketbase";
 
 export const handle: Handle = async ({ event, resolve }) => {
   event.locals.pb = createInstance();
-
 
   // load the store data from the request cookie string
   event.locals.pb.authStore.loadFromCookie(

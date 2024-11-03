@@ -3,7 +3,7 @@
   import { fade, fly, scale } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import { generateSlug } from "$lib";
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import { env } from "$env/dynamic/public";
   import { pb } from "$lib/pocketbase";
   import { toast } from "svelte-sonner";
@@ -54,10 +54,10 @@
       const urlMatch = url.url.toLowerCase().includes(searchLower);
       const slugMatch = url.slug.toLowerCase().includes(searchLower);
       // Check tags
-      const tagMatch = url.expand?.tags?.some(tag => 
-        tag.name.toLowerCase().includes(searchLower)
+      const tagMatch = url.expand?.tags?.some((tag) =>
+        tag.name.toLowerCase().includes(searchLower),
       );
-      
+
       return urlMatch || slugMatch || tagMatch;
     }),
   );
@@ -147,17 +147,15 @@
 
   // Setup realtime subscription
   onMount(async () => {
-    let cleanup: (() => void)[] = [];
-
     try {
       // Add keyboard event listener
       window.addEventListener("keydown", handleKeyboard);
-      cleanup.push(() => window.removeEventListener("keydown", handleKeyboard));
 
       // Await the subscription setup
       unsubscribe = await pb.collection("urls").subscribe("*", async (e) => {
         switch (e.action) {
           case "create": {
+            console.log("create", e.record);
             urls = [...urls, e.record as UrlsResponseWithTags];
 
             // Fetch the tags from the server
@@ -175,8 +173,9 @@
 
             break;
           }
-          case "update":
-            { urls = urls.map((url) =>
+          case "update": {
+            console.log("update", e.record);
+            urls = urls.map((url) =>
               url.id === e.record.id ? (e.record as UrlsResponseWithTags) : url,
             );
 
@@ -194,20 +193,17 @@
 
             console.log("update", e.record);
 
-            break; }
+            break;
+          }
           case "delete":
+            console.log("delete", e.record);
             urls = urls.filter((url) => url.id !== e.record.id);
             break;
         }
       });
-      cleanup.push(() => unsubscribe?.());
-
     } catch (error) {
       console.error("Failed to setup realtime subscription:", error);
     }
-
-    // Return cleanup function
-    return () => cleanup.forEach(fn => fn());
   });
 
   // Add timeout to hide shortUrl
