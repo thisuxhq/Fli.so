@@ -147,7 +147,13 @@
 
   // Setup realtime subscription
   onMount(async () => {
+    let cleanup: (() => void)[] = [];
+
     try {
+      // Add keyboard event listener
+      window.addEventListener("keydown", handleKeyboard);
+      cleanup.push(() => window.removeEventListener("keydown", handleKeyboard));
+
       // Await the subscription setup
       unsubscribe = await pb.collection("urls").subscribe("*", async (e) => {
         switch (e.action) {
@@ -194,22 +200,14 @@
             break;
         }
       });
+      cleanup.push(() => unsubscribe?.());
 
-      // Existing keyboard event listener setup
-      window.addEventListener("keydown", handleKeyboard);
-      return () => {
-        window.removeEventListener("keydown", handleKeyboard);
-      };
     } catch (error) {
       console.error("Failed to setup realtime subscription:", error);
     }
-  });
 
-  // Cleanup subscription on component destroy
-  onDestroy(() => {
-    if (unsubscribe) {
-      unsubscribe();
-    }
+    // Return cleanup function
+    return () => cleanup.forEach(fn => fn());
   });
 
   // Add timeout to hide shortUrl
