@@ -186,7 +186,7 @@ export const actions: Actions = {
       await locals.pb.collection("tags").create({
         name,
         color,
-        created_by: locals.user?.id,
+        created_by: locals.pb.authStore.model?.id,
       });
 
       console.log(`Tag created successfully: ${name}, ${color}, ${created_by}`);
