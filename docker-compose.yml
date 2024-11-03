@@ -22,11 +22,6 @@ services:
       timeout: 5s
       retries: 3
     restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.app.rule=Host(`${PUBLIC_APPLICATION_URL}`)
-      - traefik.http.routers.app.entrypoints=web
-      - traefik.http.routers.app.middlewares.app-strip-prefix.stripprefix.prefixes=/
 
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
