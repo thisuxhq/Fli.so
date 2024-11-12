@@ -52,6 +52,8 @@
     "vitest": "^2.0.4"
   },
   "dependencies": {
+    "dexie": "^4.0.9",
+    "dexie-observable": "^4.0.1-beta.13",
     "nanoid": "^5.0.7",
     "pocketbase": "^0.21.5",
     "svelte-sonner": "^0.3.28"

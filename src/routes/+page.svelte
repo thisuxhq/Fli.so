@@ -38,12 +38,9 @@
   let editSlug = $state("");
 
   // Reference for the long URL input
-  let longUrlInput: HTMLInputElement;
+  let longUrlInput = $state<HTMLInputElement | null>(null);
 
   let hoveredUrl = $state<string | null>(null);
-
-  // Add state for realtime updates
-  let unsubscribe: (() => void) | null = null;
 
   // Modify the derived URLs to work with realtime updates
   let urls = $state(data.urls);
@@ -77,7 +74,7 @@
     editingId = url.id;
     editUrl = url.url;
     editSlug = url.slug;
-    selectedTags = url.expand?.tags?.map((t) => t.id) || [];
+    selectedTags = url.expand?.tags?.map((t: any) => t.id) || [];
   };
 
   const cancelEdit = () => {
@@ -152,7 +149,7 @@
       window.addEventListener("keydown", handleKeyboard);
 
       // Await the subscription setup
-      unsubscribe = await pb.collection("urls").subscribe("*", async (e) => {
+      await pb.collection("urls").subscribe("*", async (e) => {
         switch (e.action) {
           case "create": {
             console.log("create", e.record);

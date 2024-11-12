@@ -9,23 +9,30 @@ export const load: PageServerLoad = async ({ locals }) => {
     throw redirect(302, "/login");
   }
 
-  // Fetch URLs with expanded tags and user's tags in parallel
-  const [urls, tags] = await Promise.all([
-    locals.pb.collection("urls").getFullList<UrlsResponseWithTags[]>({
-      expand: "tags",
-      sort: "-created",
-    }),
-    locals.pb.collection("tags").getFullList<TagsResponse[]>({
-      filter: `created_by = "${locals.user?.id}"`,
-      sort: "-created",
-    }),
-  ]);
+  try {
+    // Fetch URLs and tags from server
+    const [urls, tags] = await Promise.all([
+      locals.pb.collection("urls").getFullList<UrlsResponseWithTags[]>({
+        expand: "tags",
+        sort: "-created",
+      }),
+      locals.pb.collection("tags").getFullList<TagsResponse[]>({
+        filter: `created_by = "${locals.user?.id}"`,
+        sort: "-created",
+      }),
+    ]);
 
-  return {
-    urls: urls,
-    tags: tags,
-    user: locals.pb.authStore.model,
-  };
+    return {
+      urls: urls,
+      tags: tags,
+      user: locals.pb.authStore.model,
+    };
+  } catch (error) {
+    console.error("Failed to fetch URLs and tags:", error);
+    return {
+      error: "Failed to fetch URLs and tags",
+    };
+  }
 };
 
 export const actions: Actions = {
@@ -186,7 +193,7 @@ export const actions: Actions = {
       await locals.pb.collection("tags").create({
         name,
         color,
-        created_by: locals.pb.authStore.model?.id,
+        created_by: locals.user?.id,
       });
 
       console.log(`Tag created successfully: ${name}, ${color}, ${created_by}`);
