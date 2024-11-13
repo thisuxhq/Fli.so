@@ -3,10 +3,12 @@
 @import "tailwindcss/utilities";
 
 :root {
-  --background: 0 0% 98%;    /* Almost white */
+  --background: 35 90% 95%;
   --foreground: 0 0% 12%;    /* Dark gray for text */
   --card: 0 0% 100%;         /* Pure white */
-  --card-foreground: 0 0% 12%;
+
+  /* card foreground - FAF7F4 */
+  --card-foreground: 35 90% 95%;
   --popover: 0 0% 100%;
   --popover-foreground: 0 0% 12%;
   --primary: 0 0% 12%;       /* Dark gray */

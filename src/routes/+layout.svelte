@@ -5,6 +5,6 @@
 </script>
 
 <Toaster />
-<div class="min-h-screen bg-[#F8FAFC]">
+<div class="mx-auto min-h-screen max-w-5xl">
   {@render children()}
 </div>

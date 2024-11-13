@@ -199,7 +199,11 @@
         }
       });
     } catch (error) {
-      console.error("Failed to setup realtime subscription:", error);
+      console.error(
+        "Failed to setup realtime subscription:",
+        error.originalError,
+      );
+      toast.error("Failed to setup realtime subscription", error.originalError);
     }
   });
 
@@ -223,17 +227,48 @@
 </script>
 
 <div
-  class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black"
+  class="min-h-screen w-full bg-gradient-to-br dark:from-gray-900 dark:to-black"
 >
-  <div class="mx-auto max-w-3xl p-6">
+  <div class="mx-auto w-full p-6">
     <!-- Header -->
     <div class="mb-12 flex items-center justify-between">
       <div>
         <h1
           class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
         >
-          Blink
+          Qik
         </h1>
+      </div>
+
+      <div class="relative">
+        <input
+          type="text"
+          bind:value={searchQuery}
+          placeholder="Search URLs by URL, slug, or tag"
+          onkeydown={(e) => {
+            if (e.key === "Escape") {
+              e.currentTarget.blur();
+            }
+          }}
+          class="w-full rounded-full border border-slate-200 bg-white/50 py-3 pl-9 pr-16 text-sm backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900"
+        />
+        <kbd
+          class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-xs font-light text-slate-400 sm:inline-block dark:border-slate-700 dark:text-slate-500"
+        >
+          /
+        </kbd>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+            clip-rule="evenodd"
+          />
+        </svg>
       </div>
 
       <div class="flex items-center gap-3">
@@ -241,7 +276,7 @@
         <form action="?/logout" method="POST" use:enhance>
           <button
             type="submit"
-            class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/50 px-4 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50"
+            class="inline-flex items-center gap-2 rounded-2xl border border-gray-200 bg-white/50 px-3 py-3 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -261,7 +296,7 @@
 
         <!-- Add URL Button -->
         <button
-          class="group relative inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+          class="group relative inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-3 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
           onclick={() => (showAddForm = !showAddForm)}
         >
           <svg
@@ -284,7 +319,7 @@
               />
             {/if}
           </svg>
-          <span>{showAddForm ? "Cancel" : "Add URL"}</span>
+          <span>{showAddForm ? "Cancel" : "New link"}</span>
           {#if showAddForm}
             <kbd
               class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
@@ -625,43 +660,13 @@
         class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100">
-          Your URLs
+          My URLs
         </h2>
-        <div class="relative">
-          <input
-            type="text"
-            bind:value={searchQuery}
-            placeholder="Search URLs by URL, slug, or tag"
-            onkeydown={(e) => {
-              if (e.key === "Escape") {
-                e.currentTarget.blur();
-              }
-            }}
-            class="w-full rounded-full border border-slate-200 bg-white/80 py-2 pl-9 pr-16 text-sm backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900"
-          />
-          <kbd
-            class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 sm:inline-block dark:border-slate-700 dark:text-slate-500"
-          >
-            /
-          </kbd>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
       </div>
 
       {#if urls.length === 0}
         <div
-          class="rounded-2xl bg-white/80 px-8 py-12 text-center shadow-xl ring-1 ring-slate-200/50 backdrop-blur-sm dark:bg-slate-800/80 dark:ring-slate-700/50"
+          class="rounded-2xl bg-white/80 px-8 py-12 text-center ring-1 ring-slate-200/50 backdrop-blur-sm dark:bg-slate-800/80 dark:ring-slate-700/50"
           in:fly|local={{ y: 10, duration: 200, easing: quintOut }}
           out:fade|local={{ duration: 150 }}
         >
@@ -718,13 +723,13 @@
           </div>
         </div>
       {:else if filteredUrls.length > 0}
-        <div class="grid auto-rows-fr gap-4 sm:grid-cols-2">
+        <div class="grid auto-rows-fr gap-4 sm:grid-cols-3">
           {#each filteredUrls as url (url.id)}
             <div
-              class="group overflow-hidden rounded-3xl bg-white/80 p-4 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 dark:bg-slate-800/80 dark:shadow-slate-900/50 dark:ring-slate-700/50 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50 {editingId ===
+              class="shadow-mild hover:shadow-subtle group overflow-hidden rounded-3xl bg-white/80 p-4 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50 {editingId ===
               url.id
                 ? 'row-span-2'
-                : ''}"
+                : ''} h-48"
               in:fly|local={{ y: 10, duration: 200, delay: 50 }}
               out:fade|local={{ duration: 150 }}
               onmouseenter={() => (hoveredUrl = url.id)}
@@ -812,7 +817,9 @@
                   </div>
 
                   <!-- Action Buttons -->
-                  <div class="flex items-center justify-end gap-2 pt-2">
+                  <div
+                    class="flex items-center justify-end gap-2 pt-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                  >
                     <button
                       type="button"
                       class="inline-flex items-center justify-center rounded-full bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600"
@@ -831,6 +838,28 @@
               {:else}
                 <div class="space-y-3">
                   <!-- Short URL -->
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="size-10 rounded-full bg-gray-100"></div>
+
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-3 w-3"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path
+                          fill-rule="evenodd"
+                          d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      {url.clicks} clicks
+                    </span>
+                  </div>
                   <div class="flex items-start justify-between gap-4">
                     <a
                       href={`${env.PUBLIC_APPLICATION_URL}/${url.slug}`}
@@ -852,24 +881,6 @@
                         />
                       </svg>
                     </a>
-                    <span
-                      class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-3 w-3"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                        <path
-                          fill-rule="evenodd"
-                          d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                      {url.clicks} clicks
-                    </span>
                   </div>
 
                   <!-- Original URL -->
@@ -880,99 +891,62 @@
                     {url.url}
                   </p>
 
-                  <!-- Add Tags Display Here -->
-                  {#if url.expand?.tags}
-                    <div class="flex flex-wrap gap-1.5">
-                      {#each url.expand.tags as tag}
-                        <span
-                          class="inline-flex items-center rounded-full px-2 py-0.5 text-xs"
-                          style="background-color: {tag.color}20; color: {tag.color}; border: 1px solid {tag.color}40;"
-                        >
-                          {tag.name}
-                        </span>
-                      {/each}
-                    </div>
-                  {/if}
-
-                  <!-- Actions -->
-                  <div class="flex items-center justify-end gap-2 pt-2">
-                    <button
-                      onclick={() => startEdit(url)}
-                      class="group/btn relative rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-                      title="Edit URL"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
-                        />
-                      </svg>
-                      {#if hoveredUrl === url.id}
-                        <kbd
-                          class="absolute -top-8 right-0 hidden rounded-md border border-gray-200 px-1.5 py-0.5 text-xs font-light text-gray-400 group-hover/btn:inline-block dark:border-gray-700 dark:text-gray-500"
-                        >
-                          E
-                        </kbd>
-                      {/if}
-                    </button>
-
-                    {#if deletingId === url.id}
-                      <!-- Delete Confirmation -->
-                      <div
-                        class="flex items-center gap-2 rounded-full bg-red-50 px-3 py-2 dark:bg-red-950/50"
-                        transition:fly={{ x: 10, duration: 150 }}
-                      >
-                        <span
-                          class="text-sm font-medium text-red-600 dark:text-red-400"
-                        >
-                          Delete URL?
-                        </span>
-                        <form
-                          method="POST"
-                          action="?/delete"
-                          use:enhance={() => {
-                            return async ({ result, update }) => {
-                              await update();
-                              if (result.type === "success") {
-                                toast.success("URL deleted successfully");
-                              }
-                            };
-                          }}
-                          data-delete-id={url.id}
-                          class="flex items-center gap-2"
-                        >
-                          <input
-                            type="hidden"
-                            name="created_by"
-                            value={data.user.id}
-                          />
-                          <input type="hidden" name="id" value={url.id} />
-                          <button
-                            type="submit"
-                            class="rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900"
-                          >
-                            Yes
-                          </button>
-                          <button
-                            type="button"
-                            class="rounded-full px-3 py-1 text-sm font-medium text-red-600/75 hover:bg-red-100 dark:text-red-400/75 dark:hover:bg-red-900/50"
-                            onclick={() => (deletingId = null)}
-                          >
-                            No
-                          </button>
-                        </form>
+                  <!-- Tags and Actions Row -->
+                  <div class="flex items-center justify-between gap-2">
+                    <!-- Tags with horizontal stacking -->
+                    {#if url.expand?.tags}
+                      <div class="group/tags relative flex-1">
+                        <div class="ml-2 flex items-center gap-x-4">
+                          {#each url.expand.tags as tag}
+                            <span
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs first:ml-0 hover:z-10"
+                              style="background-color: {tag.color}20; color: {tag.color}; border: 1px solid {tag.color}40; margin-left: -8px;"
+                            >
+                              <span
+                                class="h-2 w-2 rounded-full"
+                                style="background-color: {tag.color};"
+                              ></span>
+                              {tag.name}
+                            </span>
+                          {/each}
+                        </div>
                       </div>
-                    {:else}
+                    {/if}
+
+                    <!-- Actions -->
+                    <div
+                      class="flex items-center gap-2 opacity-0 transition-opacity duration-200 group-hover/tags:opacity-0 group-hover:opacity-100"
+                    >
+                      <!-- Edit Button -->
+                      <button
+                        onclick={() => startEdit(url)}
+                        class="group/btn relative rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                        title="Edit URL"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"
+                          />
+                        </svg>
+                        {#if hoveredUrl === url.id}
+                          <kbd
+                            class="absolute -top-8 right-0 hidden rounded-md border border-gray-200 px-1.5 py-0.5 text-xs font-light text-gray-400 group-hover/btn:inline-block dark:border-gray-700 dark:text-gray-500"
+                          >
+                            E
+                          </kbd>
+                        {/if}
+                      </button>
+
                       <!-- Delete Button -->
                       <button
                         class="group/btn relative rounded-full p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
                         onclick={() => (deletingId = url.id)}
                         title="Delete URL"
-                        aria-label="Delete URL"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -994,7 +968,7 @@
                           </kbd>
                         {/if}
                       </button>
-                    {/if}
+                    </div>
                   </div>
                 </div>
               {/if}

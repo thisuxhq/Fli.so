@@ -4,7 +4,7 @@ import { dev } from "$app/environment";
 
 export function createInstance() {
   return new PocketBase(
-    !dev ? env.PUBLIC_POCKETBASE_URL : "http://localhost:8090",
+    dev ? "http://localhost:8090" : env.PUBLIC_POCKETBASE_URL,
   );
 }
 

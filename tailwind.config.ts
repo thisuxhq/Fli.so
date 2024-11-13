@@ -9,7 +9,12 @@ export default {
   content: ["./src/**/*.{html,js,svelte,ts}"],
 
   theme: {
-    extend: {},
+    extend: {
+      boxShadow: {
+        mild: "0px 0px 12px 0px rgba(0, 0, 0, 0.04)",
+        subtle: "0px 0px 20px 0px rgba(0, 0, 0, 0.04)",
+      },
+    },
   },
 
   plugins: [typography, forms, containerQueries, aspectRatio, animate],
