@@ -253,7 +253,7 @@
           class="w-full rounded-full border border-slate-200 bg-white/50 py-3 pl-9 pr-16 text-sm backdrop-blur-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-900"
         />
         <kbd
-          class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-xs font-light text-slate-400 sm:inline-block dark:border-slate-700 dark:text-slate-500"
+          class="pointer-events-none absolute bg-white right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 sm:inline-block dark:border-slate-700 dark:text-slate-500"
         >
           /
         </kbd>
@@ -726,10 +726,10 @@
         <div class="grid auto-rows-fr gap-4 sm:grid-cols-3">
           {#each filteredUrls as url (url.id)}
             <div
-              class="shadow-mild hover:shadow-subtle group overflow-hidden rounded-3xl bg-white/80 p-4 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50 {editingId ===
+              class="group overflow-hidden rounded-3xl bg-white/80 p-4 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50 {editingId ===
               url.id
                 ? 'row-span-2'
-                : ''} h-48"
+                : ''}"
               in:fly|local={{ y: 10, duration: 200, delay: 50 }}
               out:fade|local={{ duration: 150 }}
               onmouseenter={() => (hoveredUrl = url.id)}
@@ -896,7 +896,7 @@
                     <!-- Tags with horizontal stacking -->
                     {#if url.expand?.tags}
                       <div class="group/tags relative flex-1">
-                        <div class="ml-2 flex items-center gap-x-4">
+                        <div class="flex items-center gap-x-4 ml-3">
                           {#each url.expand.tags as tag}
                             <span
                               class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs first:ml-0 hover:z-10"
