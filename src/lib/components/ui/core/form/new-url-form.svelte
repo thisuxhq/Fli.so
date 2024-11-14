@@ -2,14 +2,15 @@
   import * as Form from "$lib/components/ui/form/index.js";
   import { Input } from "$lib/components/ui/input/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { urlSchema, type UrlSchema } from "$lib/schema/url";
   import { env } from "$env/dynamic/public";
+  import { urlSchema, type UrlSchema } from "$lib/schema/url";
   import { generateSlug } from "$lib";
   import { toast } from "svelte-sonner";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Switch } from "$lib/components/ui/switch";
   import { Textarea } from "$lib/components/ui/textarea";
   import { browser } from "$app/environment";
+  import { scrapeMetadata } from "$lib/utils/index";
 
   import SuperDebug, {
     type SuperValidated,
@@ -20,7 +21,6 @@
   import { Shuffle, Copy, Eye, EyeOff } from "lucide-svelte";
   import * as chrono from "chrono-node";
   import { Label } from "$lib/components/ui/label";
-  import { debouncedScrapeMetadata } from "$lib/utils/debounce";
 
   interface Props {
     user_id: string;
@@ -41,7 +41,7 @@
     },
   });
 
-  const { form: formData, enhance, submitting } = form;
+  const { form: formData, enhance } = form;
 
   let longUrlInput = $state<HTMLInputElement | null>(null);
   let showPassword = $state(false);
@@ -49,6 +49,10 @@
 
   const suggestSlug = () => {
     $formData.slug = generateSlug();
+  };
+
+  const suggestPassword = () => {
+    $formData.password_hash = generateSlug();
   };
 
   // Focus input when form opens
@@ -78,14 +82,15 @@
     }
   }
 
-  async function handleUrlInput() {
-    if (!$formData.url) return;
-    
-    const metadata = await debouncedScrapeMetadata($formData.url);
+  async function handleMetaFetch() {
+    const response = await scrapeMetadata($formData.url);
 
-    $formData.meta_title = metadata?.title || "";
-    $formData.meta_description = metadata?.description || "";
-    $formData.meta_image_url = metadata?.imageUrl || "";
+    if (response) {
+      metaDataEnabled = true;
+      $formData.meta_title = response.title;
+      $formData.meta_description = response.description;
+      $formData.meta_image_url = response.imageUrl;
+    }
   }
 </script>
 
@@ -120,7 +125,7 @@
               type="url"
               placeholder="https://www.example.com/path-to-destination"
               required
-              on:blur={handleUrlInput}
+              on:input={handleMetaFetch}
             />
           </Form.Control>
           <Form.FieldErrors />
@@ -144,7 +149,7 @@
                   bind:value={$formData.slug}
                   placeholder="work"
                   pattern="[a-zA-Z0-9-]+"
-                  class="h-12 rounded-none rounded-r-2xl border-0 bg-input/20"
+                  class="h-12 rounded-none border-none bg-input/20"
                 />
               </div>
               <Button
@@ -184,6 +189,17 @@
                   <Eye class="h-4 w-4" />
                 {/if}
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                on:click={suggestPassword}
+                class="h-12 w-12 rounded-none border-l-2 border-r-0 bg-input/20"
+              >
+                <Shuffle class="h-4 w-4" />
+              </Button>
+
               <Button
                 type="button"
                 variant="outline"

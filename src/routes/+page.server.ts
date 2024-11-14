@@ -27,8 +27,6 @@ export const load: PageServerLoad = async ({ locals }) => {
       }),
     ]);
 
-    console.log("Fetched URLs and tags:", urls, tags);
-
     return {
       urls: urls,
       tags: tags,

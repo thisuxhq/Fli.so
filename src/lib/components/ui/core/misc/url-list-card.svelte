@@ -4,7 +4,7 @@
   import { Pencil, Trash, ExternalLink } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
-
+  import * as Tooltip from "$lib/components/ui/tooltip";
   interface Props {
     url: UrlsResponseWithTags;
     onEdit: (url: UrlsResponseWithTags) => void;
@@ -16,7 +16,7 @@
 </script>
 
 <div
-  class="shadow-mild hover:shadow-subtle group overflow-hidden rounded-3xl bg-white/80 p-4 backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:bg-white dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
+  class="group overflow-hidden rounded-3xl bg-white/80 p-4 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
   in:fly|local={{ y: 10, duration: 200, delay: 50 }}
   out:fade|local={{ duration: 150 }}
   onmouseenter={() => (hoveredUrl = url.id)}
@@ -97,42 +97,41 @@
       <div
         class="flex items-center gap-2 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
       >
-        <Button
-          id={`edit-${url.id}`}
-          onclick={() => onEdit(url)}
-          class="group/btn relative rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-          variant="ghost"
-          size="icon"
-          title="Edit URL"
-        >
-          <Pencil class="h-4 w-4" />
-
-          {#if hoveredUrl === url.id}
-            <kbd
-              class="absolute -top-8 right-0 hidden rounded-md border border-gray-200 px-1.5 py-0.5 text-xs font-light text-gray-400 group-hover/btn:inline-block dark:border-gray-700 dark:text-gray-500"
+        <Tooltip.Root openDelay={200}>
+          <Tooltip.Trigger>
+            <Button
+              id={`edit-${url.id}`}
+              onclick={() => onEdit(url)}
+              class="group/btn relative rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              variant="ghost"
+              size="icon"
+              title="Edit URL"
             >
-              E
-            </kbd>
-          {/if}
-        </Button>
+              <Pencil class="h-4 w-4" />
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <p>Press E to edit</p>
+          </Tooltip.Content>
+        </Tooltip.Root>
 
-        <Button
-          id={`delete-${url.id}`}
-          onclick={() => onDelete(url.id)}
-          class="group/btn relative rounded-full p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
-          title="Delete URL"
-          size="icon"
-          variant="ghost"
-        >
-          <Trash class="h-4 w-4" />
-          {#if hoveredUrl === url.id}
-            <kbd
-              class="absolute -top-8 right-0 hidden rounded border border-slate-200 px-1.5 py-0.5 text-xs font-light text-slate-400 group-hover/btn:inline-block dark:border-slate-700 dark:text-slate-500"
+        <Tooltip.Root openDelay={200}>
+          <Tooltip.Trigger>
+            <Button
+              id={`delete-${url.id}`}
+              onclick={() => onDelete(url.id)}
+              class="group/btn relative rounded-full p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
+              title="Delete URL"
+              size="icon"
+              variant="ghost"
             >
-              D
-            </kbd>
-          {/if}
-        </Button>
+              <Trash class="h-4 w-4" />
+            </Button>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <p>Press D to Delete</p>
+          </Tooltip.Content>
+        </Tooltip.Root>
       </div>
     </div>
   </div>

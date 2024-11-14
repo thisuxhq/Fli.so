@@ -3,7 +3,6 @@ interface MetadataResponse {
   description: string;
   image: string;
   url: string;
-  // ... other fields available but not needed
 }
 
 interface MetaData {

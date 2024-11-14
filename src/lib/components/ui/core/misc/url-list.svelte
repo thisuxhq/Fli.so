@@ -91,7 +91,7 @@
       </div>
     </div>
   {:else if filteredUrls.length > 0}
-    <div class="grid auto-rows-fr gap-4 sm:grid-cols-3">
+    <div class="grid auto-rows-fr gap-4 sm:grid-cols-2 md:grid-cols-3">
       {#each filteredUrls as url (url.id)}
         <UrlListCard {url} {onEdit} {onDelete} />
       {/each}
