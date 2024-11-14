@@ -3,6 +3,11 @@ import type { Actions, PageServerLoad } from "./$types";
 import { generateSlug } from "$lib";
 import { redirect } from "@sveltejs/kit";
 import type { UrlsResponseWithTags, TagsResponse } from "$lib/types";
+import { superValidate } from "sveltekit-superforms";
+import { urlSchema } from "$lib/schema/url";
+import { zod } from "sveltekit-superforms/adapters";
+import bcrypt from "bcrypt";
+import { convertExpirationToDate } from "$lib/utils/index";
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.pb.authStore.isValid) {
@@ -22,10 +27,13 @@ export const load: PageServerLoad = async ({ locals }) => {
       }),
     ]);
 
+    console.log("Fetched URLs and tags:", urls, tags);
+
     return {
       urls: urls,
       tags: tags,
       user: locals.pb.authStore.model,
+      form: await superValidate(zod(urlSchema)),
     };
   } catch (error) {
     console.error("Failed to fetch URLs and tags:", error);
@@ -41,57 +49,74 @@ export const actions: Actions = {
       throw redirect(302, "/login");
     }
 
-    const formData = await request.formData();
-    const url = formData.get("url") as string;
-    let slug = formData.get("slug") as string;
-    const created_by = formData.get("created_by") as string;
+    const form = await superValidate(request, zod(urlSchema));
 
-    if (!url || !created_by) {
-      return fail(400, { message: "URL and created_by are required" });
-    }
+    console.log("Form data for URL shortening:", form.data);
 
     // If no custom slug provided, generate one
-    if (!slug) {
-      slug = generateSlug();
+    if (!form.data.slug) {
+      form.data.slug = generateSlug();
+      console.log("Generated slug for URL:", form.data.slug);
     }
 
     // Validate slug format
-    if (!/^[a-zA-Z0-9-]+$/.test(slug)) {
+    if (!/^[a-zA-Z0-9-]+$/.test(form.data.slug)) {
+      console.error("Slug format is invalid for URL shortening");
       return fail(400, {
         message: "Slug can only contain letters, numbers, and hyphens",
       });
     }
 
-    const tags = formData.getAll("tags") as string[];
-
     try {
       // Check if slug already exists
       const exists = await locals.pb
         .collection("urls")
-        .getFirstListItem(`slug = "${slug}"`)
+        .getFirstListItem(`slug = "${form.data.slug}"`)
         .catch(() => null);
 
       if (exists) {
+        console.error("Slug already exists for URL shortening");
         return fail(400, {
           message: "This custom URL is already taken",
         });
       }
 
       await locals.pb.collection("urls").create({
-        url,
-        slug,
+        url: form.data.url,
+        slug: form.data.slug,
         clicks: 0,
-        created_by,
-        tags,
+        created_by: locals.user?.id,
+        ...(form.data.password_hash
+          ? { password_hash: await bcrypt.hash(form.data.password_hash, 10) }
+          : {}),
+        ...(form.data.expiration
+          ? { expiration: convertExpirationToDate(form.data.expiration) }
+          : {}),
+        ...(form.data.expiration_url
+          ? { expiration_url: form.data.expiration_url }
+          : {}),
+        ...(form.data.meta_title ? { meta_title: form.data.meta_title } : {}),
+        ...(form.data.meta_description
+          ? { meta_description: form.data.meta_description }
+          : {}),
+        ...(form.data.meta_image_url
+          ? { meta_image_url: form.data.meta_image_url }
+          : {}),
       });
 
+      console.log(
+        "URL shortened successfully:",
+        `https://dun.sh/${form.data.slug}`,
+      );
       return {
+        form,
         type: "success",
         status: 201,
         message: "URL shortened successfully",
-        shortUrl: `https://dun.sh/${slug}`,
+        shortUrl: `https://dun.sh/${form.data.slug}`,
       };
     } catch (error) {
+      console.error("Failed to create shortened URL:", error);
       return fail(500, {
         message: "Failed to create shortened URL: " + error,
       });
