@@ -1,7 +1,12 @@
 <script lang="ts">
   import { fly, fade } from "svelte/transition";
   import { env } from "$env/dynamic/public";
-  import { Pencil, Trash, ExternalLink } from "lucide-svelte";
+  import {
+    Pencil,
+    Trash,
+    ExternalLink,
+    MousePointerClick,
+  } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
   import * as Tooltip from "$lib/components/ui/tooltip";
@@ -31,19 +36,8 @@
       <span
         class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-3 w-3"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-          <path
-            fill-rule="evenodd"
-            d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-            clip-rule="evenodd"
-          />
-        </svg>
+        <MousePointerClick class="h-3 w-3" />
+
         {url.clicks} clicks
       </span>
     </div>

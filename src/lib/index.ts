@@ -8,6 +8,10 @@ export function generateSlug() {
   return nanoid();
 }
 
+export function generatePassword() {
+  return nanoid(12);
+}
+
 // cn utility function
 export function cn(...classes: string[]) {
   return classes.filter(Boolean).join(" ");

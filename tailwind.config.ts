@@ -53,6 +53,7 @@ const config: Config = {
           foreground: "hsl(var(--preview-foreground) / <alpha-value>)",
           border: "hsl(var(--preview-border) / <alpha-value>)",
         },
+        "input-foreground": "hsl(var(--input-foreground) / <alpha-value>)",
       },
       borderRadius: {
         lg: "var(--radius)",

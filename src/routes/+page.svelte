@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { generateSlug } from "$lib";
   import { onMount } from "svelte";
   import { pb } from "$lib/pocketbase";
   import { toast } from "svelte-sonner";
   import { UrlList, NewUrlForm } from "$lib/components/ui/core";
+  import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { CircleHelp, Search, X, Plus } from "lucide-svelte";
   import type {
@@ -26,9 +26,11 @@
   }: {
     data: PageData;
   } = $props();
-  let shortUrl = $state("");
   let showAddForm = $state(false);
   let searchQuery = $state("");
+  let searchInput = $state<HTMLInputElement | null>(null);
+
+  let updatedUrls = $state<UrlsResponseWithTags[]>(data.urls);
 
   // Reference for the long URL input
   let longUrlInput = $state<HTMLInputElement | null>(null);
@@ -65,20 +67,15 @@
       } else if (event.key === "/" || (event.key === "f" && event.metaKey)) {
         // '/' or Cmd/Ctrl + F to focus search
         event.preventDefault();
-        document
-          .querySelector<HTMLInputElement>(
-            'input[type="text"][placeholder="Search URLs..."]',
-          )
-          ?.focus();
+        searchInput?.focus();
       } else if (event.key === " " && showAddForm) {
         // Spacebar to suggest new slug (only when add form is open)
         event.preventDefault();
-        shortUrl = generateSlug();
       } else if (event.key === "e" && hoveredUrl) {
         // 'e' to edit hovered URL
         event.preventDefault();
         const url = urls.find((u) => u.id === hoveredUrl);
-        if (url) startEdit(url);
+        if (url) onEdit(url);
       } else if (event.key === "d" && hoveredUrl) {
         // 'd' to start delete confirmation
         event.preventDefault();
@@ -104,7 +101,7 @@
       window.addEventListener("keydown", handleKeyboard);
 
       // Await the subscription setup
-      pb.collection("urls").subscribe("*", async (e) => {
+      await pb.collection("urls").subscribe("*", async (e) => {
         switch (e.action) {
           case "create": {
             console.log("create", e.record);
@@ -127,7 +124,7 @@
           }
           case "update": {
             console.log("update", e.record);
-            urls = urls.map((url) =>
+            updatedUrls = updatedUrls.map((url) =>
               url.id === e.record.id ? (e.record as UrlsResponseWithTags) : url,
             );
 
@@ -139,7 +136,7 @@
 
             const data = await tags.json();
 
-            urls = urls.map((url) =>
+            updatedUrls = updatedUrls.map((url) =>
               url.id === e.record.id ? { ...url, expand: { tags: data } } : url,
             );
 
@@ -156,16 +153,6 @@
     } catch (error) {
       console.error("Failed to setup realtime subscription:", error);
       toast.error("Failed to setup realtime subscription");
-    }
-  });
-
-  // Add timeout to hide shortUrl
-  $effect(() => {
-    if (shortUrl) {
-      const timer = setTimeout(() => {
-        shortUrl = "";
-      }, 5000);
-      return () => clearTimeout(timer);
     }
   });
 
@@ -188,13 +175,14 @@
         <h1
           class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
         >
-          Qik
+          fli
         </h1>
       </div>
 
       <div class="relative">
-        <input
+        <Input
           type="text"
+          bind:this={searchInput}
           bind:value={searchQuery}
           placeholder="Search URLs by URL, slug, or tag"
           onkeydown={(e) => {
@@ -202,7 +190,7 @@
               e.currentTarget.blur();
             }
           }}
-          class="w-full rounded-full bg-input py-3 pl-9 pr-16 text-sm backdrop-blur-sm placeholder:text-muted-foreground"
+          class="bg-input-foreground w-full rounded-full py-3 pl-9 pr-16 text-sm backdrop-blur-sm placeholder:text-muted-foreground"
         />
         <kbd
           class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-xs font-light text-slate-400 dark:border-slate-700 dark:text-slate-500 sm:inline-block"
@@ -254,7 +242,7 @@
     />
 
     <UrlList
-      urls={data.urls}
+      urls={updatedUrls}
       onEdit={() => {}}
       onDelete={() => {}}
       showAddForm={true}
@@ -267,7 +255,7 @@
       <Button
         variant="ghost"
         size="icon"
-        class="text-muted-foreground bg-white rounded-full"
+        class="rounded-full bg-white text-muted-foreground"
         onclick={() => {}}
       >
         <CircleHelp class="h-4 w-4" />

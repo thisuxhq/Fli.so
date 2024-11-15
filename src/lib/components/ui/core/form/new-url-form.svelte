@@ -4,12 +4,13 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { env } from "$env/dynamic/public";
   import { urlSchema, type UrlSchema } from "$lib/schema/url";
-  import { generateSlug } from "$lib";
+  import { generateSlug, generatePassword } from "$lib";
   import { toast } from "svelte-sonner";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Switch } from "$lib/components/ui/switch";
   import { Textarea } from "$lib/components/ui/textarea";
   import { browser } from "$app/environment";
+  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { scrapeMetadata } from "$lib/utils/index";
 
   import SuperDebug, {
@@ -18,7 +19,7 @@
     superForm,
   } from "sveltekit-superforms";
   import { zodClient } from "sveltekit-superforms/adapters";
-  import { Shuffle, Copy, Eye, EyeOff } from "lucide-svelte";
+  import { Shuffle, Copy, Eye, EyeOff, AlertCircleIcon } from "lucide-svelte";
   import * as chrono from "chrono-node";
   import { Label } from "$lib/components/ui/label";
 
@@ -46,14 +47,6 @@
   let longUrlInput = $state<HTMLInputElement | null>(null);
   let showPassword = $state(false);
   let metaDataEnabled = $state(false);
-
-  const suggestSlug = () => {
-    $formData.slug = generateSlug();
-  };
-
-  const suggestPassword = () => {
-    $formData.password_hash = generateSlug();
-  };
 
   // Focus input when form opens
   $effect(() => {
@@ -92,6 +85,16 @@
       $formData.meta_image_url = response.imageUrl;
     }
   }
+
+  function suggestSlug() {
+    $formData.slug = generateSlug();
+  }
+
+  function suggestPasswordAndCopy() {
+    $formData.password_hash = generatePassword();
+    navigator.clipboard.writeText($formData.password_hash);
+    toast.success("Password copied to clipboard");
+  }
 </script>
 
 <Dialog.Root open={show} {onOpenChange}>
@@ -116,9 +119,19 @@
         <!-- Destination URL -->
         <Form.Field {form} name="url">
           <Form.Control let:attrs>
-            <Form.Label class="text-muted-foreground">
-              Destination URL <span class="text-destructive">*</span>
-            </Form.Label>
+            <div class="flex items-center">
+              <Form.Label class="flex items-center text-muted-foreground">
+                Destination URL <span class="text-destructive">*</span>
+              </Form.Label>
+              <Tooltip.Root openDelay={200}>
+                <Tooltip.Trigger>
+                  <AlertCircleIcon class="ml-2 size-4" />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p>Enter the URL you want to shorten</p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </div>
             <Input
               {...attrs}
               bind:value={$formData.url}
@@ -134,7 +147,17 @@
         <!-- Custom URL -->
         <Form.Field {form} name="slug">
           <Form.Control let:attrs>
-            <Form.Label class="text-muted-foreground">Custom URL</Form.Label>
+            <Form.Label class="flex items-center text-muted-foreground">
+              Custom URL
+              <Tooltip.Root openDelay={200}>
+                <Tooltip.Trigger>
+                  <AlertCircleIcon class="ml-2 size-4 " />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p>Enter a custom URL</p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </Form.Label>
             <div class="flex rounded-2xl">
               <div
                 class="relative flex flex-1 rounded-l-2xl border bg-input/20"
@@ -156,7 +179,9 @@
                 type="button"
                 variant="outline"
                 size="icon"
-                on:click={suggestSlug}
+                onclick={() => {
+                  suggestSlug();
+                }}
                 class="h-12 w-12 rounded-l-none rounded-r-2xl bg-input/20"
               >
                 <Shuffle class="h-4 w-4" />
@@ -168,11 +193,22 @@
         <!-- Password -->
         <Form.Field {form} name="password_hash">
           <Form.Control let:attrs>
-            <Form.Label class="text-muted-foreground">Password</Form.Label>
+            <Form.Label class="flex items-center text-muted-foreground">
+              Password
+              <Tooltip.Root openDelay={200}>
+                <Tooltip.Trigger>
+                  <AlertCircleIcon class="ml-2 size-4" />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p>Enter a password to protect your link</p>
+                </Tooltip.Content>
+              </Tooltip.Root>
+            </Form.Label>
             <div class="flex">
               <Input
                 {...attrs}
                 type={showPassword ? "text" : "password"}
+                bind:value={$formData.password_hash}
                 placeholder="••••••••"
                 class="h-12 rounded-r-none bg-input/20"
               />
@@ -180,8 +216,10 @@
                 type="button"
                 variant="outline"
                 size="icon"
-                on:click={() => (showPassword = !showPassword)}
-                class="h-12 w-12 rounded-none border-x-0 bg-input/20"
+                onclick={() => {
+                  showPassword = !showPassword;
+                }}
+                class="h-12 w-16 rounded-none border-l-0 bg-input/20"
               >
                 {#if showPassword}
                   <EyeOff class="h-4 w-4" />
@@ -194,8 +232,10 @@
                 type="button"
                 variant="outline"
                 size="icon"
-                on:click={suggestPassword}
-                class="h-12 w-12 rounded-none border-l-2 border-r-0 bg-input/20"
+                onclick={() => {
+                  suggestPasswordAndCopy();
+                }}
+                class="h-12 w-16 rounded-none border-l-0 border-r-0 bg-input/20"
               >
                 <Shuffle class="h-4 w-4" />
               </Button>
@@ -204,13 +244,13 @@
                 type="button"
                 variant="outline"
                 size="icon"
-                on:click={() => {
+                onclick={() => {
                   if ($formData.password_hash) {
                     navigator.clipboard.writeText($formData.password_hash);
                     toast.success("Password copied to clipboard");
                   }
                 }}
-                class="h-12 w-12 rounded-l-none rounded-r-2xl bg-input/20"
+                class="h-12 w-16 rounded-l-none rounded-r-2xl bg-input/20"
               >
                 <Copy class="h-4 w-4" />
               </Button>
@@ -222,9 +262,17 @@
         <div class="grid grid-cols-2 gap-4">
           <Form.Field {form} name="expiration">
             <Form.Control let:attrs>
-              <Form.Label class="text-muted-foreground"
-                >Expiration date</Form.Label
-              >
+              <Form.Label class="flex items-center text-muted-foreground"
+                >Expiration date
+                <Tooltip.Root openDelay={200}>
+                  <Tooltip.Trigger>
+                    <AlertCircleIcon class="ml-2 size-4" />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p>Enter an expiration date for your link.</p>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              </Form.Label>
 
               <Input
                 {...attrs}
@@ -239,9 +287,20 @@
 
           <Form.Field {form} name="expiration_url">
             <Form.Control let:attrs>
-              <Form.Label class="text-muted-foreground"
-                >Expiration link</Form.Label
-              >
+              <Form.Label class="flex items-center text-muted-foreground">
+                Expiration link
+                <Tooltip.Root openDelay={200}>
+                  <Tooltip.Trigger>
+                    <AlertCircleIcon class="ml-2 size-4" />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p>
+                      Enter an expiration link for your link. When the link is
+                      visited, it will redirect to the secondary URL.
+                    </p>
+                  </Tooltip.Content>
+                </Tooltip.Root>
+              </Form.Label>
               <Input
                 {...attrs}
                 type="text"

@@ -1,10 +1,8 @@
 <script lang="ts">
   import { fly, fade } from "svelte/transition";
   import { quintOut } from "svelte/easing";
-  import { env } from "$env/dynamic/public";
-  import { Link, Pencil, Trash, ExternalLink } from "lucide-svelte";
+  import { Link } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
-  import { Button } from "$lib/components/ui/button";
   import { UrlListCard } from "$lib/components/ui/core";
 
   interface Props {
@@ -16,14 +14,7 @@
     searchQuery: string;
   }
 
-  let {
-    urls,
-    onEdit,
-    onDelete,
-    showAddForm,
-    setShowAddForm,
-    searchQuery,
-  }: Props = $props();
+  let { urls, onEdit, onDelete, searchQuery }: Props = $props();
 
   let filteredUrls = $derived(
     urls.filter((url) => {
