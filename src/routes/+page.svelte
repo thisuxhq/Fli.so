@@ -105,7 +105,7 @@
         switch (e.action) {
           case "create": {
             console.log("create", e.record);
-            urls = [...urls, e.record as UrlsResponseWithTags];
+            updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls];
 
             // Fetch the tags from the server
             const tags = await fetch("/api/tags", {
@@ -116,7 +116,7 @@
             const data = await tags.json();
 
             // Update the urls with the new tags
-            urls = urls.map((url) =>
+            updatedUrls = updatedUrls.map((url) =>
               url.id === e.record.id ? { ...url, expand: { tags: data } } : url,
             );
 
@@ -146,7 +146,7 @@
           }
           case "delete":
             console.log("delete", e.record);
-            urls = urls.filter((url) => url.id !== e.record.id);
+            updatedUrls = updatedUrls.filter((url) => url.id !== e.record.id);
             break;
         }
       });

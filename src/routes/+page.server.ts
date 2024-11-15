@@ -6,8 +6,12 @@ import type { UrlsResponseWithTags, TagsResponse } from "$lib/types";
 import { superValidate } from "sveltekit-superforms";
 import { urlSchema } from "$lib/schema/url";
 import { zod } from "sveltekit-superforms/adapters";
-import bcrypt from "bcrypt";
+import { HMAC } from "@oslojs/crypto/hmac";
+import { SHA256 } from "@oslojs/crypto/sha2";
 import { convertExpirationToDate } from "$lib/utils/index";
+import { env } from "$env/dynamic/private";
+
+const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.pb.authStore.isValid) {
@@ -79,13 +83,23 @@ export const actions: Actions = {
         });
       }
 
+      console.log(
+        "Creating HMAC with SHA256 and HASH_SECRET for password hashing",
+      );
+      const hasher = new HMAC(SHA256, new TextEncoder().encode(HASH_SECRET));
+      console.log("Updating HMAC with password hash for encryption");
+      hasher.update(new TextEncoder().encode(form.data.password_hash));
+      console.log("Generating digest for password hash encryption");
+      const digest = hasher.digest();
+      console.log("Digest:", Buffer.from(digest).toString("hex"));
+
       await locals.pb.collection("urls").create({
         url: form.data.url,
         slug: form.data.slug,
         clicks: 0,
         created_by: locals.user?.id,
         ...(form.data.password_hash
-          ? { password_hash: await bcrypt.hash(form.data.password_hash, 10) }
+          ? { password_hash: Buffer.from(digest).toString("hex") }
           : {}),
         ...(form.data.expiration
           ? { expiration: convertExpirationToDate(form.data.expiration) }
