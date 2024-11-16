@@ -17,3 +17,14 @@ export function convertExpirationToDate(expiration: string): string {
   );
   return utcNoonDate.toISOString();
 }
+
+// now write a function that converts a given expiration date string in the format "2024-11-15T12:00:00.000Z"
+// to a human readable string in the format "Nov 15, 2024 at 12:00 PM"
+export function convertExpirationToHumanReadable(expiration: string): string {
+  const date = new Date(expiration);
+  return date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}

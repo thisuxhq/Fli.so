@@ -44,6 +44,13 @@ export type TagsRecord = {
 export type UrlsRecord = {
 	clicks?: number
 	created_by?: RecordIdString
+	expiration?: IsoDateString
+	expiration_url?: string
+	meta_description?: string
+	meta_image_url?: string
+	meta_title?: string
+	password_hash?: string
+	qr_code?: string
 	slug: string
 	tags?: RecordIdString[]
 	url: string
@@ -58,13 +65,6 @@ export type UsersRecord = {
 export type TagsResponse<Texpand = unknown> = Required<TagsRecord> & BaseSystemFields<Texpand>
 export type UrlsResponse<Texpand = unknown> = Required<UrlsRecord> & BaseSystemFields<Texpand>
 export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSystemFields<Texpand>
-
-// UrlsResponse with expanded tags
-export type UrlsResponseWithTags<Texpand = unknown> = UrlsResponse<Texpand> & {
-  expand: {
-    tags: TagsResponse[];
-  };
-};
 
 // Types containing all Records and Responses, useful for creating typing helper functions
 

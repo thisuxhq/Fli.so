@@ -13,6 +13,7 @@
   } from "$lib/types";
   import { type UrlSchema } from "$lib/schema/url";
   import type { Infer, SuperValidated } from "sveltekit-superforms";
+  import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
 
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
@@ -28,7 +29,7 @@
   } = $props();
   let showAddForm = $state(false);
   let searchQuery = $state("");
-  let searchInput = $state<HTMLInputElement | null>(null);
+  let searchInput: HTMLInputElement | null;
 
   let updatedUrls = $state<UrlsResponseWithTags[]>(data.urls);
 
@@ -43,65 +44,20 @@
   // Add new state for deletion confirmation
   let deletingId = $state<string | null>(null);
 
-  // Keyboard shortcuts
-  function handleKeyboard(event: KeyboardEvent) {
-    const isInputFocused = document.activeElement?.tagName === "INPUT";
+  // Helper function to check if input is focused
+  const isInputFocused = () => {
+    const active = document.activeElement;
+    return (
+      active instanceof HTMLInputElement ||
+      active instanceof HTMLTextAreaElement
+    );
+  };
 
-    // Global shortcuts (work even when input is focused)
-    if (event.key === "Escape") {
-      if (showAddForm) {
-        showAddForm = false;
-      } else if (deletingId) {
-        // Cancel deletion
-        deletingId = null;
-      }
-      return;
-    }
-
-    // Shortcuts that only work when input is not focused
-    if (!isInputFocused) {
-      if (event.key === "c" || event.key === "n") {
-        // 'c' or 'n' to add new URL
-        event.preventDefault();
-        showAddForm = !showAddForm;
-      } else if (event.key === "/" || (event.key === "f" && event.metaKey)) {
-        // '/' or Cmd/Ctrl + F to focus search
-        event.preventDefault();
-        searchInput?.focus();
-      } else if (event.key === " " && showAddForm) {
-        // Spacebar to suggest new slug (only when add form is open)
-        event.preventDefault();
-      } else if (event.key === "e" && hoveredUrl) {
-        // 'e' to edit hovered URL
-        event.preventDefault();
-        const url = urls.find((u) => u.id === hoveredUrl);
-        if (url) onEdit(url);
-      } else if (event.key === "d" && hoveredUrl) {
-        // 'd' to start delete confirmation
-        event.preventDefault();
-        if (deletingId === hoveredUrl) {
-          // If already confirming, submit the delete
-          const form = document.querySelector(
-            `form[data-delete-id="${hoveredUrl}"]`,
-          );
-          form?.dispatchEvent(new Event("submit", { cancelable: true }));
-          deletingId = null;
-        } else {
-          // Start confirmation
-          deletingId = hoveredUrl;
-        }
-      }
-    }
-  }
-
-  // Setup realtime subscription
-  onMount(async () => {
+  // Move keyboard shortcuts setup into onMount
+  onMount(() => {
     try {
-      // Add keyboard event listener
-      window.addEventListener("keydown", handleKeyboard);
-
-      // Await the subscription setup
-      await pb.collection("urls").subscribe("*", async (e) => {
+      // Setup realtime subscription
+      pb.collection("urls").subscribe("*", async (e) => {
         switch (e.action) {
           case "create": {
             console.log("create", e.record);
@@ -154,7 +110,120 @@
       console.error("Failed to setup realtime subscription:", error);
       toast.error("Failed to setup realtime subscription");
     }
+
+    // Cleanup both event listeners
+    return () => {
+      pb.collection("urls").unsubscribe();
+    };
   });
+
+  // Shortcuts
+  const shortcuts: Shortcut[] = [
+    {
+      key: "Escape",
+      handler: (e) => {
+        if (isInputFocused()) {
+          e.preventDefault();
+          searchInput?.blur();
+        }
+      },
+    },
+    {
+      key: "c",
+      handler: (e) => {
+        if (!isInputFocused()) {
+          e.preventDefault();
+          showAddForm = !showAddForm;
+        }
+      },
+    },
+    {
+      key: "n",
+      handler: (e) => {
+        if (!isInputFocused()) {
+          e.preventDefault();
+          showAddForm = !showAddForm;
+        }
+      },
+    },
+    {
+      key: "/",
+      handler: (e) => {
+        console.log("/ pressed", {
+          searchInput,
+          activeElement: document.activeElement,
+        });
+        e.preventDefault();
+        e.stopPropagation();
+        if (!searchInput) return;
+        requestAnimationFrame(() => {
+          searchInput?.focus();
+        });
+      },
+    },
+    {
+      key: "f",
+      ctrl: true,
+      handler: (e) => {
+        if (!isInputFocused()) {
+          e.preventDefault();
+          searchInput?.focus();
+        }
+      },
+    },
+    {
+      key: "e",
+      handler: (e) => {
+        if (!isInputFocused() && hoveredUrl) {
+          e.preventDefault();
+          const url = urls.find((u) => u.id === hoveredUrl);
+          if (url) handleEdit(url);
+        }
+      },
+    },
+    {
+      key: "d",
+      handler: (e) => {
+        if (!isInputFocused() && hoveredUrl) {
+          e.preventDefault();
+          if (deletingId === hoveredUrl) {
+            const form = document.querySelector(
+              `form[data-delete-id="${hoveredUrl}"]`,
+            );
+            form?.dispatchEvent(new Event("submit", { cancelable: true }));
+            deletingId = null;
+          } else {
+            deletingId = hoveredUrl;
+          }
+        }
+      },
+    },
+  ];
+
+  $effect(() => {
+    console.log("Search input ref:", searchInput);
+    return initKeyboardShortcuts(shortcuts);
+  });
+
+  async function handleEdit(url: UrlsResponseWithTags) {
+    showAddForm = true;
+  }
+
+  async function handleDelete(id: string) {
+    const data = await fetch(`/api/url/`, {
+      method: "DELETE",
+      body: JSON.stringify({ id }),
+    });
+
+    const res = await data.json();
+    console.log(res);
+
+    if (res.success) {
+      toast.success("URL deleted");
+    } else {
+      toast.error(res.error);
+    }
+  }
 
   // Update showAddForm to focus input when form opens
   $effect(() => {
@@ -162,6 +231,16 @@
       // Use setTimeout to ensure DOM is ready
       setTimeout(() => longUrlInput?.focus(), 50);
     }
+  });
+
+  // Add an effect to monitor the input binding
+  $effect(() => {
+    console.log("searchInput changed:", searchInput);
+  });
+
+  // Add this debug effect to verify the binding
+  $effect(() => {
+    console.log("searchInput ref:", searchInput);
   });
 </script>
 
@@ -185,12 +264,7 @@
           bind:this={searchInput}
           bind:value={searchQuery}
           placeholder="Search URLs by URL, slug, or tag"
-          onkeydown={(e) => {
-            if (e.key === "Escape") {
-              e.currentTarget.blur();
-            }
-          }}
-          class="bg-input-foreground w-full rounded-full py-3 pl-9 pr-16 text-sm backdrop-blur-sm placeholder:text-muted-foreground"
+          class="w-full rounded-full bg-input-foreground py-3 pl-9 pr-16 text-sm backdrop-blur-sm placeholder:text-muted-foreground"
         />
         <kbd
           class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-xs font-light text-slate-400 dark:border-slate-700 dark:text-slate-500 sm:inline-block"
@@ -243,8 +317,14 @@
 
     <UrlList
       urls={updatedUrls}
-      onEdit={() => {}}
-      onDelete={() => {}}
+      onEdit={(url: UrlsResponseWithTags) => {
+        showAddForm = true;
+        console.log("onEdit", url.url);
+        handleEdit(url);
+      }}
+      onDelete={(id: string) => {
+        handleDelete(id);
+      }}
       showAddForm={true}
       setShowAddForm={() => {}}
       {searchQuery}
