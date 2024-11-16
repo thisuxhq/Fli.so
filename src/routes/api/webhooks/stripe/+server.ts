@@ -34,6 +34,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
           .getFirstListItem(`stripe_customer_id="${session.customer}"`)
           .catch(() => null);
 
+        console.log("Customer with stripe ID", customer);
+
         if (!customer) {
           console.log("Customer not found, creating new customer record...");
           customer = await locals.pb.collection("customers").create({
