@@ -23,7 +23,10 @@ vite.config.ts.timestamp-*
 
 # PocketBase data
 pocketbase/pocketbase
-pb_data/    
-     
+pb_data/
+
 # Include only migrations
 !/pb_migrations/
+
+# docs
+docs

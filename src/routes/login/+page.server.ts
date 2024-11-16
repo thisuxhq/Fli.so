@@ -1,5 +1,7 @@
 import { fail, error, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import { createOrRetrieveStripeCustomer } from "$lib/server/stripe-utils";
+import type { UsersResponse } from "$lib/types";
 
 export const load = (async ({ locals }) => {
   if (locals.pb.authStore.isValid) {
@@ -44,13 +46,25 @@ export const actions: Actions = {
       return fail(400, { message: "Please provide both email and password." });
     }
 
+    console.log("Creating user");
+
     try {
-      await locals.pb.collection("users").create({
+      const user: UsersResponse = await locals.pb.collection("users").create({
         username: email.split("@")[0],
         email: email,
         password: password,
         passwordConfirm: password,
+        name: email.split("@")[0], // Add default name
+        emailVisibility: true,
       });
+
+      console.log("User created", user);
+
+      console.log("Creating Stripe customer");
+      await createOrRetrieveStripeCustomer(user);
+      console.log("Stripe customer created");
+
+      console.log("Signed up", user);
     } catch (err) {
       console.log("Error: ", err);
     }
