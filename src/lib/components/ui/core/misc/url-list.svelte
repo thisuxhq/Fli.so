@@ -1,9 +1,9 @@
 <script lang="ts">
   import { fly, fade } from "svelte/transition";
   import { quintOut } from "svelte/easing";
-  import { Link } from "lucide-svelte";
+  import { Link, Plus } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
-  import { UrlListCard } from "$lib/components/ui/core";
+  import { UrlListCard, UrlEmptyState } from "$lib/components/ui/core";
 
   interface Props {
     urls: UrlsResponseWithTags[];
@@ -40,39 +40,28 @@
 >
   {#if urls.length === 0}
     <div
-      class="rounded-2xl bg-white/80 px-8 py-12 text-center ring-1 ring-slate-200/50 backdrop-blur-sm dark:bg-slate-800/80 dark:ring-slate-700/50"
+      class="rounded-2xl px-8 py-12 text-center"
       in:fly|local={{ y: 10, duration: 200, easing: quintOut }}
       out:fade|local={{ duration: 150 }}
     >
-      <div class="mx-auto max-w-md">
-        <Link class="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500" />
+      <div
+        class="mx-auto flex w-full max-w-sm flex-col items-center justify-center"
+      >
+        <UrlEmptyState />
 
         <h3 class="mt-4 text-lg font-medium text-slate-900 dark:text-slate-100">
-          Start Shortening URLs
+          Hmmm... Seems like you don't have any links. Let's create one!
         </h3>
 
-        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          Create your first shortened URL and make sharing links easier than
-          ever.
-        </p>
-
         <button
-          class="mt-6 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
+          class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
           onclick={() => (showAddForm = true)}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+          <span class="flex flex-row items-center justify-center gap-2">
+            <Plus class="size-5" />
+
+            New link</span
           >
-            <path
-              fill-rule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clip-rule="evenodd"
-            />
-          </svg>
-          <span>Create Your First Short URL</span>
           <kbd
             class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm dark:bg-black/20 sm:inline-block"
           >

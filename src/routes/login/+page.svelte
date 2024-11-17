@@ -8,9 +8,7 @@
   let isLoading = $state(false);
 </script>
 
-<div
-  class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black"
->
+<div class="min-h-screen dark:from-gray-900 dark:to-black">
   <div class="mx-auto max-w-md p-6">
     <!-- Header -->
     <div class="mb-5 text-center">
@@ -26,7 +24,7 @@
     <div class="mb-8 flex justify-center gap-2">
       <button
         class="relative rounded-full px-4 py-2 text-sm font-medium transition-colors
-        {isLogin 
+        {isLogin
           ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
           : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}"
         onclick={() => (isLogin = true)}
@@ -36,7 +34,7 @@
       </button>
       <button
         class="relative rounded-full px-4 py-2 text-sm font-medium transition-colors
-        {!isLogin 
+        {!isLogin
           ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
           : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}"
         onclick={() => (isLogin = false)}
