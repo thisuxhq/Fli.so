@@ -29,7 +29,7 @@
   } = $props();
   let showAddForm = $state(false);
   let searchQuery = $state("");
-  let searchInput: HTMLInputElement | null;
+  let searchInput: HTMLInputElement | undefined = undefined;
 
   let updatedUrls = $state<UrlsResponseWithTags[]>(data.urls);
 
@@ -73,7 +73,9 @@
 
             // Update the urls with the new tags
             updatedUrls = updatedUrls.map((url) =>
-              url.id === e.record.id ? { ...url, expand: { tags: data } } : url,
+              url.id === e.record.id
+                ? { ...url, expand: { tags_id: data } }
+                : url,
             );
 
             break;
@@ -93,7 +95,9 @@
             const data = await tags.json();
 
             updatedUrls = updatedUrls.map((url) =>
-              url.id === e.record.id ? { ...url, expand: { tags: data } } : url,
+              url.id === e.record.id
+                ? { ...url, expand: { tags_id: data } }
+                : url,
             );
 
             console.log("update", e.record);
@@ -149,16 +153,18 @@
     {
       key: "/",
       handler: (e) => {
-        console.log("/ pressed", {
-          searchInput,
-          activeElement: document.activeElement,
-        });
-        e.preventDefault();
-        e.stopPropagation();
-        if (!searchInput) return;
-        requestAnimationFrame(() => {
-          searchInput?.focus();
-        });
+        if (!showAddForm) {
+          console.log("/ pressed", {
+            searchInput,
+            activeElement: document.activeElement,
+          });
+          e.preventDefault();
+          e.stopPropagation();
+          if (!searchInput) return;
+          requestAnimationFrame(() => {
+            searchInput?.focus();
+          });
+        }
       },
     },
     {
@@ -262,7 +268,7 @@
       <div class="relative">
         <Input
           type="text"
-          bind:this={searchInput!}
+          bind:this={searchInput}
           bind:value={searchQuery}
           placeholder="Search URLs by URL, slug, or tag"
           class="w-full rounded-full bg-input-foreground py-3 pl-9 pr-16 text-sm backdrop-blur-sm placeholder:text-muted-foreground"

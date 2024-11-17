@@ -1,5 +1,6 @@
-import { persisted } from 'svelte-persisted-store'
+import { persisted } from "svelte-persisted-store";
 
-export const timezone = persisted('timezone', 
-  Intl.DateTimeFormat().resolvedOptions().timeZone // Default to browser timezone
-); 
+export const timezone = persisted(
+  "timezone",
+  Intl.DateTimeFormat().resolvedOptions().timeZone, // Default to browser timezone
+);

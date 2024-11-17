@@ -24,8 +24,6 @@ export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
         pocketbaseUserId: user.id,
       },
     });
-    
-    
 
     // Create customer record in PocketBase
     const customer = await pb.collection("customers").create({

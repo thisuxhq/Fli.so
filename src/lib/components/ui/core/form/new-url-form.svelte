@@ -44,7 +44,7 @@
 
   const { form: formData, enhance } = form;
 
-  let longUrlInput = $state<HTMLInputElement | null>(null);
+  let longUrlInput: HTMLInputElement | null = null;
   let showPassword = $state(false);
   let metaDataEnabled = $state(false);
 
@@ -135,10 +135,16 @@
             <Input
               {...attrs}
               bind:value={$formData.url}
+              bind:this={longUrlInput}
               type="url"
               placeholder="https://www.example.com/path-to-destination"
               required
               on:input={handleMetaFetch}
+              onkeydown={(e) => {
+                if (e.key === "/") {
+                  e.stopPropagation();
+                }
+              }}
             />
           </Form.Control>
           <Form.FieldErrors />
@@ -173,6 +179,11 @@
                   placeholder="work"
                   pattern="[a-zA-Z0-9-]+"
                   class="h-12 rounded-none border-none bg-input/20"
+                  onkeydown={(e) => {
+                    if (e.key === "/") {
+                      e.stopPropagation();
+                    }
+                  }}
                 />
               </div>
               <Button
@@ -211,6 +222,11 @@
                 bind:value={$formData.password_hash}
                 placeholder="••••••••"
                 class="h-12 rounded-r-none bg-input/20"
+                onkeydown={(e) => {
+                  if (e.key === "/") {
+                    e.stopPropagation();
+                  }
+                }}
               />
               <Button
                 type="button"
@@ -281,6 +297,11 @@
                 class="h-12 rounded-2xl bg-input/20"
                 on:input={handleExpirationInput}
                 on:blur={handleExpirationBlur}
+                onkeydown={(e) => {
+                  if (e.key === "/") {
+                    e.stopPropagation();
+                  }
+                }}
               />
             </Form.Control>
           </Form.Field>
@@ -306,6 +327,11 @@
                 type="text"
                 placeholder="Secondary-URL"
                 class="h-12 rounded-2xl bg-input/20"
+                onkeydown={(e) => {
+                  if (e.key === "/") {
+                    e.stopPropagation();
+                  }
+                }}
               />
             </Form.Control>
           </Form.Field>
@@ -320,6 +346,11 @@
               type="text"
               placeholder="Tag1, Tag2, Tag3"
               class="h-12 rounded-2xl bg-input/20"
+              onkeydown={(e) => {
+                if (e.key === "/") {
+                  e.stopPropagation();
+                }
+              }}
             />
           </Form.Control>
         </Form.Field>
@@ -407,6 +438,11 @@
               bind:value={$formData.meta_title}
               placeholder="Title"
               class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
+              onkeydown={(e) => {
+                if (e.key === "/") {
+                  e.stopPropagation();
+                }
+              }}
             />
           </div>
           <div class="flex flex-col items-start justify-start gap-2">
@@ -417,6 +453,11 @@
               bind:value={$formData.meta_description}
               placeholder="Description"
               class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
+              onkeydown={(e) => {
+                if (e.key === "/") {
+                  e.stopPropagation();
+                }
+              }}
             />
           </div>
           <div class="flex flex-col items-start justify-start gap-2">
@@ -426,6 +467,11 @@
               bind:value={$formData.meta_image_url}
               placeholder="Meta Image URL"
               class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
+              onkeydown={(e) => {
+                if (e.key === "/") {
+                  e.stopPropagation();
+                }
+              }}
             />
           </div>
         </div>

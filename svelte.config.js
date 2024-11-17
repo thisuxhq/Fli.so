@@ -25,8 +25,8 @@ const config = {
       },
     }),
     serviceWorker: {
-      register: true
-    }
+      register: true,
+    },
   },
 };
 

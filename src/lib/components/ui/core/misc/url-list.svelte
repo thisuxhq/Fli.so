@@ -2,7 +2,7 @@
   import { fly, fade } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import { Link, Plus } from "lucide-svelte";
-  import type { UrlsResponseWithTags } from "$lib/types";
+  import type { TagsResponse, UrlsResponseWithTags } from "$lib/types";
   import { UrlListCard, UrlEmptyState } from "$lib/components/ui/core";
 
   interface Props {
@@ -14,7 +14,7 @@
     searchQuery: string;
   }
 
-  let { urls, onEdit, onDelete, searchQuery }: Props = $props();
+  let { urls, onEdit, onDelete, searchQuery, showAddForm }: Props = $props();
 
   let filteredUrls = $derived(
     urls.filter((url) => {
@@ -23,7 +23,7 @@
       const urlMatch = url.url.toLowerCase().includes(searchLower);
       const slugMatch = url.slug.toLowerCase().includes(searchLower);
       // Check tags
-      const tagMatch = url.expand?.tags?.some((tag) =>
+      const tagMatch = url.expand?.tags?.some((tag: TagsResponse) =>
         tag.name.toLowerCase().includes(searchLower),
       );
 

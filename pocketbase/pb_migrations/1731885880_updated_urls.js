@@ -8,16 +8,18 @@ migrate(
     collection.schema.addField(
       new SchemaField({
         system: false,
-        id: "pzgieofw",
-        name: "password_hash",
-        type: "text",
+        id: "fjhhpzwt",
+        name: "tags_id",
+        type: "relation",
         required: false,
         presentable: false,
         unique: false,
         options: {
-          min: 8,
-          max: 100,
-          pattern: "",
+          collectionId: "6156foct15u4yk8",
+          cascadeDelete: false,
+          minSelect: null,
+          maxSelect: null,
+          displayFields: null,
         },
       }),
     );
@@ -32,16 +34,18 @@ migrate(
     collection.schema.addField(
       new SchemaField({
         system: false,
-        id: "pzgieofw",
-        name: "password_hash",
-        type: "text",
-        required: true,
+        id: "fjhhpzwt",
+        name: "tags",
+        type: "relation",
+        required: false,
         presentable: false,
         unique: false,
         options: {
-          min: 8,
-          max: 100,
-          pattern: "",
+          collectionId: "6156foct15u4yk8",
+          cascadeDelete: false,
+          minSelect: null,
+          maxSelect: null,
+          displayFields: null,
         },
       }),
     );

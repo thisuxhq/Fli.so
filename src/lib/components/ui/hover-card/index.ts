@@ -5,10 +5,10 @@ const Root = HoverCardPrimitive.Root;
 const Trigger = HoverCardPrimitive.Trigger;
 
 export {
-	Root,
-	Content,
-	Trigger,
-	Root as HoverCard,
-	Content as HoverCardContent,
-	Trigger as HoverCardTrigger,
+  Root,
+  Content,
+  Trigger,
+  Root as HoverCard,
+  Content as HoverCardContent,
+  Trigger as HoverCardTrigger,
 };

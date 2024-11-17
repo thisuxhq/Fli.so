@@ -9,7 +9,8 @@
   } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
-  import { initKeyboardShortcuts } from '$lib/keyboard';
+  import { initKeyboardShortcuts } from "$lib/keyboard";
+
   interface Props {
     url: UrlsResponseWithTags;
     onEdit: (url: UrlsResponseWithTags) => void;
@@ -24,9 +25,12 @@
   $effect(() => {
     if (hoveredUrl === url.id) {
       return initKeyboardShortcuts([
-        { key: 'e', handler: () => !showDeleteConfirm && onEdit(url) },
-        { key: 'd', handler: () => !showDeleteConfirm && (showDeleteConfirm = true) },
-        { key: 'Escape', handler: () => showDeleteConfirm = false }
+        { key: "e", handler: () => !showDeleteConfirm && onEdit(url) },
+        {
+          key: "d",
+          handler: () => !showDeleteConfirm && (showDeleteConfirm = true),
+        },
+        { key: "Escape", handler: () => (showDeleteConfirm = false) },
       ]);
     }
   });
@@ -42,7 +46,7 @@
   in:fly|local={{ y: 10, duration: 200, delay: 50 }}
   out:fade|local={{ duration: 150 }}
   onmouseenter={() => (hoveredUrl = url.id)}
-  onmouseleave={() => { 
+  onmouseleave={() => {
     hoveredUrl = null;
     showDeleteConfirm = false;
   }}
@@ -88,17 +92,19 @@
     <!-- Tags and Actions -->
     <div class="relative flex items-center justify-end gap-2">
       <!-- Tags -->
-      {#if url.expand?.tags}
-        <div 
-          class="group/tags relative flex-1 min-w-0 transition-all duration-300 ease-out"
+      {#if url.expand?.tags_id}
+        <div
+          class="group/tags relative min-w-0 flex-1 transition-all duration-300 ease-out"
           class:translate-x-[-150%]={showDeleteConfirm}
           class:opacity-0={showDeleteConfirm}
         >
           <!-- When not hovered, show all tags -->
-          <div class="ml-3 flex items-center gap-x-4 transition-opacity duration-200 group-hover:opacity-0">
-            {#each url.expand.tags as tag}
+          <div
+            class="ml-3 flex items-center gap-x-4 transition-opacity duration-200 group-hover:opacity-0"
+          >
+            {#each url.expand.tags_id as tag}
               <span
-                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs first:ml-0 hover:z-10 max-w-[150px]"
+                class="inline-flex max-w-[150px] items-center gap-1 rounded-full px-2 py-0.5 text-xs first:ml-0 hover:z-10"
                 style="background-color: {tag.color}20; color: {tag.color}; border: 1px solid {tag.color}40; margin-left: -8px;"
               >
                 <span
@@ -111,19 +117,25 @@
           </div>
 
           <!-- When hovered, show only first tag + count -->
-          <div class="absolute inset-0 flex items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            {#if url.expand.tags.length > 0}
+          <div
+            class="absolute inset-0 flex items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          >
+            {#if url.expand.tags_id.length > 0}
               <span
-                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs max-w-[150px]"
-                style="background-color: {url.expand.tags[0].color}20; color: {url.expand.tags[0].color}; border: 1px solid {url.expand.tags[0].color}40;"
+                class="inline-flex max-w-[150px] items-center gap-1 rounded-full px-2 py-0.5 text-xs"
+                style="background-color: {url.expand.tags_id[0]
+                  .color}20; color: {url.expand.tags_id[0]
+                  .color}; border: 1px solid {url.expand.tags_id[0].color}40;"
               >
                 <span
                   class="h-2 w-2 shrink-0 rounded-full"
-                  style="background-color: {url.expand.tags[0].color};"
+                  style="background-color: {url.expand.tags_id[0].color};"
                 ></span>
-                <span class="truncate">{url.expand.tags[0].name}</span>
-                {#if url.expand.tags.length > 1}
-                  <span class="ml-1 shrink-0 text-slate-500">+{url.expand.tags.length - 1}</span>
+                <span class="truncate">{url.expand.tags_id[0].name}</span>
+                {#if url.expand.tags_id.length > 1}
+                  <span class="ml-1 shrink-0 text-slate-500"
+                    >+{url.expand.tags_id.length - 1}</span
+                  >
                 {/if}
               </span>
             {/if}
@@ -141,7 +153,7 @@
         <Button
           id={`edit-${url.id}`}
           onclick={() => onEdit(url)}
-          class="group/btn relative rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          class="group/btn relative rounded-full p-2 text-gray-600 opacity-0 transition-opacity duration-200 hover:bg-gray-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-800"
           variant="ghost"
           size="icon"
           title="Edit URL (press 'e')"
@@ -151,8 +163,8 @@
 
         <Button
           id={`delete-${url.id}`}
-          onclick={() => showDeleteConfirm = true}
-          class="group/btn relative rounded-full p-2 text-red-500 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+          onclick={() => (showDeleteConfirm = true)}
+          class="group/btn relative rounded-full p-2 text-red-500 opacity-0 transition-opacity duration-200 hover:bg-red-50 hover:text-red-700 group-hover:opacity-100 dark:text-red-400 dark:hover:bg-red-950/50 dark:hover:text-red-300"
           title="Delete URL (press 'd')"
           size="icon"
           variant="ghost"
@@ -163,7 +175,7 @@
 
       <!-- Delete Confirmation -->
       <div
-        class="absolute right-0 flex items-center gap-2 transition-all duration-300 ease-out transform"
+        class="absolute right-0 flex transform items-center gap-2 transition-all duration-300 ease-out"
         class:translate-x-0={showDeleteConfirm}
         class:translate-x-[150%]={!showDeleteConfirm}
         class:opacity-100={showDeleteConfirm}
@@ -171,7 +183,7 @@
         class:pointer-events-none={!showDeleteConfirm}
       >
         <Button
-          onclick={() => showDeleteConfirm = false}
+          onclick={() => (showDeleteConfirm = false)}
           variant="ghost"
           size="sm"
           class="text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"

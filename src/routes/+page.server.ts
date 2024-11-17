@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ locals }) => {
     // Fetch URLs and tags from server
     const [urls, tags] = await Promise.all([
       locals.pb.collection("urls").getFullList<UrlsResponseWithTags[]>({
-        expand: "tags",
+        expand: "tags_id",
         sort: "-created",
       }),
       locals.pb.collection("tags").getFullList<TagsResponse[]>({
