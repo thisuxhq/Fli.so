@@ -1,9 +1,13 @@
 <script lang="ts">
   import { fly, fade } from "svelte/transition";
   import { quintOut } from "svelte/easing";
-  import { Link, Plus } from "lucide-svelte";
+  import { Plus } from "lucide-svelte";
   import type { TagsResponse, UrlsResponseWithTags } from "$lib/types";
-  import { UrlListCard, UrlEmptyState } from "$lib/components/ui/core";
+  import {
+    UrlListCard,
+    UrlEmptyState,
+    EmptySearchResult,
+  } from "$lib/components/ui/core";
 
   interface Props {
     urls: UrlsResponseWithTags[];
@@ -78,21 +82,18 @@
     </div>
   {:else}
     <div
-      class="rounded-2xl bg-white/80 px-8 py-12 text-center shadow-xl ring-1 ring-slate-200/50 backdrop-blur-sm dark:bg-slate-800/80 dark:ring-slate-700/50"
+      class="rounded-2xl px-8 py-12 text-center"
       in:fly|local={{ y: 10, duration: 200, easing: quintOut }}
       out:fade|local={{ duration: 150 }}
     >
-      <div class="mx-auto max-w-md">
-        <Link class="mx-auto h-12 w-12 text-slate-400 dark:text-slate-500" />
+      <div
+        class="mx-auto flex w-full max-w-sm flex-col items-center justify-center"
+      >
+        <EmptySearchResult />
 
         <h3 class="mt-4 text-lg font-medium text-slate-900 dark:text-slate-100">
-          No URLs match your search
+          No such link exists :(
         </h3>
-
-        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-          Try adjusting your search terms or clear the search to see all your
-          URLs.
-        </p>
       </div>
     </div>
   {/if}
