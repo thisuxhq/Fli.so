@@ -57,10 +57,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         console.log(`Creating subscription record in database...`);
         await locals.pb.collection("subscriptions").create({
           user_id: session.client_reference_id,
-          customer_id: customer.id,
+          customer_id: customer?.id,
           stripe_subscription_id: subscription.id,
           stripe_price_id: subscription.items.data[0].price.id,
-          plan_name: subscription.items.data[0].price.product.name || 
+          plan_name: subscription.items.data[0].price.product?.name || 
                      subscription.items.data[0].price.nickname || 
                      "Default Plan",
           status: subscription.status,
