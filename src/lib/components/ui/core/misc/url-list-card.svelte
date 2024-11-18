@@ -10,6 +10,8 @@
   import type { UrlsResponseWithTags } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
   import { initKeyboardShortcuts } from "$lib/keyboard";
+  import { cn } from "$lib/utils";
+  import { getTagStyles } from "$lib/utils";
 
   interface Props {
     url: UrlsResponseWithTags;
@@ -100,17 +102,15 @@
         >
           <!-- When not hovered, show all tags -->
           <div
-            class="ml-3 flex items-center gap-x-4 transition-opacity duration-200 group-hover:opacity-0"
+            class="flex items-center gap-x-2 transition-opacity duration-200 group-hover:opacity-0"
           >
             {#each url.expand.tags_id as tag}
-              <span
-                class="inline-flex max-w-[150px] items-center gap-1 rounded-full px-2 py-0.5 text-xs first:ml-0 hover:z-10"
-                style="background-color: {tag.color}20; color: {tag.color}; border: 1px solid {tag.color}40; margin-left: -8px;"
-              >
-                <span
-                  class="h-2 w-2 shrink-0 rounded-full"
-                  style="background-color: {tag.color};"
-                ></span>
+              {@const styles = getTagStyles(tag.color as keyof typeof tailwindColors)}
+              <span class={cn(
+                "inline-flex max-w-[150px] items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs first:ml-0 hover:z-10",
+                styles.text
+              )}>
+                <span class={cn("h-2 w-2 shrink-0 rounded-full", styles.dot)}></span>
                 <span class="truncate">{tag.name}</span>
               </span>
             {/each}
@@ -121,21 +121,15 @@
             class="absolute inset-0 flex items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100"
           >
             {#if url.expand.tags_id.length > 0}
-              <span
-                class="inline-flex max-w-[150px] items-center gap-1 rounded-full px-2 py-0.5 text-xs"
-                style="background-color: {url.expand.tags_id[0]
-                  .color}20; color: {url.expand.tags_id[0]
-                  .color}; border: 1px solid {url.expand.tags_id[0].color}40;"
-              >
-                <span
-                  class="h-2 w-2 shrink-0 rounded-full"
-                  style="background-color: {url.expand.tags_id[0].color};"
-                ></span>
+              {@const styles = getTagStyles(url.expand.tags_id[0].color as keyof typeof tailwindColors)}
+              <span class={cn(
+                "inline-flex max-w-[150px] items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs",
+                styles.text
+              )}>
+                <span class={cn("h-2 w-2 shrink-0 rounded-full", styles.dot)}></span>
                 <span class="truncate">{url.expand.tags_id[0].name}</span>
                 {#if url.expand.tags_id.length > 1}
-                  <span class="ml-1 shrink-0 text-slate-500"
-                    >+{url.expand.tags_id.length - 1}</span
-                  >
+                  <span class="ml-1 shrink-0 text-slate-500">+{url.expand.tags_id.length - 1}</span>
                 {/if}
               </span>
             {/if}

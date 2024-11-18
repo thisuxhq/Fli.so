@@ -82,26 +82,31 @@
           }
           case "update": {
             console.log("update", e.record);
+            // First update the basic URL data
             updatedUrls = updatedUrls.map((url) =>
-              url.id === e.record.id ? (e.record as UrlsResponseWithTags) : url,
+              url.id === e.record.id ? { ...url, ...e.record } : url,
             );
 
-            // Fetch the tags from the server
-            const tags = await fetch("/api/tags", {
-              method: "POST",
-              body: JSON.stringify({ tags_ids: e?.record?.tags }),
-            });
+            console.log("tags_id", e.record.tags_id);
 
-            const data = await tags.json();
+            // Only fetch tags if they exist
+            if (e.record.tags_id?.length) {
+              const tags = await fetch("/api/tags", {
+                method: "POST",
+                body: JSON.stringify({ tags_ids: e.record.tags_id }),
+              });
 
-            updatedUrls = updatedUrls.map((url) =>
-              url.id === e.record.id
-                ? { ...url, expand: { tags_id: data } }
-                : url,
-            );
+              const data = await tags.json();
 
-            console.log("update", e.record);
+              console.log("tags response", data);
 
+              // Update with tags
+              updatedUrls = updatedUrls.map((url) =>
+                url.id === e.record.id
+                  ? { ...url, tags: e.record.tags, expand: { tags_id: data } }
+                  : url,
+              );
+            }
             break;
           }
           case "delete":
