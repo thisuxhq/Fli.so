@@ -9,9 +9,10 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Switch } from "$lib/components/ui/switch";
   import { Textarea } from "$lib/components/ui/textarea";
-  import { browser } from "$app/environment"; 
+  import { browser } from "$app/environment";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { scrapeMetadata } from "$lib/utils/index";
+  import { TagsSelector } from "$lib/components/ui/core/misc";
 
   import SuperDebug, {
     type SuperValidated,
@@ -22,17 +23,20 @@
   import { Shuffle, Copy, Eye, EyeOff, AlertCircleIcon } from "lucide-svelte";
   import * as chrono from "chrono-node";
   import { Label } from "$lib/components/ui/label";
+  import type { TagsResponse } from "$lib/types";
 
   interface Props {
     user_id: string;
     data: SuperValidated<Infer<UrlSchema>>;
     show?: boolean;
     onOpenChange?: (open: boolean) => void;
+    tags: TagsResponse[];
   }
 
-  let { data, user_id, show = false, onOpenChange }: Props = $props();
+  let { data, user_id, show = false, onOpenChange, tags }: Props = $props();
 
   const form = superForm(data, {
+    dataType: "json",
     validators: zodClient(urlSchema),
     onResult: ({ result }) => {
       if (result.type === "success") {
@@ -101,6 +105,10 @@
       console.error("Failed to copy password:", err);
       toast.error("Failed to copy password to clipboard");
     }
+  }
+
+  function handleTagsSelect(tags: string[]) {
+    $formData.tags = tags;
   }
 </script>
 
@@ -265,7 +273,9 @@
                 size="icon"
                 on:click={async () => {
                   if ($formData.password_hash) {
-                    await navigator.clipboard.writeText($formData.password_hash);
+                    await navigator.clipboard.writeText(
+                      $formData.password_hash,
+                    );
                     toast.success("Password copied to clipboard");
                   }
                 }}
@@ -342,20 +352,12 @@
 
         <!-- Tags -->
         <Form.Field {form} name="tags">
-          <Form.Control let:attrs>
+          <Form.Control>
             <Form.Label class="text-muted-foreground">Tags</Form.Label>
-            <Input
-              {...attrs}
-              type="text"
-              placeholder="Tag1, Tag2, Tag3"
-              class="h-12 rounded-2xl bg-input/20"
-              on:keydown={(e) => {
-                if (e.key === "/") {
-                  e.stopPropagation();
-                }
-              }}
-            />
+            <TagsSelector {tags} onSelect={handleTagsSelect} />
           </Form.Control>
+          <Form.FieldErrors />
+          <input type="hidden" bind:value={$formData.tags} name="tags" />
         </Form.Field>
 
         <!-- Created by -->

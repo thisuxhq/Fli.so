@@ -2,6 +2,7 @@
   import { Check, Loader2 } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import { toast } from "svelte-sonner";
+  import { Earth } from "lucide-svelte";
 
   interface Plan {
     name: string;
@@ -13,6 +14,16 @@
 
   let { data }: { data: { plans: Record<string, Plan> } } = $props();
   let isLoading = $state<boolean>(false);
+
+  const benefits = [
+    "Shorten unlimited URLs",
+    "Track URL analytics",
+    "Customizable URLs",
+    "Easily manage your links",
+    "Bulk URL shortening",
+    "Integrates with popular platforms",
+    "Export shortened URLs",
+  ];
 
   const features: Record<string, string[]> = {
     "FLI PRO": [
@@ -121,6 +132,43 @@
           </Button>
         </div>
       {/each}
+    </div>
+  </div>
+</div>
+
+<div class="flex min-h-screen flex-col items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="mb-8 flex justify-center">
+      <Earth class="size-10" />
+    </div>
+    <div class="relative rounded-3xl bg-white p-6">
+      <div
+        class="absolute -top-3 right-3 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white"
+      >
+        Limited Offer
+      </div>
+      <h2 class="mb-2 text-xl font-medium">Do it all</h2>
+      <h1 class="mb-4 text-3xl font-medium tracking-tight">
+        Only $9 for lifetime access
+      </h1>
+      <ul class="mb-6">
+        {#each benefits as item}
+          <li class="mb-1 flex items-center">
+            <Check class="mr-2 h-5 w-5 text-green-500" />
+            <span>{item}</span>
+          </li>
+        {/each}
+      </ul>
+      <Button class="w-full rounded-2xl"
+        >Ready to pay? <kbd
+          class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+        >
+          P
+        </kbd>
+      </Button>
+      <p class="mt-4 text-center text-xs text-gray-500">
+        By clicking the button, you agree to our terms & conditions
+      </p>
     </div>
   </div>
 </div>

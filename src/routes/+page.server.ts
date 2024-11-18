@@ -31,6 +31,8 @@ export const load: PageServerLoad = async ({ locals }) => {
       }),
     ]);
 
+    console.log("tags", tags);
+
     return {
       urls: urls,
       tags: tags,
@@ -93,11 +95,14 @@ export const actions: Actions = {
       const digest = hasher.digest();
       console.log("Digest:", Buffer.from(digest).toString("hex"));
 
+      console.log("Tags id", form.data.tags);
+
       await locals.pb.collection("urls").create({
         url: form.data.url,
         slug: form.data.slug,
         clicks: 0,
         created_by: locals.user?.id,
+        tags_id: form.data.tags,
         ...(form.data.password_hash
           ? { password_hash: Buffer.from(digest).toString("hex") }
           : {}),

@@ -9,18 +9,16 @@
     avatar: string;
   }
 
-  let {
-    name = "John Doe",
-    email = "john.doe@example.com",
-    avatar = "https://github.com/shadcn.png",
-  }: Props = $props();
+  let { name, email, avatar }: Props = $props();
 </script>
 
 <DropdownMenu.Root>
   <DropdownMenu.Trigger>
     <Avatar.Root>
       <Avatar.Image src={avatar} alt={name} />
-      <Avatar.Fallback>CN</Avatar.Fallback>
+      <Avatar.Fallback class="bg-white text-black">
+        {name.slice(0, 2)}
+      </Avatar.Fallback>
     </Avatar.Root>
   </DropdownMenu.Trigger>
   <DropdownMenu.Content class="w-[240px] bg-input-foreground">
@@ -32,9 +30,12 @@
     <DropdownMenu.Group
       class="flex flex-col gap-2 rounded-2xl bg-white p-2 text-base"
     >
-      <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
+      <DropdownMenu.Item
+        class="text-base hover:cursor-pointer  hover:bg-white/10"
+        href="/pricing"
+      >
         <Crown class="mr-2 size-5" />
-        <a href="/pricing" class="text-base">Upgrade to Pro</a>
+        Upgrade to Pro
       </DropdownMenu.Item>
       <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
         <MessageCircle class="mr-2 size-5" />
@@ -45,14 +46,17 @@
         <span class="text-base">More from us</span>
       </DropdownMenu.Item>
 
-      <form action="?/logout" method="post">
-        <DropdownMenu.Item class="group hover:cursor-pointer">
-          <LogOut class="mr-2 size-5 group-hover:text-red-500" />
-          <button type="submit" class="text-base group-hover:text-red-500">
+      <DropdownMenu.Item class="group w-full hover:cursor-pointer">
+        <form action="?/logout" method="post">
+          <button
+            type="submit"
+            class="flex w-full items-center text-base group-hover:text-red-500"
+          >
+            <LogOut class="mr-2 size-5 group-hover:text-red-500" />
             Logout
           </button>
-        </DropdownMenu.Item>
-      </form>
+        </form>
+      </DropdownMenu.Item>
     </DropdownMenu.Group>
   </DropdownMenu.Content>
 </DropdownMenu.Root>

@@ -30,7 +30,7 @@
   } = $props();
   let showAddForm = $state(false);
   let searchQuery = $state("");
-  let openSettings = $state<boolean>(false);
+
   let searchInput: HTMLInputElement | undefined = undefined;
 
   let updatedUrls = $state<UrlsResponseWithTags[]>(data.urls);
@@ -68,9 +68,9 @@
             // Fetch the tags from the server
             const tags = await fetch("/api/tags", {
               method: "POST",
-              body: JSON.stringify({ tags_ids: e?.record?.tags }),
+              body: JSON.stringify({ tags_ids: e.record.tags_id }),
             });
-
+            
             const data = await tags.json();
 
             // Update the urls with the new tags
@@ -268,7 +268,7 @@
         <h1
           class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
         >
-          fli
+          dun
         </h1>
       </div>
 
@@ -333,6 +333,7 @@
       onOpenChange={(open) => {
         showAddForm = open;
       }}
+      tags={data.tags}
     />
 
     <UrlList

@@ -6,6 +6,7 @@
     Trash,
     ExternalLink,
     MousePointerClick,
+    Earth,
   } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
@@ -58,22 +59,26 @@
   <div class="space-y-3">
     <!-- URL Info -->
     <div class="flex items-center justify-between gap-2">
-      <div class="size-10 rounded-full bg-gray-100"></div>
+      <div
+        class="group flex size-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors duration-200 group-hover:bg-amber-50 group-hover:text-amber-950"
+      >
+        <Earth class="size-5" />
+      </div>
       <span
         class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
       >
-        <MousePointerClick class="h-3 w-3" />
+        <MousePointerClick class="size-3" />
 
         {url.clicks} clicks
       </span>
     </div>
 
     <!-- Short URL -->
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex items-start justify-between gap-4 group/link">
       <a
         href={`${env.PUBLIC_APPLICATION_URL}/${url.slug}`}
         target="_blank"
-        class="group/link flex items-center gap-2 font-medium text-slate-900 hover:text-red-600 dark:text-slate-100 dark:hover:text-gray-900"
+        class="group/link flex items-center gap-2 font-medium text-slate-900 group-hover/link:text-amber-600 dark:text-slate-100 dark:group-hover/link:text-gray-900"
       >
         {env.PUBLIC_APPLICATION_NAME}/{url.slug}
 
@@ -102,15 +107,20 @@
         >
           <!-- When not hovered, show all tags -->
           <div
-            class="flex items-center gap-x-2 transition-opacity duration-200 group-hover:opacity-0"
+            class="flex items-center gap-x-1 transition-opacity duration-200 group-hover:opacity-0"
           >
             {#each url.expand.tags_id as tag}
-              {@const styles = getTagStyles(tag.color as keyof typeof tailwindColors)}
-              <span class={cn(
-                "inline-flex max-w-[150px] items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs first:ml-0 hover:z-10",
-                styles.text
-              )}>
-                <span class={cn("h-2 w-2 shrink-0 rounded-full", styles.dot)}></span>
+              {@const styles = getTagStyles(
+                tag.color as keyof typeof tailwindColors,
+              )}
+              <span
+                class={cn(
+                  "inline-flex max-w-[150px] items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs first:ml-0 hover:z-10",
+                  styles.text,
+                )}
+              >
+                <span class={cn("h-2 w-2 shrink-0 rounded-full", styles.dot)}
+                ></span>
                 <span class="truncate">{tag.name}</span>
               </span>
             {/each}
@@ -121,15 +131,22 @@
             class="absolute inset-0 flex items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100"
           >
             {#if url.expand.tags_id.length > 0}
-              {@const styles = getTagStyles(url.expand.tags_id[0].color as keyof typeof tailwindColors)}
-              <span class={cn(
-                "inline-flex max-w-[150px] items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs",
-                styles.text
-              )}>
-                <span class={cn("h-2 w-2 shrink-0 rounded-full", styles.dot)}></span>
+              {@const styles = getTagStyles(
+                url.expand.tags_id[0].color as keyof typeof tailwindColors,
+              )}
+              <span
+                class={cn(
+                  "inline-flex max-w-[150px] items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs",
+                  styles.text,
+                )}
+              >
+                <span class={cn("h-2 w-2 shrink-0 rounded-full", styles.dot)}
+                ></span>
                 <span class="truncate">{url.expand.tags_id[0].name}</span>
                 {#if url.expand.tags_id.length > 1}
-                  <span class="ml-1 shrink-0 text-slate-500">+{url.expand.tags_id.length - 1}</span>
+                  <span class="ml-1 shrink-0 text-slate-500"
+                    >+{url.expand.tags_id.length - 1}</span
+                  >
                 {/if}
               </span>
             {/if}

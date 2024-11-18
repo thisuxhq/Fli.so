@@ -5,3 +5,4 @@ export { default as EmptySearchResult } from "./empty-search-result.svelte";
 export { default as NotFound } from "./not-found-icon.svelte";
 export { default as KbdShortcut } from "./kbd-shortcut.svelte";
 export { default as Settings } from "./settings.svelte";
+export { default as TagsSelector } from "./tags-selector.svelte";
