@@ -9,7 +9,7 @@
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import { Switch } from "$lib/components/ui/switch";
   import { Textarea } from "$lib/components/ui/textarea";
-  import { browser } from "$app/environment";
+  import { browser } from "$app/environment"; 
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { scrapeMetadata } from "$lib/utils/index";
 
@@ -86,14 +86,21 @@
     }
   }
 
-  function suggestSlug() {
+  async function suggestSlug() {
+    console.log("Generating slug");
     $formData.slug = generateSlug();
   }
 
-  function suggestPasswordAndCopy() {
-    $formData.password_hash = generatePassword();
-    navigator.clipboard.writeText($formData.password_hash);
-    toast.success("Password copied to clipboard");
+  async function suggestPasswordAndCopy() {
+    const password = generatePassword();
+    $formData.password_hash = password;
+    try {
+      await navigator.clipboard.writeText(password);
+      toast.success("Password copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy password:", err);
+      toast.error("Failed to copy password to clipboard");
+    }
   }
 </script>
 
@@ -140,7 +147,7 @@
               placeholder="https://www.example.com/path-to-destination"
               required
               on:input={handleMetaFetch}
-              onkeydown={(e) => {
+              on:keydown={(e) => {
                 if (e.key === "/") {
                   e.stopPropagation();
                 }
@@ -179,7 +186,7 @@
                   placeholder="work"
                   pattern="[a-zA-Z0-9-]+"
                   class="h-12 rounded-none border-none bg-input/20"
-                  onkeydown={(e) => {
+                  on:keydown={(e) => {
                     if (e.key === "/") {
                       e.stopPropagation();
                     }
@@ -190,9 +197,7 @@
                 type="button"
                 variant="outline"
                 size="icon"
-                onclick={() => {
-                  suggestSlug();
-                }}
+                on:click={suggestSlug}
                 class="h-12 w-12 rounded-l-none rounded-r-2xl bg-input/20"
               >
                 <Shuffle class="h-4 w-4" />
@@ -222,7 +227,7 @@
                 bind:value={$formData.password_hash}
                 placeholder="••••••••"
                 class="h-12 rounded-r-none bg-input/20"
-                onkeydown={(e) => {
+                on:keydown={(e) => {
                   if (e.key === "/") {
                     e.stopPropagation();
                   }
@@ -232,7 +237,7 @@
                 type="button"
                 variant="outline"
                 size="icon"
-                onclick={() => {
+                on:click={() => {
                   showPassword = !showPassword;
                 }}
                 class="h-12 w-16 rounded-none border-l-0 bg-input/20"
@@ -248,9 +253,7 @@
                 type="button"
                 variant="outline"
                 size="icon"
-                onclick={() => {
-                  suggestPasswordAndCopy();
-                }}
+                on:click={suggestPasswordAndCopy}
                 class="h-12 w-16 rounded-none border-l-0 border-r-0 bg-input/20"
               >
                 <Shuffle class="h-4 w-4" />
@@ -260,9 +263,9 @@
                 type="button"
                 variant="outline"
                 size="icon"
-                onclick={() => {
+                on:click={async () => {
                   if ($formData.password_hash) {
-                    navigator.clipboard.writeText($formData.password_hash);
+                    await navigator.clipboard.writeText($formData.password_hash);
                     toast.success("Password copied to clipboard");
                   }
                 }}
@@ -297,7 +300,7 @@
                 class="h-12 rounded-2xl bg-input/20"
                 on:input={handleExpirationInput}
                 on:blur={handleExpirationBlur}
-                onkeydown={(e) => {
+                on:keydown={(e) => {
                   if (e.key === "/") {
                     e.stopPropagation();
                   }
@@ -327,7 +330,7 @@
                 type="text"
                 placeholder="Secondary-URL"
                 class="h-12 rounded-2xl bg-input/20"
-                onkeydown={(e) => {
+                on:keydown={(e) => {
                   if (e.key === "/") {
                     e.stopPropagation();
                   }
@@ -346,7 +349,7 @@
               type="text"
               placeholder="Tag1, Tag2, Tag3"
               class="h-12 rounded-2xl bg-input/20"
-              onkeydown={(e) => {
+              on:keydown={(e) => {
                 if (e.key === "/") {
                   e.stopPropagation();
                 }
@@ -438,7 +441,7 @@
               bind:value={$formData.meta_title}
               placeholder="Title"
               class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
-              onkeydown={(e) => {
+              on:keydown={(e) => {
                 if (e.key === "/") {
                   e.stopPropagation();
                 }
@@ -453,7 +456,7 @@
               bind:value={$formData.meta_description}
               placeholder="Description"
               class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
-              onkeydown={(e) => {
+              on:keydown={(e) => {
                 if (e.key === "/") {
                   e.stopPropagation();
                 }
@@ -467,7 +470,7 @@
               bind:value={$formData.meta_image_url}
               placeholder="Meta Image URL"
               class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
-              onkeydown={(e) => {
+              on:keydown={(e) => {
                 if (e.key === "/") {
                   e.stopPropagation();
                 }
