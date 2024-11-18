@@ -2,7 +2,8 @@
   import { onMount } from "svelte";
   import { pb } from "$lib/pocketbase";
   import { toast } from "svelte-sonner";
-  import { UrlList, NewUrlForm } from "$lib/components/ui/core";
+  import * as Avatar from "$lib/components/ui/avatar";
+  import { UrlList, NewUrlForm, Settings } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { CircleHelp, Search, X, Plus } from "lucide-svelte";
@@ -29,6 +30,7 @@
   } = $props();
   let showAddForm = $state(false);
   let searchQuery = $state("");
+  let openSettings = $state<boolean>(false);
   let searchInput: HTMLInputElement | undefined = undefined;
 
   let updatedUrls = $state<UrlsResponseWithTags[]>(data.urls);
@@ -315,6 +317,8 @@
             </kbd>
           {/if}
         </Button>
+
+        <Settings />
       </div>
     </div>
 
