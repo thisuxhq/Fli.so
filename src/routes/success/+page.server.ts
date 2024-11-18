@@ -1,8 +1,17 @@
 import type { PageServerLoad } from "./$types";
-// success_url: `${url.origin}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
 
-export const load: PageServerLoad = async ({ params }) => {
-  const { session_id } = params;
+export const load: PageServerLoad = async ({ url }) => {
+  const session_id = url.searchParams.get("session_id");
+
+  if (!session_id) {
+    return {
+      status: 400,
+      body: {
+        error: "session_id is required",
+      },
+    };
+  }
+
   return {
     session_id,
   };

@@ -26,7 +26,7 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
           quantity: 1,
         },
       ],
-      success_url: `${url.origin}?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${url.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${url.origin}/pricing`,
     });
 

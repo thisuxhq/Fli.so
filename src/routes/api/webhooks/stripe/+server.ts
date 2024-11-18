@@ -49,6 +49,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         console.log(`Retrieving subscription details from Stripe...`);
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string,
+          {
+            expand: ['items.data.price.product'],
+          }
         );
 
         console.log(`Creating subscription record in database...`);
@@ -57,8 +60,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
           customer_id: customer.id,
           stripe_subscription_id: subscription.id,
           stripe_price_id: subscription.items.data[0].price.id,
-          plan_name:
-            subscription.items.data[0].price.nickname || "Default Plan",
+          plan_name: subscription.items.data[0].price.product.name || 
+                     subscription.items.data[0].price.nickname || 
+                     "Default Plan",
           status: subscription.status,
           current_period_start: new Date(
             subscription.current_period_start * 1000,
@@ -76,23 +80,34 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         const subscription = event.data.object;
         console.log(`Processing subscription update: ${subscription.id}`);
 
-        console.log(`Looking up existing subscription record...`);
-        const existingSub = await locals.pb
-          .collection("subscriptions")
-          .getFirstListItem(`stripe_subscription_id="${subscription.id}"`);
+        try {
+          console.log(`Looking up existing subscription record...`);
+          const existingSub = await locals.pb
+            .collection("subscriptions")
+            .getFirstListItem(`stripe_subscription_id="${subscription.id}"`);
 
-        console.log(`Updating subscription record...`);
-        await locals.pb.collection("subscriptions").update(existingSub.id, {
-          status: subscription.status,
-          current_period_start: new Date(
-            subscription.current_period_start * 1000,
-          ).toISOString(),
-          current_period_end: new Date(
-            subscription.current_period_end * 1000,
-          ).toISOString(),
-          cancel_at_period_end: subscription.cancel_at_period_end,
-        });
-        console.log(`Subscription updated successfully`);
+          console.log(`Updating subscription record...`);
+          await locals.pb.collection("subscriptions").update(existingSub.id, {
+            status: subscription.status,
+            plan_name: subscription.items.data[0].price.product?.name || 
+                       subscription.items.data[0].price.nickname || 
+                       existingSub.plan_name,
+            current_period_start: new Date(
+              subscription.current_period_start * 1000,
+            ).toISOString(),
+            current_period_end: new Date(
+              subscription.current_period_end * 1000,
+            ).toISOString(),
+            cancel_at_period_end: subscription.cancel_at_period_end,
+          });
+        } catch (err) {
+          // Only log the error if subscription not found, don't create a new one
+          if (err.status === 404) {
+            console.log("Subscription not found for update - skipping");
+          } else {
+            throw err; // Re-throw if it's not a 404 error
+          }
+        }
         break;
       }
 
