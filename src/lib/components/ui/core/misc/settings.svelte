@@ -29,10 +29,12 @@
       <div class="text-sm text-muted-foreground">{email}</div>
     </div>
 
-    <DropdownMenu.Group class="flex gap-2 flex-col rounded-2xl bg-white p-2 text-base">
+    <DropdownMenu.Group
+      class="flex flex-col gap-2 rounded-2xl bg-white p-2 text-base"
+    >
       <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
         <Crown class="mr-2 size-5" />
-        <span class="text-base">Upgrade to Pro</span>
+        <a href="/pricing" class="text-base">Upgrade to Pro</a>
       </DropdownMenu.Item>
       <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
         <MessageCircle class="mr-2 size-5" />
@@ -43,10 +45,14 @@
         <span class="text-base">More from us</span>
       </DropdownMenu.Item>
 
-      <DropdownMenu.Item class="group hover:cursor-pointer">
-        <LogOut class="mr-2 size-5 group-hover:text-red-500" />
-        <span class="text-base group-hover:text-red-500">Logout</span>
-      </DropdownMenu.Item>
+      <form action="?/logout" method="post">
+        <DropdownMenu.Item class="group hover:cursor-pointer">
+          <LogOut class="mr-2 size-5 group-hover:text-red-500" />
+          <button type="submit" class="text-base group-hover:text-red-500">
+            Logout
+          </button>
+        </DropdownMenu.Item>
+      </form>
     </DropdownMenu.Group>
   </DropdownMenu.Content>
 </DropdownMenu.Root>
