@@ -143,15 +143,6 @@
       },
     },
     {
-      key: "c",
-      handler: (e) => {
-        if (!isInputFocused()) {
-          e.preventDefault();
-          showAddForm = !showAddForm;
-        }
-      },
-    },
-    {
       key: "n",
       handler: (e) => {
         if (!isInputFocused()) {
@@ -316,7 +307,7 @@
             <kbd
               class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
             >
-              C
+              N
             </kbd>
           {/if}
         </Button>

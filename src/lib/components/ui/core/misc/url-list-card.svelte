@@ -13,6 +13,7 @@
   import { initKeyboardShortcuts } from "$lib/keyboard";
   import { cn } from "$lib/utils";
   import { getTagStyles } from "$lib/utils";
+  import { toast } from "svelte-sonner";
 
   interface Props {
     url: UrlsResponseWithTags;
@@ -34,6 +35,13 @@
           handler: () => !showDeleteConfirm && (showDeleteConfirm = true),
         },
         { key: "Escape", handler: () => (showDeleteConfirm = false) },
+        {
+          key: "c",
+          handler: () =>
+            navigator.clipboard
+              .writeText(`${env.PUBLIC_APPLICATION_URL}/${url.slug}`)
+              .then(() => toast.success("Copied to clipboard")),
+        },
       ]);
     }
   });
@@ -74,7 +82,7 @@
     </div>
 
     <!-- Short URL -->
-    <div class="flex items-start justify-between gap-4 group/link">
+    <div class="group/link flex items-start justify-between gap-4">
       <a
         href={`${env.PUBLIC_APPLICATION_URL}/${url.slug}`}
         target="_blank"
@@ -115,7 +123,7 @@
               )}
               <span
                 class={cn(
-                  "inline-flex max-w-[150px] items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs first:ml-0 hover:z-10",
+                  "inline-flex max-w-[150px] items-center gap-1 rounded-full border-[0.5px] border-gray-200  px-2 py-0.5 text-xs first:ml-0 hover:z-10",
                   styles.text,
                 )}
               >
@@ -136,7 +144,7 @@
               )}
               <span
                 class={cn(
-                  "inline-flex max-w-[150px] items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs",
+                  "inline-flex max-w-[150px] items-center gap-1 rounded-full border-[0.5px] border-gray-200  px-2 py-0.5 text-xs",
                   styles.text,
                 )}
               >

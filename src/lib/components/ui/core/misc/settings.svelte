@@ -41,7 +41,11 @@
         <MessageCircle class="mr-2 size-5" />
         <span class="text-base">Feedback</span>
       </DropdownMenu.Item>
-      <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
+      <DropdownMenu.Item
+        class="hover:cursor-pointer hover:bg-white/10"
+        href="https://thisux.com?utm_source=blink"
+        target="_blank"
+      >
         <Gift class="mr-2 size-5" />
         <span class="text-base">More from us</span>
       </DropdownMenu.Item>
