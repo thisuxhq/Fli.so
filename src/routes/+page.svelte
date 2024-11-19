@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import { pb } from "$lib/pocketbase";
   import { toast } from "svelte-sonner";
-  import * as Avatar from "$lib/components/ui/avatar";
   import { UrlList, NewUrlForm, Settings } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
@@ -15,6 +14,7 @@
   import { type UrlSchema } from "$lib/schema/url";
   import type { Infer, SuperValidated } from "sveltekit-superforms";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
+  import { KeyboardShortcutsDialog } from "$lib/components/ui/core";
 
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
@@ -46,6 +46,9 @@
   // Add new state for deletion confirmation
   let deletingId = $state<string | null>(null);
 
+  // Add state for dialog
+  let showKeyboardShortcuts = $state(false);
+
   // Helper function to check if input is focused
   const isInputFocused = () => {
     const active = document.activeElement;
@@ -70,7 +73,7 @@
               method: "POST",
               body: JSON.stringify({ tags_ids: e.record.tags_id }),
             });
-            
+
             const data = await tags.json();
 
             // Update the urls with the new tags
@@ -351,16 +354,23 @@
       {searchQuery}
     />
 
-    <!-- Add a keyboard shortcuts help dialog -->
+    <!-- Update the help button -->
     <div class="fixed bottom-4 right-4">
       <Button
         variant="ghost"
         size="icon"
         class="rounded-full bg-white text-muted-foreground"
-        onclick={() => {}}
+        onclick={() => (showKeyboardShortcuts = true)}
       >
         <CircleHelp class="h-4 w-4" />
       </Button>
     </div>
+
+    <KeyboardShortcutsDialog
+      open={showKeyboardShortcuts}
+      onOpenChange={(open: boolean) => {
+        showKeyboardShortcuts = open;
+      }}
+    />
   </div>
 </div>
