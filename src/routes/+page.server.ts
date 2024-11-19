@@ -97,12 +97,17 @@ export const actions: Actions = {
 
       console.log("Tags id", form.data.tags);
 
+      console.log("Expiration", form.data.expiration);
+      console.log("Expiration URL", form.data.expiration_url);
+
       await locals.pb.collection("urls").create({
         url: form.data.url,
         slug: form.data.slug,
         clicks: 0,
         created_by: locals.user?.id,
         tags_id: form.data.tags,
+        expiration: form.data.expiration ? convertExpirationToDate(form.data.expiration) : null,
+        expiration_url: form.data.expiration_url ? form.data.expiration_url : null,
         ...(form.data.password_hash
           ? { password_hash: Buffer.from(digest).toString("hex") }
           : {}),
@@ -147,9 +152,9 @@ export const actions: Actions = {
 
     const formData = await request.formData();
     const data = Object.fromEntries(formData);
-    
+
     try {
-      const result = await locals.pb.collection('urls').update(data.id, {
+      const result = await locals.pb.collection("urls").update(data.id, {
         url: data.url,
         slug: data.slug,
         password_hash: data.password_hash,
@@ -158,9 +163,9 @@ export const actions: Actions = {
         tags: data.tags,
         meta_title: data.meta_title,
         meta_description: data.meta_description,
-        meta_image_url: data.meta_image_url
+        meta_image_url: data.meta_image_url,
       });
-      
+
       return { success: true, data: result };
     } catch (error) {
       return { success: false, error: error.message };

@@ -339,6 +339,7 @@
                 {...attrs}
                 type="text"
                 placeholder="Secondary-URL"
+                bind:value={$formData.expiration_url}
                 class="h-12 rounded-2xl bg-input/20"
                 on:keydown={(e) => {
                   if (e.key === "/") {
@@ -347,6 +348,7 @@
                 }}
               />
             </Form.Control>
+            <Form.FieldErrors />
           </Form.Field>
         </div>
 

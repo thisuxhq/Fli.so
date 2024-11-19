@@ -3,6 +3,7 @@ import type { PageServerLoad } from "./$types";
 import { HMAC } from "@oslojs/crypto/hmac";
 import { SHA256 } from "@oslojs/crypto/sha2";
 import { env } from "$env/dynamic/private";
+import type { UrlsResponse } from "$lib/types";
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
@@ -13,7 +14,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
   const url = await locals.pb
     .collection("urls")
-    .getFirstListItem(`slug = "${params.slug}"`);
+    .getFirstListItem<UrlsResponse>(`slug = "${params.slug}"`);
 
   if (!url) {
     throw error(404, "Not found");
@@ -23,6 +24,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   await locals.pb.collection("urls").update(url.id, {
     clicks: url.clicks + 1,
   });
+
+  // check if the url is expired
+  if (url.expiration && new Date(url.expiration) < new Date()) {
+    console.log("URL is expired, so redirecting to expiration_url");
+    throw redirect(302, url.expiration_url);
+  }
 
   // If URL has password, return data for password verification
   if (url.password_hash) {

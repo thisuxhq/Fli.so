@@ -50,8 +50,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string,
           {
-            expand: ['items.data.price.product'],
-          }
+            expand: ["items.data.price.product"],
+          },
         );
 
         console.log(`Creating subscription record in database...`);
@@ -60,9 +60,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
           customer_id: customer?.id,
           stripe_subscription_id: subscription.id,
           stripe_price_id: subscription.items.data[0].price.id,
-          plan_name: subscription.items.data[0].price.product?.name || 
-                     subscription.items.data[0].price.nickname || 
-                     "Default Plan",
+          plan_name:
+            subscription.items.data[0].price.product?.name ||
+            subscription.items.data[0].price.nickname ||
+            "Default Plan",
           status: subscription.status,
           current_period_start: new Date(
             subscription.current_period_start * 1000,
@@ -89,9 +90,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
           console.log(`Updating subscription record...`);
           await locals.pb.collection("subscriptions").update(existingSub.id, {
             status: subscription.status,
-            plan_name: subscription.items.data[0].price.product?.name || 
-                       subscription.items.data[0].price.nickname || 
-                       existingSub.plan_name,
+            plan_name:
+              subscription.items.data[0].price.product?.name ||
+              subscription.items.data[0].price.nickname ||
+              existingSub.plan_name,
             current_period_start: new Date(
               subscription.current_period_start * 1000,
             ).toISOString(),

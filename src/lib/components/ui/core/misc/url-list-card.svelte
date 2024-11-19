@@ -19,7 +19,6 @@
     url: UrlsResponseWithTags;
     onEdit: (url: UrlsResponseWithTags) => void;
     onDelete: (id: string) => void;
-    
   }
 
   let { url, onEdit, onDelete }: Props = $props();
