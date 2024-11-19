@@ -146,40 +146,24 @@ export const actions: Actions = {
     }
 
     const formData = await request.formData();
-    const id = formData.get("id") as string;
-    const url = formData.get("url") as string;
-    const slug = formData.get("slug") as string;
-    const created_by = formData.get("created_by") as string;
-    const tags = formData.getAll("tags") as string[];
-
-    if (!id || !url || !slug || !created_by) {
-      return fail(400, { message: "ID, URL, and slug are required" });
-    }
-
+    const data = Object.fromEntries(formData);
+    
     try {
-      await locals.pb.collection("urls").update(id, {
-        url,
-        slug,
-        created_by,
-        tags,
+      const result = await locals.pb.collection('urls').update(data.id, {
+        url: data.url,
+        slug: data.slug,
+        password_hash: data.password_hash,
+        expiration: data.expiration,
+        expiration_url: data.expiration_url,
+        tags: data.tags,
+        meta_title: data.meta_title,
+        meta_description: data.meta_description,
+        meta_image_url: data.meta_image_url
       });
-
-      // Fetch the updated record with expanded tags
-      const updatedRecord = await locals.pb.collection("urls").getOne(id, {
-        expand: "tags",
-      });
-
-      return {
-        type: "success",
-        status: 200,
-        message: "URL updated successfully",
-        data: updatedRecord,
-      };
+      
+      return { success: true, data: result };
     } catch (error) {
-      console.error("Failed to update URL:", error);
-      return fail(500, {
-        message: "Failed to update URL",
-      });
+      return { success: false, error: error.message };
     }
   },
 

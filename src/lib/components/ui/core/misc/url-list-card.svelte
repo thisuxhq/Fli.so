@@ -19,6 +19,7 @@
     url: UrlsResponseWithTags;
     onEdit: (url: UrlsResponseWithTags) => void;
     onDelete: (id: string) => void;
+    
   }
 
   let { url, onEdit, onDelete }: Props = $props();
@@ -49,6 +50,10 @@
   function handleDelete() {
     showDeleteConfirm = false;
     onDelete(url.id);
+  }
+
+  function handleEdit() {
+    // showEditForm = true;
   }
 </script>
 

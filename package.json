@@ -24,6 +24,7 @@
     "@sveltejs/adapter-auto": "^3.3.1",
     "@sveltejs/adapter-cloudflare": "^4.7.4",
     "@sveltejs/adapter-node": "^5.2.9",
+    "@sveltejs/adapter-vercel": "^5.4.7",
     "@sveltejs/kit": "^2.8.1",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
