@@ -3,6 +3,8 @@
   import { Input } from "$lib/components/ui/input";
   import { Eye, EyeOff, Lock } from "lucide-svelte";
   import { KbdShortcut } from "$lib/components/ui/core/misc";
+  import { enhance } from "$app/forms";
+  import { toast } from "svelte-sonner";
 
   interface PageData {
     url_id: string;
@@ -29,6 +31,22 @@
       method="POST"
       action="?/verify_password"
       class="flex flex-col gap-4 rounded-3xl bg-white p-4"
+      use:enhance={() => {
+        return async ({ result, update }) => {
+          if (result.type === "failure") {
+            if (result.status === 401) {
+              toast.error("Password is incorrect");
+              password = "";
+            } else if (result.status === 404) {
+              toast.error("URL not found");
+            } else {
+              toast.error("An error occurred");
+            }
+          }
+
+          update();
+        };
+      }}
     >
       <div class="relative">
         <Input
