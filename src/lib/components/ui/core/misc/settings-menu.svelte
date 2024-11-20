@@ -32,7 +32,7 @@
     >
       <DropdownMenu.Item
         class="text-base hover:cursor-pointer  hover:bg-white/10"
-        href="/pricing"
+        href="/billing"
       >
         <Crown class="mr-2 size-5" />
         Upgrade to Pro
