@@ -2,48 +2,22 @@
   import { Check, Loader2 } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import { toast } from "svelte-sonner";
-  import { Earth } from "lucide-svelte";
+  import * as Tabs from "$lib/components/ui/tabs";
+  import { KbdShortcut } from "$lib/components/ui/core/misc";
+  import type Stripe from "stripe";
 
-  interface Plan {
-    name: string;
-    price: number;
-    features: string[];
-    interval: string;
-    stripe_price_id: string;
+  interface PageData {
+    plans: Stripe.Price[];
+    tab: "monthly" | "yearly";
   }
 
-  let { data }: { data: { plans: Record<string, Plan> } } = $props();
+  let { data }: { data: PageData } = $props();
+
+  let currentTab = $state<"monthly" | "yearly">("monthly");
+
   let isLoading = $state<boolean>(false);
 
-  const benefits = [
-    "Shorten unlimited URLs",
-    "Track URL analytics",
-    "Customizable URLs",
-    "Easily manage your links",
-    "Bulk URL shortening",
-    "Integrates with popular platforms",
-    "Export shortened URLs",
-  ];
-
-  const features: Record<string, string[]> = {
-    "FLI PRO": [
-      "Up to 10 team members",
-      "Advanced analytics",
-      "Priority support",
-      "Custom integrations",
-      "API access",
-    ],
-    "FLI ENTERPRISE": [
-      "Unlimited team members",
-      "Enterprise analytics",
-      "24/7 dedicated support",
-      "Custom development",
-      "SLA guarantee",
-      "Advanced security",
-    ],
-  };
-
-  async function handleSubscribe(plan: Plan) {
+  async function handleSubscribe(plan: Stripe.Price) {
     try {
       isLoading = true;
 
@@ -53,7 +27,8 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          priceId: plan.stripe_price_id,
+          priceId: plan.id,
+          tab: currentTab,
         }),
       });
 
@@ -71,104 +46,97 @@
       isLoading = false;
     }
   }
+
+  function handleTabChange(value: "monthly" | "yearly") {
+    currentTab = value;
+  }
+
+  $effect(() => {
+    if (data.tab) {
+      currentTab = data.tab;
+    }
+  });
 </script>
 
-<div class="py-24 sm:py-32">
-  <div class="mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="mx-auto max-w-2xl sm:text-center">
-      <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
-        Simple, transparent pricing
-      </h2>
-      <p class="mt-6 text-lg leading-8 text-muted-foreground">
-        Choose the plan that's right for you
-      </p>
-    </div>
-    <div
-      class="mx-auto mt-16 grid max-w-lg grid-cols-1 gap-6 sm:mt-20 lg:max-w-4xl lg:grid-cols-2"
-    >
-      {#each Object.entries(data.plans) as [key, plan]}
+<div class="flex h-screen flex-col items-center justify-center p-4">
+  <Tabs.Root
+    value={currentTab}
+    class="mx-auto flex w-full  max-w-md flex-col items-center justify-center gap-4"
+    onValueChange={(e) => handleTabChange(e)}
+  >
+    <Tabs.List class="flex justify-center rounded-xl p-1">
+      <Tabs.Trigger value="monthly" class="rounded-xl">Monthly</Tabs.Trigger>
+      <Tabs.Trigger value="yearly" class="rounded-xl">Yearly</Tabs.Trigger>
+    </Tabs.List>
+    <Tabs.Content value="monthly" class="mx-auto w-full max-w-lg">
+      <div class="relative rounded-3xl bg-white p-6">
         <div
-          class="flex flex-col justify-between rounded-3xl bg-card p-8 ring-1 ring-gray-200 xl:p-10"
+          class="absolute -top-3 right-3 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white"
         >
-          <div>
-            <div class="flex items-center justify-between gap-x-4">
-              <h3 class="text-lg font-semibold leading-8">{plan.name}</h3>
-              {#if key === "FLI ENTERPRISE"}
-                <p
-                  class="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold leading-5 text-primary"
-                >
-                  Most popular
-                </p>
-              {/if}
-            </div>
-            <p class="mt-6 flex items-baseline gap-x-1">
-              <span class="text-4xl font-bold tracking-tight"
-                >${plan.price}</span
-              >
-              <span
-                class="text-sm font-semibold leading-6 text-muted-foreground"
-                >/{plan.interval}</span
-              >
-            </p>
-            <ul role="list" class="mt-8 space-y-3 text-sm leading-6">
-              {#each features[key] as feature}
-                <li class="flex gap-x-3">
-                  <Check class="h-6 w-5 flex-none text-primary" />
-                  <span>{feature}</span>
-                </li>
-              {/each}
-            </ul>
-          </div>
-          <Button
-            variant={key === "FLI ENTERPRISE" ? "default" : "outline"}
-            class="mt-8"
-            disabled={isLoading}
-            on:click={() => handleSubscribe(plan)}
-          >
-            {#if isLoading}
-              <Loader2 class="mr-2 h-4 w-4 animate-spin" />
-            {/if}
-            Get started
-          </Button>
+          Limited Offer
         </div>
-      {/each}
-    </div>
-  </div>
-</div>
-
-<div class="flex min-h-screen flex-col items-center justify-center p-4">
-  <div class="w-full max-w-md">
-    <div class="mb-8 flex justify-center">
-      <Earth class="size-10" />
-    </div>
-    <div class="relative rounded-3xl bg-white p-6">
-      <div
-        class="absolute -top-3 right-3 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white"
-      >
-        Limited Offer
-      </div>
-      <h2 class="mb-2 text-xl font-medium">Do it all</h2>
-      <h1 class="mb-4 text-3xl font-medium tracking-tight">
-        Only $9 for lifetime access
-      </h1>
-      <ul class="mb-6">
-        {#each benefits as item}
-          <li class="mb-1 flex items-center">
-            <Check class="mr-2 h-5 w-5 text-green-500" />
-            <span>{item}</span>
-          </li>
-        {/each}
-      </ul>
-      <Button class="w-full rounded-2xl"
-        >Ready to pay? <kbd
-          class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+        <h2 class="mb-2 text-xl font-medium">Do it all</h2>
+        <h1 class="mb-4 text-3xl font-medium tracking-tight">
+          {`Only $${data.plans[1].unit_amount! / 100} for monthly access`}
+        </h1>
+        <ul class="mb-6">
+          {#each JSON.parse(data.plans[1].metadata.features
+              .replace(/\n/g, "")
+              .trim()) as feature}
+            <li class="mb-1 flex items-center">
+              <Check class="mr-2 h-5 w-5 text-green-500" />
+              <span>{feature}</span>
+            </li>
+          {/each}
+        </ul>
+        <Button
+          class="w-full rounded-2xl"
+          on:click={() => handleSubscribe(data.plans[1])}
         >
-          P
-        </kbd>
-      </Button>
-      <p class="mt-4 text-center text-xs text-gray-500">
-        By clicking the button, you agree to our terms & conditions
-      </p>
-    </div>
-  </div>
+          Ready to pay? <kbd
+            class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+          >
+            P
+          </kbd>
+        </Button>
+        <p class="mt-4 text-center text-xs text-gray-500">
+          By clicking the button, you agree to our terms & conditions
+        </p>
+      </div>
+    </Tabs.Content>
+    <Tabs.Content value="yearly" class="mx-auto w-full max-w-lg">
+      <div class="relative rounded-3xl bg-white p-6">
+        <div
+          class="absolute -top-3 right-3 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white"
+        >
+          Limited Offer
+        </div>
+        <h2 class="mb-2 text-xl font-medium">Do it all</h2>
+        <h1 class="mb-4 text-3xl font-medium tracking-tight">
+          {`Only $${data.plans[0].unit_amount! / 100} for yearly access`}
+        </h1>
+        <ul class="mb-6">
+          {#each JSON.parse(data.plans[0].metadata.features) as feature}
+            <li class="mb-1 flex items-center">
+              <Check class="mr-2 h-5 w-5 text-green-500" />
+              <span>{feature}</span>
+            </li>
+          {/each}
+        </ul>
+        <Button
+          class="w-full rounded-2xl"
+          on:click={() => handleSubscribe(data.plans[0])}
+        >
+          {#if isLoading}
+            <Loader2 class="size-4 animate-spin" />
+          {/if}
+          Ready to pay?
+          <KbdShortcut shortcut="P" />
+        </Button>
+        <p class="mt-4 text-center text-xs text-gray-500">
+          By clicking the button, you agree to our terms & conditions
+        </p>
+      </div>
+    </Tabs.Content>
+  </Tabs.Root>
 </div>

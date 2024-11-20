@@ -9,7 +9,7 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
       throw redirect(303, "/login");
     }
 
-    const { priceId } = await request.json();
+    const { priceId, tab } = await request.json();
 
     if (!locals.user) {
       throw redirect(303, "/login");
@@ -18,6 +18,7 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
     // Get or create customer
     const customer = await createOrRetrieveStripeCustomer(locals.user);
 
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -29,8 +30,8 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
           quantity: 1,
         },
       ],
-      success_url: `${url.origin}/success?session_id={CHECKOUT_SESSION_ID}&token=${locals.pb.authStore.token}`,
-      cancel_url: `${url.origin}/pricing`,
+      success_url: `${url.origin}/success`,
+      cancel_url: `${url.origin}/pricing?tab=${tab}`,
       metadata: {
         user_id: locals.user.id,
       },
