@@ -1,6 +1,6 @@
 <script lang="ts">
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-  import * as Avatar from "$lib/components/ui/avatar";
+  import {Avatar, AvatarImage, AvatarFallback} from "$lib/components/ui/avatar";
   import { Crown, MessageCircle, Gift, LogOut } from "lucide-svelte";
 
   interface Props {
@@ -14,12 +14,12 @@
 
 <DropdownMenu.Root>
   <DropdownMenu.Trigger>
-    <Avatar.Root>
-      <Avatar.Image src={avatar} alt={name} />
-      <Avatar.Fallback class="bg-white text-black">
+    <Avatar>
+      <AvatarImage src={avatar} alt={name} />
+      <AvatarFallback class="bg-white text-black">
         {name.slice(0, 2)}
-      </Avatar.Fallback>
-    </Avatar.Root>
+      </AvatarFallback>
+    </Avatar>
   </DropdownMenu.Trigger>
   <DropdownMenu.Content class="w-[240px] bg-input-foreground">
     <div class="px-2 py-2.5 text-base">
