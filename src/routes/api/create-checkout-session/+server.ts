@@ -31,7 +31,7 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
         },
       ],
       success_url: `${url.origin}/success`,
-      cancel_url: `${url.origin}/pricing?tab=${tab}`,
+      cancel_url: `${url.origin}/billing?tab=${tab}`,
       metadata: {
         user_id: locals.user.id,
       },
