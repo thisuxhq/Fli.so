@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { pb } from "$lib/pocketbase";
   import { toast } from "svelte-sonner";
-  import { UrlList, NewUrlForm, Settings } from "$lib/components/ui/core";
+  import { UrlList, NewUrlForm, SettingsMenu } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { CircleHelp, Search, X, Plus } from "lucide-svelte";
@@ -312,7 +312,7 @@
           {/if}
         </Button>
 
-        <Settings
+        <SettingsMenu
           name={data.user.name}
           email={data.user.email}
           avatar={data.user.avatar}

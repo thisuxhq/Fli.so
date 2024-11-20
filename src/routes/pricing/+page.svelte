@@ -95,7 +95,12 @@
           class="w-full rounded-2xl"
           on:click={() => handleSubscribe(data.plans[1])}
         >
-          Ready to pay? <kbd
+          {#if isLoading}
+            <Loader2 class="mr-2 size-4 animate-spin" />
+          {/if}
+
+          Ready to pay?
+          <kbd
             class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
           >
             P
@@ -107,7 +112,9 @@
       </div>
     </Tabs.Content>
     <Tabs.Content value="yearly" class="mx-auto w-full max-w-lg">
-      <div class="relative rounded-3xl bg-white/80 p-6 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50">
+      <div
+        class="relative rounded-3xl bg-white/80 p-6 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
+      >
         <div
           class="absolute -top-3 right-3 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white"
         >
@@ -130,7 +137,7 @@
           on:click={() => handleSubscribe(data.plans[0])}
         >
           {#if isLoading}
-            <Loader2 class="size-4 animate-spin" />
+            <Loader2 class="mr-2 size-4 animate-spin" />
           {/if}
           Ready to pay?
           <KbdShortcut shortcut="P" />
