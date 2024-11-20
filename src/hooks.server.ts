@@ -8,7 +8,6 @@ export const handle: Handle = async ({ event, resolve }) => {
   event.locals.pb = createInstance();
   const cookie = event.request.headers.get("cookie") || "";
   event.locals.pb.authStore.loadFromCookie(cookie);
-  event.locals.pb.autoCancellation(false);
 
   try {
     if (event.locals.pb.authStore.isValid) {
@@ -26,7 +25,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   const setCookie = event.locals.pb.authStore.exportToCookie({
     sameSite: "lax",
     secure: !dev,
-    httpOnly: true,
+    httpOnly: false,
     path: "/",
     maxAge: 7 * 24 * 60 * 60,
   });

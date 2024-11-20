@@ -54,11 +54,14 @@ export type PaymentMethodsRecord = {
 }
 
 export enum SubscriptionsStatusOptions {
-	"active" = "active",
-	"cancelled" = "cancelled",
-	"past_due" = "past_due",
-	"trialing" = "trialing",
 	"incomplete" = "incomplete",
+	"incomplete_expired" = "incomplete_expired",
+	"trialing" = "trialing",
+	"active" = "active",
+	"past_due" = "past_due",
+	"canceled" = "canceled",
+	"unpaid" = "unpaid",
+	"pause" = "pause",
 }
 export type SubscriptionsRecord = {
 	cancel_at_period_end?: boolean

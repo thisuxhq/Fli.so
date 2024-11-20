@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { pb } from "$lib/pocketbase";
   import { toast } from "svelte-sonner";
   import { UrlList, NewUrlForm, SettingsMenu } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
@@ -15,6 +14,7 @@
   import type { Infer, SuperValidated } from "sveltekit-superforms";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
   import { KeyboardShortcutsDialog } from "$lib/components/ui/core";
+  import { pbClient } from "../hooks.client";
 
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
@@ -59,76 +59,91 @@
   };
 
   // Move keyboard shortcuts setup into onMount
-  onMount(() => {
+  onMount(async () => {
     try {
-      // Setup realtime subscription
-      pb.collection("urls").subscribe("*", async (e) => {
-        switch (e.action) {
-          case "create": {
-            console.log("create", e.record);
-            updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls];
+      // Use the singleton pb instance for realtime
+      pbClient.authStore.loadFromCookie(document.cookie); //get cookie pb_auth
+      pbClient.authStore.onChange(() => {
+        document.cookie = pbClient.authStore.exportToCookie({
+          httpOnly: false,
+        });
+      });
 
-            // Fetch the tags from the server
-            const tags = await fetch("/api/tags", {
-              method: "POST",
-              body: JSON.stringify({ tags_ids: e.record.tags_id }),
-            });
-
-            const data = await tags.json();
-
-            // Update the urls with the new tags
-            updatedUrls = updatedUrls.map((url) =>
-              url.id === e.record.id
-                ? { ...url, expand: { tags_id: data } }
-                : url,
-            );
-
-            break;
-          }
-          case "update": {
-            console.log("update", e.record);
-            // First update the basic URL data
-            updatedUrls = updatedUrls.map((url) =>
-              url.id === e.record.id ? { ...url, ...e.record } : url,
-            );
-
-            console.log("tags_id", e.record.tags_id);
-
-            // Only fetch tags if they exist
-            if (e.record.tags_id?.length) {
-              const tags = await fetch("/api/tags", {
-                method: "POST",
-                body: JSON.stringify({ tags_ids: e.record.tags_id }),
-              });
-
-              const data = await tags.json();
-
-              console.log("tags response", data);
-
-              // Update with tags
-              updatedUrls = updatedUrls.map((url) =>
-                url.id === e.record.id
-                  ? { ...url, tags: e.record.tags, expand: { tags_id: data } }
-                  : url,
-              );
+      await pbClient.collection("urls").subscribe("*", async (e) => {
+        try {
+          switch (e.action) {
+            case "create": {
+              updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls];
+              if (e.record.tags_id?.length) {
+                const tags = await fetch("/api/tags", {
+                  method: "POST",
+                  body: JSON.stringify({ tags_ids: e.record.tags_id }),
+                });
+                const data = await tags.json();
+                updatedUrls = updatedUrls.map((url) =>
+                  url.id === e.record.id
+                    ? { ...url, expand: { tags_id: data } }
+                    : url,
+                );
+              }
+              break;
             }
-            break;
+            case "update": {
+              console.log("[UPDATE] Processing update event");
+              console.log("[UPDATE] Current updatedUrls:", updatedUrls);
+              // First update the basic URL data
+              updatedUrls = updatedUrls.map((url) =>
+                url.id === e.record.id ? { ...url, ...e.record } : url,
+              );
+              console.log("[UPDATE] Updated basic URL data:", updatedUrls);
+
+              console.log("[UPDATE] Tags_id from record:", e.record.tags_id);
+
+              // Only fetch tags if they exist
+              if (e.record.tags_id?.length) {
+                console.log(
+                  "[UPDATE] Fetching tags for record:",
+                  e.record.tags_id,
+                );
+                const tags = await fetch("/api/tags", {
+                  method: "POST",
+                  body: JSON.stringify({ tags_ids: e.record.tags_id }),
+                });
+
+                const data = await tags.json();
+                console.log("[UPDATE] Received tags data:", data);
+
+                // Update with tags
+                updatedUrls = updatedUrls.map((url) =>
+                  url.id === e.record.id
+                    ? { ...url, tags: e.record.tags, expand: { tags_id: data } }
+                    : url,
+                );
+                console.log("[UPDATE] Final updatedUrls state:", updatedUrls);
+              }
+              break;
+            }
+            case "delete":
+              console.log(
+                "[DELETE] Processing delete event for record:",
+                e.record.id,
+              );
+              console.log("[DELETE] Current updatedUrls:", updatedUrls);
+              updatedUrls = updatedUrls.filter((url) => url.id !== e.record.id);
+              console.log(
+                "[DELETE] Final updatedUrls state after deletion:",
+                updatedUrls,
+              );
+              break;
           }
-          case "delete":
-            console.log("delete", e.record);
-            updatedUrls = updatedUrls.filter((url) => url.id !== e.record.id);
-            break;
+        } catch (error) {
+          console.error("Error processing realtime event:", error);
         }
       });
     } catch (error) {
       console.error("Failed to setup realtime subscription:", error);
       toast.error("Failed to setup realtime subscription");
     }
-
-    // Cleanup both event listeners
-    return () => {
-      pb.collection("urls").unsubscribe();
-    };
   });
 
   // Shortcuts
@@ -341,7 +356,9 @@
         handleDelete(id);
       }}
       showAddForm={true}
-      setShowAddForm={() => {}}
+      setShowAddForm={(show: boolean) => {
+        showAddForm = show;
+      }}
       {searchQuery}
     />
 

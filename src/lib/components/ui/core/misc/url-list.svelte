@@ -3,6 +3,8 @@
   import { quintOut } from "svelte/easing";
   import { Plus } from "lucide-svelte";
   import type { TagsResponse, UrlsResponseWithTags } from "$lib/types";
+  import { Button } from "$lib/components/ui/button";
+  import { KbdShortcut } from "$lib/components/ui/core/misc";
   import {
     UrlListCard,
     UrlEmptyState,
@@ -18,7 +20,7 @@
     searchQuery: string;
   }
 
-  let { urls, onEdit, onDelete, searchQuery, showAddForm }: Props = $props();
+  let { urls, onEdit, onDelete, searchQuery, setShowAddForm }: Props = $props();
 
   let filteredUrls = $derived(
     urls.filter((url) => {
@@ -49,29 +51,26 @@
       out:fade|local={{ duration: 150 }}
     >
       <div
-        class="mx-auto flex w-full max-w-sm flex-col items-center justify-center"
+        class="mx-auto flex w-full max-w-sm flex-col items-center justify-center gap-6"
       >
-        <UrlEmptyState />
+        <div class="flex flex-col items-center justify-center gap-1">
+          <UrlEmptyState />
 
-        <h3 class="mt-4 text-lg font-medium text-slate-900 dark:text-slate-100">
-          Hmmm... Seems like you don't have any links. Let's create one!
-        </h3>
+          <h3
+            class="mt-4 text-lg font-medium text-slate-900 dark:text-slate-100"
+          >
+            Hmmm... Seems like you don't have any links. Let's create one!
+          </h3>
+        </div>
 
-        <button
-          class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-gray-800 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100"
-          onclick={() => (showAddForm = true)}
-        >
+        <Button class="rounded-2xl" onclick={() => setShowAddForm(true)}>
           <span class="flex flex-row items-center justify-center gap-2">
             <Plus class="size-5" />
 
             New link</span
           >
-          <kbd
-            class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm dark:bg-black/20 sm:inline-block"
-          >
-            C
-          </kbd>
-        </button>
+          <KbdShortcut shortcut="N" />
+        </Button>
       </div>
     </div>
   {:else if filteredUrls.length > 0}
