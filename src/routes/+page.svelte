@@ -272,7 +272,7 @@
 >
   <div class="mx-auto w-full p-6">
     <!-- Header -->
-    <div class="mb-12 flex items-center justify-between">
+    <div class="mb-4 flex items-center justify-between">
       <div>
         <h1
           class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
@@ -281,7 +281,7 @@
         </h1>
       </div>
 
-      <div class="relative">
+      <div class="relative hidden md:block">
         <Input
           type="text"
           bind:this={searchInput}
@@ -344,6 +344,21 @@
       }}
       tags={data.tags}
     />
+
+    <!-- search input -->
+    <div class="relative mb-4 block md:hidden">
+      <Input
+        type="text"
+        bind:this={searchInput}
+        bind:value={searchQuery}
+        placeholder="Search URLs by URL, slug, or tag"
+        class="w-full rounded-full bg-input-foreground py-3 pl-9 pr-4 text-sm backdrop-blur-sm placeholder:text-muted-foreground"
+      />
+
+      <Search
+        class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-muted-foreground"
+      />
+    </div>
 
     <UrlList
       urls={updatedUrls}
