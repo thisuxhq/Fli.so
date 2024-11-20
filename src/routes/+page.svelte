@@ -349,7 +349,7 @@
     <div class="relative mb-4 block md:hidden">
       <Input
         type="text"
-        bind:this={searchInput}
+        bind:this={searchInput!}
         bind:value={searchQuery}
         placeholder="Search URLs by URL, slug, or tag"
         class="w-full rounded-full bg-input-foreground py-3 pl-9 pr-4 text-sm backdrop-blur-sm placeholder:text-muted-foreground"
