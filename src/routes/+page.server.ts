@@ -6,9 +6,7 @@ import type { UrlsResponseWithTags, TagsResponse } from "$lib/types";
 import { superValidate } from "sveltekit-superforms";
 import { urlSchema } from "$lib/schema/url";
 import { zod } from "sveltekit-superforms/adapters";
-import { HMAC } from "@oslojs/crypto/hmac";
-import { SHA256 } from "@oslojs/crypto/sha2";
-import { convertExpirationToDate } from "$lib/utils/index";
+import { convertExpirationToDate, hashPassword } from "$lib/utils/index";
 import { env } from "$env/dynamic/private";
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
@@ -19,7 +17,6 @@ export const load: PageServerLoad = async ({ locals }) => {
   }
 
   try {
-    // Fetch URLs and tags from server
     const [urls, tags] = await Promise.all([
       locals.pb.collection("urls").getFullList<UrlsResponseWithTags[]>({
         expand: "tags_id",
@@ -31,8 +28,6 @@ export const load: PageServerLoad = async ({ locals }) => {
       }),
     ]);
 
-    console.log("tags", tags);
-
     return {
       urls: urls,
       tags: tags,
@@ -40,7 +35,6 @@ export const load: PageServerLoad = async ({ locals }) => {
       form: await superValidate(zod(urlSchema)),
     };
   } catch (error) {
-    console.error("Failed to fetch URLs and tags:", error);
     return {
       error: "Failed to fetch URLs and tags",
     };
@@ -55,50 +49,27 @@ export const actions: Actions = {
 
     const form = await superValidate(request, zod(urlSchema));
 
-    console.log("Form data for URL shortening:", form.data);
-
-    // If no custom slug provided, generate one
     if (!form.data.slug) {
       form.data.slug = generateSlug();
-      console.log("Generated slug for URL:", form.data.slug);
     }
 
-    // Validate slug format
     if (!/^[a-zA-Z0-9-]+$/.test(form.data.slug)) {
-      console.error("Slug format is invalid for URL shortening");
       return fail(400, {
         message: "Slug can only contain letters, numbers, and hyphens",
       });
     }
 
     try {
-      // Check if slug already exists
       const exists = await locals.pb
         .collection("urls")
         .getFirstListItem(`slug = "${form.data.slug}"`)
         .catch(() => null);
 
       if (exists) {
-        console.error("Slug already exists for URL shortening");
         return fail(400, {
           message: "This custom URL is already taken",
         });
       }
-
-      console.log(
-        "Creating HMAC with SHA256 and HASH_SECRET for password hashing",
-      );
-      const hasher = new HMAC(SHA256, new TextEncoder().encode(HASH_SECRET));
-      console.log("Updating HMAC with password hash for encryption");
-      hasher.update(new TextEncoder().encode(form.data.password_hash));
-      console.log("Generating digest for password hash encryption");
-      const digest = hasher.digest();
-      console.log("Digest:", Buffer.from(digest).toString("hex"));
-
-      console.log("Tags id", form.data.tags);
-
-      console.log("Expiration", form.data.expiration);
-      console.log("Expiration URL", form.data.expiration_url);
 
       await locals.pb.collection("urls").create({
         url: form.data.url,
@@ -106,10 +77,19 @@ export const actions: Actions = {
         clicks: 0,
         created_by: locals.user?.id,
         tags_id: form.data.tags,
-        expiration: form.data.expiration ? convertExpirationToDate(form.data.expiration) : null,
-        expiration_url: form.data.expiration_url ? form.data.expiration_url : null,
+        expiration: form.data.expiration
+          ? convertExpirationToDate(form.data.expiration)
+          : null,
+        expiration_url: form.data.expiration_url
+          ? form.data.expiration_url
+          : null,
         ...(form.data.password_hash
-          ? { password_hash: Buffer.from(digest).toString("hex") }
+          ? {
+              password_hash: await hashPassword(
+                form.data.password_hash,
+                HASH_SECRET,
+              ),
+            }
           : {}),
         ...(form.data.expiration
           ? { expiration: convertExpirationToDate(form.data.expiration) }
@@ -126,10 +106,6 @@ export const actions: Actions = {
           : {}),
       });
 
-      console.log(
-        "URL shortened successfully:",
-        `https://dun.sh/${form.data.slug}`,
-      );
       return {
         form,
         type: "success",
@@ -138,7 +114,6 @@ export const actions: Actions = {
         shortUrl: `https://dun.sh/${form.data.slug}`,
       };
     } catch (error) {
-      console.error("Failed to create shortened URL:", error);
       return fail(500, {
         message: "Failed to create shortened URL: " + error,
       });
@@ -185,13 +160,11 @@ export const actions: Actions = {
       return fail(400, { message: "ID is required" });
     }
 
-    // check if the user is the owner of the URL
     const url = await locals.pb.collection("urls").getOne(id);
     if (url.created_by !== created_by) {
       return fail(403, { message: "You are not the owner of this URL" });
     }
 
-    // delete the URL
     await locals.pb.collection("urls").delete(id);
 
     return {
@@ -201,7 +174,7 @@ export const actions: Actions = {
     };
   },
   logout: async ({ locals }) => {
-    await locals.pb.authStore.clear();
+    locals.pb.authStore.clear();
     throw redirect(302, "/login");
   },
 
@@ -216,7 +189,6 @@ export const actions: Actions = {
     const created_by = formData.get("created_by") as string;
 
     if (!name || !color) {
-      console.error("Missing required fields for creating a tag");
       return fail(400, { message: "Name and color are required" });
     }
 
@@ -224,17 +196,15 @@ export const actions: Actions = {
       await locals.pb.collection("tags").create({
         name,
         color,
-        created_by: locals.user?.id,
+        created_by: created_by,
       });
 
-      console.log(`Tag created successfully: ${name}, ${color}, ${created_by}`);
       return {
         type: "success",
         status: 201,
         message: "Tag created successfully",
       };
     } catch (error) {
-      console.error(`Failed to create tag: ${error}`);
       return fail(500, {
         message: "Failed to create tag: " + error,
       });

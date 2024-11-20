@@ -15,7 +15,6 @@ export const load: PageServerLoad = async ({ url, locals }) => {
     const plans = await stripe.prices.list({
       product: env.STRIPE_PRODUCT_ID,
     });
-    console.log("plans", plans);
     return {
       plans: plans.data,
       tab,

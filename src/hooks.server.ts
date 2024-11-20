@@ -28,7 +28,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     secure: !dev,
     httpOnly: true,
     path: "/",
-    maxAge: 7 * 24 * 60 * 60
+    maxAge: 7 * 24 * 60 * 60,
   });
   response.headers.set("set-cookie", setCookie);
 
