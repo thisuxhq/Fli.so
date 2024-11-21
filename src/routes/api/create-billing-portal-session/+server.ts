@@ -2,6 +2,7 @@ import { json } from "@sveltejs/kit";
 import { stripe } from "$lib/server/stripe";
 import type { RequestHandler } from "./$types";
 import { redirect } from "@sveltejs/kit";
+import type { UsersResponse } from "$lib/types";
 import { createOrRetrieveStripeCustomer } from "$lib/server/stripe-utils";
 
 export const POST: RequestHandler = async ({ locals, url }) => {
@@ -11,7 +12,10 @@ export const POST: RequestHandler = async ({ locals, url }) => {
 
   try {
     // Get or create Stripe customer
-    const customer = await createOrRetrieveStripeCustomer(locals?.user);
+    const customer = await createOrRetrieveStripeCustomer(
+      locals?.user as UsersResponse,
+      locals.pb
+    );
 
     // Create Stripe billing portal session
     const session = await stripe.billingPortal.sessions.create({

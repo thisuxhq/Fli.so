@@ -13,11 +13,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 
   try {
+    // Authenticate as admin FIRST before any operations
+    await locals.pb.admins.authWithPassword(
+      env.POCKETBASE_ADMIN_EMAIL!,
+      env.POCKETBASE_ADMIN_PASSWORD!
+    );
+
     console.log("Constructing Stripe webhook event...");
     const event = stripe.webhooks.constructEvent(
       payload,
       signature,
-      env.STRIPE_WEBHOOK_SECRET!,
+      env.STRIPE_WEBHOOK_SECRET!
     );
 
     console.log(`Processing webhook event type: ${event.type}`);
@@ -27,7 +33,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         const session = event.data.object;
         console.log(`Processing completed checkout session: ${session.id}`);
 
-        // Get or create customer
+        if (!session.customer) {
+          console.log("No customer found in session - skipping");
+          break;
+        }
+
+        // Now we're authenticated as admin, this should work
         console.log(`Looking up customer with Stripe ID: ${session.customer}`);
         let customer = await locals.pb
           .collection("customers")

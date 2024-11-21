@@ -1,8 +1,8 @@
 import { stripe } from "./stripe";
-import { pb } from "$lib/pocketbase";
+import type { TypedPocketBase } from "$lib/types";
 import type { UsersResponse } from "$lib/types";
 
-export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
+export async function createOrRetrieveStripeCustomer(user: UsersResponse, pb: TypedPocketBase) {
   try {
     // Check if customer already exists in PocketBase
     const existingCustomer = await pb
@@ -14,8 +14,6 @@ export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
       return existingCustomer;
     }
 
-    console.info("Creating Stripe customer for user:", user);
-
     // Create new customer in Stripe
     const stripeCustomer = await stripe.customers.create({
       name: user.name,
@@ -25,7 +23,7 @@ export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
       },
     });
 
-    // Create customer record in PocketBase
+    // Create customer record in PocketBase using authenticated client
     const customer = await pb.collection("customers").create({
       user_id: user.id,
       stripe_customer_id: stripeCustomer.id,

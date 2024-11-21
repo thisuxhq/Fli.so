@@ -2,6 +2,7 @@ import { json, redirect } from "@sveltejs/kit";
 import { stripe } from "$lib/server/stripe";
 import type { RequestHandler } from "./$types";
 import { createOrRetrieveStripeCustomer } from "$lib/server/stripe-utils";
+import type { UsersResponse } from "$lib/types";
 
 export const POST: RequestHandler = async ({ request, url, locals }) => {
   try {
@@ -16,7 +17,10 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
     }
 
     // Get or create customer
-    const customer = await createOrRetrieveStripeCustomer(locals.user);
+    const customer = await createOrRetrieveStripeCustomer(
+      locals.user as UsersResponse,
+      locals.pb,
+    );
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
