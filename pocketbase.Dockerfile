@@ -1,35 +1,20 @@
-# pocketbase.Dockerfile
-FROM alpine:3 as downloader
+FROM alpine:latest
 
-ARG TARGETOS
-ARG TARGETARCH
-ARG TARGETVARIANT
-ARG VERSION=0.21.3
+ARG PB_VERSION=0.22.27
 
-ENV BUILDX_ARCH="${TARGETOS:-linux}_${TARGETARCH:-amd64}${TARGETVARIANT}"
+#RUN apk add --no-cache unzip ca-certificates
 
-RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${VERSION}/pocketbase_${VERSION}_${BUILDX_ARCH}.zip \
-    && unzip pocketbase_${VERSION}_${BUILDX_ARCH}.zip \
-    && chmod +x /pocketbase
+# download and unzip PocketBase
+ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
+RUN unzip /tmp/pb.zip -d /pb/
 
-FROM oven/bun:1-slim
+# uncomment to copy the local pb_migrations dir into the image
+COPY ./pb_migrations pocketbase/pb_migrations
 
-# Install required packages
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    wget \
-    && rm -rf /var/cache/apt/*
+# uncomment to copy the local pb_hooks dir into the image
+COPY ./pb_hooks pocketbase/pb_hooks
 
-WORKDIR /app
+EXPOSE 8080
 
-# Copy PocketBase binary
-COPY --from=downloader /pocketbase /usr/local/bin/pocketbase
-
-# Copy start script and set permissions
-COPY scripts/start-pocketbase.sh /app/start-pocketbase.sh
-RUN chmod +x /app/start-pocketbase.sh
-
-EXPOSE 8090
-
-# Use the start script as entrypoint
-ENTRYPOINT ["/app/start-pocketbase.sh"]
+# start PocketBase
+CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8080"]
