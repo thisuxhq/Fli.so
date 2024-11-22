@@ -1,28 +1,35 @@
-FROM alpine:latest
+# pocketbase.Dockerfile
+FROM alpine:3 as downloader
+
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG VERSION=0.21.3
+
+ENV BUILDX_ARCH="${TARGETOS:-linux}_${TARGETARCH:-amd64}${TARGETVARIANT}"
+
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${VERSION}/pocketbase_${VERSION}_${BUILDX_ARCH}.zip \
+    && unzip pocketbase_${VERSION}_${BUILDX_ARCH}.zip \
+    && chmod +x /pocketbase
+
+FROM oven/bun:1-slim
+
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    wget \
+    && rm -rf /var/cache/apt/*
 
 WORKDIR /app
 
-# Install required dependencies
-RUN apk add --no-cache \
-    ca-certificates \
-    unzip \
-    wget \
-    bash
+# Copy PocketBase binary
+COPY --from=downloader /pocketbase /usr/local/bin/pocketbase
 
-# Download and install PocketBase
-RUN wget https://github.com/pocketbase/pocketbase/releases/latest/download/pocketbase_linux_amd64.zip \
-    && unzip pocketbase_linux_amd64.zip \
-    && rm pocketbase_linux_amd64.zip \
-    && chmod +x /app/pocketbase
-
-# Create startup script
-COPY ./scripts/start-pocketbase.sh /app/start-pocketbase.sh
+# Copy start script and set permissions
+COPY scripts/start-pocketbase.sh /app/start-pocketbase.sh
 RUN chmod +x /app/start-pocketbase.sh
 
 EXPOSE 8090
 
-# Create directories for PocketBase data
-RUN mkdir -p /pb_data /pb_public /pb_hooks /pb_migrations
-
-# Use the startup script as entrypoint
+# Use the start script as entrypoint
 ENTRYPOINT ["/app/start-pocketbase.sh"]
