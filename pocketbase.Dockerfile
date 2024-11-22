@@ -12,7 +12,7 @@ RUN unzip /tmp/pb.zip -d /pb/
 COPY ./pb_migrations pocketbase/pb_migrations
 
 # uncomment to copy the local pb_hooks dir into the image
-COPY ./pb_hooks pocketbase/pb_hooks
+# COPY ./pb_hooks pocketbase/pb_hooks
 
 EXPOSE 8080
 
