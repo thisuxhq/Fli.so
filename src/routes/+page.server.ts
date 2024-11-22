@@ -121,29 +121,25 @@ export const actions: Actions = {
   },
 
   update: async ({ request, locals }) => {
-    if (!locals.pb.authStore.isValid) {
-      throw redirect(302, "/login");
-    }
-
     const formData = await request.formData();
-    const data = Object.fromEntries(formData);
-
+    const id = formData.get('id') as string;
+    
     try {
-      const result = await locals.pb.collection("urls").update(data.id, {
-        url: data.url,
-        slug: data.slug,
-        password_hash: data.password_hash,
-        expiration: data.expiration,
-        expiration_url: data.expiration_url,
-        tags: data.tags,
-        meta_title: data.meta_title,
-        meta_description: data.meta_description,
-        meta_image_url: data.meta_image_url,
+      const result = await locals.pb.collection('urls').update(id, {
+        url: formData.get('url'),
+        slug: formData.get('slug'),
+        tags: formData.getAll('tags'),
+        meta_title: formData.get('meta_title'),
+        meta_description: formData.get('meta_description'),
+        meta_image_url: formData.get('meta_image_url'),
       });
-
+      
       return { success: true, data: result };
     } catch (error) {
-      return { success: false, error: error.message };
+      return fail(400, { 
+        success: false, 
+        error: error.message 
+      });
     }
   },
 

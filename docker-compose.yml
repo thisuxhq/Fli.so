@@ -1,12 +1,11 @@
 version: "3.7"
 services:
   pocketbase:
-    image: ghcr.io/muchobien/pocketbase:latest
+    build:
+      context: .
+      dockerfile: pocketbase.Dockerfile
     container_name: pocketbase
     restart: unless-stopped
-    command:
-      - --encryptionEnv
-      - ENCRYPTION
     environment:
       ENCRYPTION: ${ENCRYPTION}
     ports:
@@ -15,6 +14,7 @@ services:
       - ./pocketbase/pb_data:/pb_data
       - ./pocketbase/pb_public:/pb_public
       - ./pocketbase/pb_hooks:/pb_hooks
+      - ./pocketbase/pb_migrations:/pb_migrations # Add migrations volume
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
       interval: 5s
@@ -22,29 +22,3 @@ services:
       retries: 5
     networks:
       - app-network
-
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "4173:4173"
-    environment:
-      PUBLIC_POCKETBASE_URL: ${PUBLIC_POCKETBASE_URL}
-      PUBLIC_APPLICATION_NAME: ${PUBLIC_APPLICATION_NAME}
-      PUBLIC_APPLICATION_URL: ${PUBLIC_APPLICATION_URL}
-    depends_on:
-      pocketbase:
-        condition: service_healthy
-    networks:
-      - app-network
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:4173 || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    restart: unless-stopped
-
-networks:
-  app-network:
-    driver: bridge
