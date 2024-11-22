@@ -1,19 +1,12 @@
-# app.Dockerfile
-FROM oven/bun:1 as builder
+FROM oven/bun:latest 
 
 WORKDIR /app
-COPY package.json bun.lockb ./
+COPY package*.json ./
 RUN bun install
 
 COPY . .
 RUN bun run build
 
-FROM oven/bun:1-slim as runner
-WORKDIR /app
+EXPOSE 4173
 
-COPY --from=builder /app/build build/
-COPY --from=builder /app/package.json ./
-RUN bun install --production
-
-EXPOSE 3000
-CMD ["bun", "build/index.js"]
+CMD ["bun", "run", "preview", "--host", "0.0.0.0"]

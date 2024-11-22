@@ -27,7 +27,7 @@ services:
       context: .
       dockerfile: app.Dockerfile
     ports:
-      - "3000:3000"
+      - "4173:4173"
     environment:
       - PUBLIC_POCKETBASE_URL=http://pocketbase:8090
     depends_on:
