@@ -11,12 +11,13 @@
   interface Props {
     tags: TagsResponse[];
     onSelect: (tags: string[]) => void;
+    selectedTags: string[];
   }
 
-  let { tags, onSelect }: Props = $props();
+  let { tags, onSelect, selectedTags }: Props = $props();
 
   let open = $state(false);
-  let selectedValues = $state<string[]>([]);
+  let selectedValues = $state<string[]>(selectedTags);
 
   let selectedLabels = $derived(
     tags

@@ -1,7 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
-  import { UrlList, NewUrlForm, SettingsMenu } from "$lib/components/ui/core";
+  import {
+    UrlList,
+    NewUrlForm,
+    SettingsMenu,
+    UrlEditForm,
+  } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { CircleHelp, Search, X, Plus } from "lucide-svelte";
@@ -48,6 +53,12 @@
 
   // Add state for dialog
   let showKeyboardShortcuts = $state(false);
+
+  // Add state for editing URL
+  let editingUrl = $state<UrlsResponseWithTags | null>(null);
+
+  // Add state for edit form
+  let showEditForm = $state(false);
 
   // Helper function to check if input is focused
   const isInputFocused = () => {
@@ -228,8 +239,9 @@
   });
 
   async function handleEdit(url: UrlsResponseWithTags) {
-    //TODO: Implement edit functionality
-    showAddForm = true;
+    editingUrl = url;
+    showEditForm = true;
+    console.log("Editing URL:", editingUrl);
   }
 
   async function handleDelete(id: string) {
@@ -335,16 +347,6 @@
       </div>
     </div>
 
-    <NewUrlForm
-      data={data.form}
-      show={showAddForm}
-      user_id={data.user.id}
-      onOpenChange={(open) => {
-        showAddForm = open;
-      }}
-      tags={data.tags}
-    />
-
     <!-- search input -->
     <div class="relative mb-4 block md:hidden">
       <Input
@@ -363,8 +365,6 @@
     <UrlList
       urls={updatedUrls}
       onEdit={(url: UrlsResponseWithTags) => {
-        showAddForm = true;
-        console.log("onEdit", url.url);
         handleEdit(url);
       }}
       onDelete={(id: string) => {
@@ -397,3 +397,22 @@
     />
   </div>
 </div>
+
+<NewUrlForm
+  data={data.form}
+  show={showAddForm}
+  user_id={data.user.id}
+  onOpenChange={(open) => {
+    showAddForm = open;
+  }}
+  tags={data.tags}
+/>
+
+<UrlEditForm
+  url={editingUrl}
+  show={showEditForm}
+  onOpenChange={(open) => {
+    showEditForm = open;
+  }}
+  tags={data.tags}
+/>

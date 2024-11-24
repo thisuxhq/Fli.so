@@ -369,7 +369,11 @@
           <Form.Field {form} name="tags">
             <Form.Control>
               <Form.Label class="text-muted-foreground">Tags</Form.Label>
-              <TagsSelector {tags} onSelect={handleTagsSelect} />
+              <TagsSelector
+                {tags}
+                onSelect={handleTagsSelect}
+                selectedTags={[]}
+              />
             </Form.Control>
             <Form.FieldErrors />
             <input type="hidden" bind:value={$formData.tags} name="tags" />
