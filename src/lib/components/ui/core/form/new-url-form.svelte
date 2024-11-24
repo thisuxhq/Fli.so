@@ -373,6 +373,12 @@
                 {tags}
                 onSelect={handleTagsSelect}
                 selectedTags={[]}
+                onRefreshTags={async () => {
+                  const response = await fetch('/api/tags');
+                  if (response.ok) {
+                    tags = await response.json();
+                  }
+                }}
               />
             </Form.Control>
             <Form.FieldErrors />

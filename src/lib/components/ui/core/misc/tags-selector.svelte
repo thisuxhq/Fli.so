@@ -7,14 +7,16 @@
   import { cn } from "$lib/utils";
   import type { TagsResponse } from "$lib/types";
   import { tick } from "svelte";
+  import { CreateTagDialog } from "$lib/components/ui/core/misc";
 
   interface Props {
     tags: TagsResponse[];
     onSelect: (tags: string[]) => void;
     selectedTags: string[];
+    onRefreshTags: () => void;
   }
 
-  let { tags, onSelect, selectedTags }: Props = $props();
+  let { tags, onSelect, selectedTags, onRefreshTags }: Props = $props();
 
   let open = $state(false);
   let selectedValues = $state<string[]>(selectedTags);
@@ -30,6 +32,9 @@
   );
 
   let selectedCount = $derived(selectedValues.length);
+
+  let showCreateTagDialog = $state(false);
+  let newTagName = $state("");
 
   function toggleValue(value: string) {
     const index = selectedValues.indexOf(value);
@@ -71,7 +76,21 @@
   <Popover.Content class="w-[200px] p-0">
     <Command.Root>
       <Command.Input placeholder="Search tags..." />
-      <Command.Empty>No tag found.</Command.Empty>
+      <Command.Empty>
+        <div class="flex flex-col items-center gap-2 p-4">
+          <p class="text-sm text-muted-foreground">No tag found.</p>
+          <Button
+            variant="outline"
+            class="w-full rounded-2xl"
+            onclick={() => {
+              newTagName = searchQuery;
+              showCreateTagDialog = true;
+            }}
+          >
+            Create "{searchQuery}"
+          </Button>
+        </div>
+      </Command.Empty>
       <Command.List>
         <Command.Group>
           {#each tags as tag}
@@ -99,3 +118,12 @@
     </Command.Root>
   </Popover.Content>
 </Popover.Root>
+
+<CreateTagDialog
+  open={showCreateTagDialog}
+  onOpenChange={(open) => showCreateTagDialog = open}
+  initialName={newTagName}
+  onSuccess={() => {
+    onRefreshTags();
+  }}
+/>

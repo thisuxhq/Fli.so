@@ -84,9 +84,12 @@
         try {
           switch (e.action) {
             case "create": {
-              updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls];
+              updatedUrls = updatedUrls = updatedUrls.map((url) =>
+                url.id === e.record.id ? { ...url, ...e.record } : url,
+              );
+
               if (e.record.tags_id?.length) {
-                const tags = await fetch("/api/tags", {
+                const tags = await fetch("/api/tags/by_ids", {
                   method: "POST",
                   body: JSON.stringify({ tags_ids: e.record.tags_id }),
                 });
@@ -116,7 +119,7 @@
                   "[UPDATE] Fetching tags for record:",
                   e.record.tags_id,
                 );
-                const tags = await fetch("/api/tags", {
+                const tags = await fetch("/api/tags/by_ids", {
                   method: "POST",
                   body: JSON.stringify({ tags_ids: e.record.tags_id }),
                 });
@@ -127,7 +130,7 @@
                 // Update with tags
                 updatedUrls = updatedUrls.map((url) =>
                   url.id === e.record.id
-                    ? { ...url, tags: e.record.tags, expand: { tags_id: data } }
+                    ? { ...url, expand: { tags_id: data } }
                     : url,
                 );
                 console.log("[UPDATE] Final updatedUrls state:", updatedUrls);

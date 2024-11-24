@@ -281,6 +281,12 @@
               {tags}
               onSelect={handleTagsSelect}
               selectedTags={url.tags_id}
+              onRefreshTags={async () => {
+                const response = await fetch('/api/tags');
+                if (response.ok) {
+                  tags = await response.json();
+                }
+              }}
             />
           </div>
 
