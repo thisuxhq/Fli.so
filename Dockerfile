@@ -1,18 +1,11 @@
-FROM oven/bun:latest AS builder
-
-WORKDIR /app
-
-COPY . .
-
-RUN bun i
-RUN bun run build
- 
 FROM oven/bun:latest
 
-COPY --from=builder /app/build .
+WORKDIR /app
+COPY package.json package.json
+RUN bun install
 
-EXPOSE 4173
+COPY . .
+RUN bun run build
 
-USER bun
-
-CMD ["bun", "run", "preview"]
+EXPOSE 3000
+CMD ["bun", "--bun", "build/index.js"]

@@ -1,36 +1,53 @@
-# docker-compose.yml
-version: '3.8'
+version: "3.8"
 
 services:
   pocketbase:
-    build:
-      context: .
-      dockerfile: pocketbase.Dockerfile
-      args:
-        VERSION: 0.22.27
+    image: ghcr.io/muchobien/pocketbase:0.22.27
+    container_name: pocketbase
+    restart: unless-stopped
     ports:
       - "8090:8090"
     volumes:
       - ./pocketbase/pb_data:/pb_data
       - ./pocketbase/pb_public:/pb_public
       - ./pocketbase/pb_hooks:/pb_hooks
-      - ./pocketbase/pb_migrations:/pb_migrations
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
+    networks:
+      - app_network
 
-  app:
+  sveltekit-app:
     build:
       context: .
-      dockerfile: app.Dockerfile
+      dockerfile: Dockerfile
+    container_name: sveltekit-app
     ports:
-      - "4173:4173"
-    environment:
-      - PUBLIC_POCKETBASE_URL=http://pocketbase:8090
+      - "3000:3000"
     depends_on:
-      pocketbase:
-        condition: service_healthy
-    restart: unless-stopped
+      - pocketbase
+    env_file:
+      - .env
+    environment:
+      - POCKETBASE_URL=${POCKETBASE_URL:-http://pocketbase:8090}
+      - PUBLIC_POCKETBASE_URL=${PUBLIC_POCKETBASE_URL:-http://localhost:8090}
+      - PUBLIC_APPLICATION_NAME=${PUBLIC_APPLICATION_NAME}
+      - PUBLIC_APPLICATION_URL=${PUBLIC_APPLICATION_URL}
+      - ENCRYPTION=${ENCRYPTION}
+      - POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL}
+      - POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD}
+      - METADATA_SCRAPER_URL=${METADATA_SCRAPER_URL}
+      - HASH_ALGORITHM=${HASH_ALGORITHM}
+      - HASH_KEY=${HASH_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_PRO_PRICE_ID=${STRIPE_PRO_PRICE_ID}
+      - STRIPE_ENTERPRISE_PRICE_ID=${STRIPE_ENTERPRISE_PRICE_ID}
+      - PUBLIC_SITE_URL=${PUBLIC_SITE_URL}
+      - STRIPE_PRODUCT_ID=${STRIPE_PRODUCT_ID}
+    networks:
+      - app_network
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+networks:
+  app_network:
+    driver: bridge

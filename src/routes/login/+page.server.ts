@@ -61,7 +61,7 @@ export const actions: Actions = {
       console.log("User created", user);
 
       console.log("Creating Stripe customer");
-      await createOrRetrieveStripeCustomer(user);
+      await createOrRetrieveStripeCustomer(user, locals.pb);
       console.log("Stripe customer created");
 
       console.log("Signed up", user);
