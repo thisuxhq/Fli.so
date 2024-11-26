@@ -15,6 +15,7 @@
   import { cn } from "$lib/utils";
   import { getTagStyles } from "$lib/utils";
   import { toast } from "svelte-sonner";
+  import type { TailwindColor } from "$lib/types/colors";
 
   interface Props {
     url: UrlsResponseWithTags;
@@ -78,7 +79,7 @@
           <div
             class="absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 shadow-sm dark:bg-slate-800"
           >
-            <Lock class="size-3.5 text-gray-500 group-hover:text-amber-500" />
+            <Lock class="size-3.5 text-gray-500 group-hover:text-amber-950" />
           </div>
         {/if}
       </div>
@@ -128,7 +129,7 @@
           >
             {#each url.expand.tags_id as tag}
               {@const styles = getTagStyles(
-                tag.color as keyof typeof tailwindColors,
+                tag.color as TailwindColor,
               )}
               <span
                 class={cn(
@@ -149,7 +150,7 @@
           >
             {#if url.expand.tags_id.length > 0}
               {@const styles = getTagStyles(
-                url.expand.tags_id[0].color as keyof typeof tailwindColors,
+                url.expand.tags_id[0].color as TailwindColor,
               )}
               <span
                 class={cn(
