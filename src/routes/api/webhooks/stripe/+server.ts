@@ -1,4 +1,4 @@
-import { stripe } from "$lib/server/stripe";
+import { stripeWorker } from "$lib/server/stripe";
 import { error, json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { env } from "$env/dynamic/private";
@@ -29,10 +29,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     }
 
     console.log("Constructing Stripe webhook event...");
-    const event = stripe.webhooks.constructEvent(
+    const event = stripeWorker.webhooks.constructEvent(
       payload,
       signature,
-      env.STRIPE_WEBHOOK_SECRET!
+      env.STRIPE_WEBHOOK_SECRET!,
     );
 
     console.log(`Processing webhook event type: ${event.type}`);
@@ -67,7 +67,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
         // Create subscription record
         console.log(`Retrieving subscription details from Stripe...`);
-        const subscription = await stripe.subscriptions.retrieve(
+        const subscription = await stripeWorker.subscriptions.retrieve(
           session.subscription as string,
           {
             expand: ["items.data.price.product"],
