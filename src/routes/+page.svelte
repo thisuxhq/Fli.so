@@ -114,33 +114,31 @@
               console.log("[UPDATE] Current updatedUrls:", updatedUrls);
               // First update the basic URL data
               updatedUrls = updatedUrls.map((url) =>
-                url.id === e.record.id ? { ...url, ...e.record } : url,
+                url.id === e.record.id 
+                  ? { 
+                      ...url, 
+                      ...e.record,
+                      // Clear tags if none exist
+                      expand: {
+                        tags_id: e.record.tags_id?.length ? url.expand?.tags_id : []
+                      }
+                    } 
+                  : url
               );
-              console.log("[UPDATE] Updated basic URL data:", updatedUrls);
-
-              console.log("[UPDATE] Tags_id from record:", e.record.tags_id);
 
               // Only fetch tags if they exist
               if (e.record.tags_id?.length) {
-                console.log(
-                  "[UPDATE] Fetching tags for record:",
-                  e.record.tags_id,
-                );
                 const tags = await fetch("/api/tags/by_ids", {
                   method: "POST",
                   body: JSON.stringify({ tags_ids: e.record.tags_id }),
                 });
-
                 const data = await tags.json();
-                console.log("[UPDATE] Received tags data:", data);
-
-                // Update with tags
+                
                 updatedUrls = updatedUrls.map((url) =>
                   url.id === e.record.id
                     ? { ...url, expand: { tags_id: data } }
-                    : url,
+                    : url
                 );
-                console.log("[UPDATE] Final updatedUrls state:", updatedUrls);
               }
               break;
             }
