@@ -5,7 +5,7 @@ import type { TypedPocketBase } from "./types";
 
 export function createInstance() {
   return new PocketBase(
-    dev ? "http://localhost:8090" : env.PUBLIC_POCKETBASE_URL,
+    dev ? "http://0.0.0.0:8090" : env.PUBLIC_POCKETBASE_URL,
   ) as TypedPocketBase;
 }
 
