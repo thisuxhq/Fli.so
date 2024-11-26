@@ -14,6 +14,7 @@
   import { TagsSelector } from "$lib/components/ui/core/misc";
   import type { TagsResponse, UrlsResponseWithTags } from "$lib/types";
   import { toast } from "svelte-sonner";
+  import { convertExpirationToDate, convertExpirationToHumanReadable } from "$lib/utils/datetime";
 
   type Tab = "edit" | "meta";
   let currentTab = $state<Tab>("edit");
@@ -28,10 +29,45 @@
 
   let { url, show = false, onOpenChange, tags }: Props = $props();
   let url_tags = $state<TagsResponse[]>(tags);
+  let rawExpirationInput = $state("");
+  let expirationDisplay = $state("");
 
   $effect(() => {
-    url_tags = tags;
+    if (url?.expiration) {
+      expirationDisplay = convertExpirationToHumanReadable(url.expiration);
+      rawExpirationInput = expirationDisplay;
+    }
   });
+
+  function handleExpirationInput(e: Event) {
+    // Just update the raw input without processing
+    rawExpirationInput = (e.target as HTMLInputElement).value;
+  }
+
+  function processExpiration() {
+    try {
+      if (url && rawExpirationInput) {
+        // Convert to ISO and store in url
+        url.expiration = convertExpirationToDate(rawExpirationInput);
+        // Update display
+        expirationDisplay = convertExpirationToHumanReadable(url.expiration);
+        rawExpirationInput = expirationDisplay;
+      }
+    } catch (error) {
+      console.error("Failed to parse date:", error);
+    }
+  }
+
+  function handleExpirationKeyDown(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      processExpiration();
+    }
+  }
+
+  function handleExpirationBlur() {
+    processExpiration();
+  }
 
   let errors = $state<Record<string, string>>({});
   let metaDataEnabled = $state(
@@ -250,11 +286,14 @@
                 </Tooltip.Root>
               </div>
               <Input
-              type="text"
-              name="expiration"
-                bind:value={url.expiration}
+                type="text"
+                name="expiration"
+                bind:value={rawExpirationInput}
                 placeholder="tomorrow at 5pm"
                 class="h-12 rounded-2xl bg-input/20"
+                on:input={handleExpirationInput}
+                on:keydown={handleExpirationKeyDown}
+                on:blur={handleExpirationBlur}
               />
             </div>
 

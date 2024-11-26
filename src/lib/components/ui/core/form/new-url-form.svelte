@@ -59,7 +59,7 @@
 
   const { form: formData, enhance } = form;
 
-  let longUrlInput: HTMLInputElement | null = null;
+  let longUrlInput = $state<HTMLInputElement | null>(null);
   let showPassword = $state(false);
   let metaDataEnabled = $state(false);
 
@@ -82,6 +82,10 @@
     const parsed = chrono.parseDate(input);
     if (parsed) {
       $formData.expiration = parsed.toISOString().slice(0, 16);
+      (e.target as HTMLInputElement).value = parsed.toLocaleString("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
     }
   }
 

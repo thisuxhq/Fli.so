@@ -4,6 +4,7 @@ import { HMAC } from "@oslojs/crypto/hmac";
 import { SHA256 } from "@oslojs/crypto/sha2";
 import { env } from "$env/dynamic/private";
 import type { UrlsResponse } from "$lib/types";
+import { arrayBufferToHex } from "$lib/utils/buffer";
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
@@ -72,7 +73,7 @@ export const actions: Actions = {
     }
 
     // Verify password hash matches
-    if (url.password_hash !== Buffer.from(digest).toString("hex")) {
+    if (url.password_hash !== arrayBufferToHex(digest.buffer as ArrayBuffer)) {
       console.log("Invalid password");
       return fail(401, { message: "Invalid password" });
     }
