@@ -1,6 +1,6 @@
 import { HMAC } from "@oslojs/crypto/hmac";
 import { SHA256 } from "@oslojs/crypto/sha2";
-import { Buffer } from "node:buffer";
+
 
 export async function hashPassword(password: string, secret: string): Promise<string> {
   const hasher: HMAC = new HMAC(SHA256, new TextEncoder().encode(secret));
