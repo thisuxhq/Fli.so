@@ -27,9 +27,15 @@
   }
 
   let { url, show = false, onOpenChange, tags }: Props = $props();
+  let url_tags = $state<TagsResponse[]>(tags);
+
+  $effect(() => {
+    url_tags = tags;
+  });
+
   let errors = $state<Record<string, string>>({});
   let metaDataEnabled = $state(
-    show || !!(url?.meta_title || url?.meta_description || url?.meta_image_url)
+    show || !!(url?.meta_title || url?.meta_description || url?.meta_image_url),
   );
 
   // window size
@@ -114,6 +120,7 @@
             </div>
             <Input
               id="url"
+              name="url"
               bind:value={url.url}
               type="url"
               required
@@ -149,6 +156,7 @@
                   {env.PUBLIC_APPLICATION_NAME}/
                 </span>
                 <Input
+                  name="slug"
                   id="slug"
                   bind:value={url.slug}
                   class="h-12 rounded-none border-none bg-input/20"
@@ -185,6 +193,7 @@
             </div>
             <div class="flex">
               <Input
+                name="password_hash"
                 type={showPassword ? "text" : "password"}
                 bind:value={url.password_hash}
                 placeholder="••••••••"
@@ -241,7 +250,8 @@
                 </Tooltip.Root>
               </div>
               <Input
-                type="text"
+              type="text"
+              name="expiration"
                 bind:value={url.expiration}
                 placeholder="tomorrow at 5pm"
                 class="h-12 rounded-2xl bg-input/20"
@@ -267,6 +277,7 @@
               </div>
               <Input
                 type="text"
+                name="expiration_url"
                 bind:value={url.expiration_url}
                 placeholder="Secondary-URL"
                 class="h-12 rounded-2xl bg-input/20"
@@ -282,10 +293,11 @@
               onSelect={handleTagsSelect}
               selectedTags={url.tags_id}
               onRefreshTags={async () => {
-                const response = await fetch('/api/tags');
-                if (response.ok) {
-                  tags = await response.json();
-                }
+                console.log("Refreshing tags");
+                const response = await fetch("/api/tags");
+                console.log("response from fetch", response);
+                url_tags = await response.json();
+                console.log("tags", url_tags);
               }}
             />
           </div>

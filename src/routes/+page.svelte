@@ -60,6 +60,9 @@
   // Add state for edit form
   let showEditForm = $state(false);
 
+  // Add these state variables at the top with other state declarations
+  let isAnyDialogOpen = $derived(showAddForm || showEditForm);
+
   // Helper function to check if input is focused
   const isInputFocused = () => {
     const active = document.activeElement;
@@ -84,21 +87,25 @@
         try {
           switch (e.action) {
             case "create": {
-              updatedUrls = updatedUrls = updatedUrls.map((url) =>
-                url.id === e.record.id ? { ...url, ...e.record } : url,
-              );
+              console.log("[CREATE] Processing create event");
+              updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls, ];
 
+              console.log("[CREATE] Tags_id from record:", e.record.tags_id);
+
+              // Only fetch tags if they exist
               if (e.record.tags_id?.length) {
                 const tags = await fetch("/api/tags/by_ids", {
                   method: "POST",
                   body: JSON.stringify({ tags_ids: e.record.tags_id }),
                 });
                 const data = await tags.json();
+                console.log("[CREATE] Received tags data:", data);
                 updatedUrls = updatedUrls.map((url) =>
                   url.id === e.record.id
                     ? { ...url, expand: { tags_id: data } }
                     : url,
                 );
+                console.log("[CREATE] Final updatedUrls state:", updatedUrls);
               }
               break;
             }
@@ -183,7 +190,7 @@
     {
       key: "/",
       handler: (e) => {
-        if (!showAddForm) {
+        if (!isAnyDialogOpen && !showAddForm) {
           console.log("/ pressed", {
             searchInput,
             activeElement: document.activeElement,

@@ -73,6 +73,7 @@ export const actions: Actions = {
 
     // Verify password hash matches
     if (url.password_hash !== Buffer.from(digest).toString("hex")) {
+      console.log("Invalid password");
       return fail(401, { message: "Invalid password" });
     }
 

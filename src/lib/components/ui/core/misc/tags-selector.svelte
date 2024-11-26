@@ -13,7 +13,7 @@
     tags: TagsResponse[];
     onSelect: (tags: string[]) => void;
     selectedTags: string[];
-    onRefreshTags: () => void;
+    onRefreshTags?: () => void;
   }
 
   let { tags, onSelect, selectedTags, onRefreshTags }: Props = $props();
@@ -31,6 +31,7 @@
     selectedLabels.length > 0 ? selectedLabels.join(", ") : "Choose tags...",
   );
 
+  let searchQuery = $state("");
   let selectedCount = $derived(selectedValues.length);
 
   let showCreateTagDialog = $state(false);
@@ -75,7 +76,7 @@
   </Popover.Trigger>
   <Popover.Content class="w-[200px] p-0">
     <Command.Root>
-      <Command.Input placeholder="Search tags..." />
+      <Command.Input placeholder="Search tags..." bind:value={searchQuery} />
       <Command.Empty>
         <div class="flex flex-col items-center gap-2 p-4">
           <p class="text-sm text-muted-foreground">No tag found.</p>
@@ -83,19 +84,22 @@
             variant="outline"
             class="w-full rounded-2xl"
             onclick={() => {
-              newTagName = searchQuery;
               showCreateTagDialog = true;
+              newTagName = searchQuery;
+              console.log("clicked new tag");
             }}
           >
-            Create "{searchQuery}"
+            <span class="truncate">+ Create "{searchQuery}" tag</span>
           </Button>
         </div>
       </Command.Empty>
       <Command.List>
         <Command.Group>
-          {#each tags as tag}
+          {#each tags.filter(tag => 
+            tag.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ) as tag}
             <Command.Item
-              value={tag.id}
+              value={tag.name}
               onSelect={() => {
                 toggleValue(tag.id);
                 if (selectedValues.length === 0) {
@@ -121,9 +125,10 @@
 
 <CreateTagDialog
   open={showCreateTagDialog}
-  onOpenChange={(open) => showCreateTagDialog = open}
+  onOpenChange={(open) => (showCreateTagDialog = open)}
   initialName={newTagName}
-  onSuccess={() => {
-    onRefreshTags();
+  onSuccess={(newTag) => {
+    tags = [...tags, newTag];
+    onRefreshTags?.();
   }}
 />

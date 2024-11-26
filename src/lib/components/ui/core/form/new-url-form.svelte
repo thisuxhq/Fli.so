@@ -40,6 +40,11 @@
 
   let currentTab = $state<Tab>("edit");
   let { data, user_id, show = false, onOpenChange, tags }: Props = $props();
+  let url_tags = $state<TagsResponse[]>(tags);
+
+  $effect(() => {
+    url_tags = tags;
+  });
 
   const form = superForm(data, {
     dataType: "json",
@@ -374,10 +379,11 @@
                 onSelect={handleTagsSelect}
                 selectedTags={[]}
                 onRefreshTags={async () => {
-                  const response = await fetch('/api/tags');
-                  if (response.ok) {
-                    tags = await response.json();
-                  }
+                  console.log("Refreshing tags");
+                  const response = await fetch("/api/tags");
+                  console.log("response from fetch", response);
+                  url_tags = await response.json();
+                  console.log("tags", url_tags);
                 }}
               />
             </Form.Control>
@@ -524,17 +530,22 @@
           onValueChange={(e) => {
             currentTab = e as Tab;
             // Scroll to top when switching tabs
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           class="mt-8 flex w-full flex-col items-center justify-center overflow-auto"
         >
-          <Tabs.List class="w-fit bg-input/20 rounded-2xl">
+          <Tabs.List class="w-fit rounded-2xl bg-input/20">
             <Tabs.Trigger value="edit" class="rounded-xl">Edit</Tabs.Trigger>
-            <Tabs.Trigger value="meta" class="rounded-xl">Meta data</Tabs.Trigger>
+            <Tabs.Trigger value="meta" class="rounded-xl"
+              >Meta data</Tabs.Trigger
+            >
           </Tabs.List>
 
           <!-- Edit Tab Content -->
-          <Tabs.Content value="edit" class="z-10 space-y-6 bg-input/20 rounded-t-3xl p-5">
+          <Tabs.Content
+            value="edit"
+            class="z-10 space-y-6 rounded-t-3xl bg-input/20 p-5"
+          >
             <form
               method="POST"
               action="?/shorten"

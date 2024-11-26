@@ -121,24 +121,68 @@ export const actions: Actions = {
   },
 
   update: async ({ request, locals }) => {
+    if (!locals.pb.authStore.isValid) {
+      throw redirect(302, "/login");
+    }
+
     const formData = await request.formData();
-    const id = formData.get('id') as string;
-    
-    try {
-      const result = await locals.pb.collection('urls').update(id, {
-        url: formData.get('url'),
-        slug: formData.get('slug'),
-        tags: formData.getAll('tags'),
-        meta_title: formData.get('meta_title'),
-        meta_description: formData.get('meta_description'),
-        meta_image_url: formData.get('meta_image_url'),
+    const id = formData.get("id") as string;
+    const slug = formData.get("slug") as string;
+    const password = formData.get("password_hash") as string;
+
+    if (!id) {
+      return fail(400, { message: "ID is required" });
+    }
+
+    if (!/^[a-zA-Z0-9-]+$/.test(slug)) {
+      return fail(400, {
+        message: "Slug can only contain letters, numbers, and hyphens",
       });
-      
-      return { success: true, data: result };
+    }
+
+    try {
+      const exists = await locals.pb
+        .collection("urls")
+        .getFirstListItem(`slug = "${slug}" && id != "${id}"`)
+        .catch(() => null);
+
+      if (exists) {
+        return fail(400, {
+          message: "This custom URL is already taken",
+        });
+      }
+
+      const updateData = {
+        url: formData.get("url"),
+        slug,
+        tags_id: formData.getAll("tags"),
+        meta_title: formData.get("meta_title"),
+        meta_description: formData.get("meta_description"),
+        meta_image_url: formData.get("meta_image_url"),
+        ...(password
+          ? {
+              password_hash: await hashPassword(password, HASH_SECRET),
+            }
+          : {}),
+        ...(formData.get("expiration")
+          ? { expiration: convertExpirationToDate(formData.get("expiration") as string) }
+          : {}),
+        ...(formData.get("expiration_url")
+          ? { expiration_url: formData.get("expiration_url") }
+          : {}),
+      };
+
+      const result = await locals.pb.collection("urls").update(id, updateData);
+
+      return { 
+        success: true, 
+        data: result,
+        message: "URL updated successfully" 
+      };
     } catch (error) {
-      return fail(400, { 
-        success: false, 
-        error: error.message 
+      return fail(400, {
+        success: false,
+        message: "Failed to update URL: " + error,
       });
     }
   },
@@ -174,7 +218,7 @@ export const actions: Actions = {
     throw redirect(302, "/login");
   },
 
-  createTag: async ({ request, locals }) => {
+  create_tag: async ({ request, locals }) => {
     if (!locals.pb.authStore.isValid) {
       throw redirect(302, "/login");
     }
@@ -182,7 +226,6 @@ export const actions: Actions = {
     const formData = await request.formData();
     const name = formData.get("name") as string;
     const color = formData.get("color") as string;
-    const created_by = formData.get("created_by") as string;
 
     if (!name || !color) {
       return fail(400, { message: "Name and color are required" });
@@ -192,7 +235,7 @@ export const actions: Actions = {
       await locals.pb.collection("tags").create({
         name,
         color,
-        created_by: created_by,
+        created_by: locals.user?.id,
       });
 
       return {
