@@ -13,11 +13,20 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   }
 
   try {
+    // Add logging before admin auth
+    console.log("Starting webhook processing...");
+    
     // Authenticate as admin FIRST before any operations
-    await locals.pb.admins.authWithPassword(
-      env.POCKETBASE_ADMIN_EMAIL!,
-      env.POCKETBASE_ADMIN_PASSWORD!
-    );
+    try {
+      await locals.pb.admins.authWithPassword(
+        env.POCKETBASE_ADMIN_EMAIL!,
+        env.POCKETBASE_ADMIN_PASSWORD!
+      );
+      console.log("Admin authentication successful");
+    } catch (authError) {
+      console.error("Admin authentication failed:", authError);
+      throw error(500, "Admin authentication failed");
+    }
 
     console.log("Constructing Stripe webhook event...");
     const event = stripe.webhooks.constructEvent(
@@ -53,7 +62,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
             user_id: session.client_reference_id,
             stripe_customer_id: session.customer,
           });
-          console.log(`Created new customer record with ID: ${customer.id}`);
+          console.log(`Created new customer record with ID: ${customer?.id}`);
         }
 
         // Create subscription record
@@ -168,7 +177,19 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     return json({ received: true });
   } catch (err) {
-    console.error("Error processing webhook:", err);
-    throw error(400, "Webhook error");
+    console.error("Error processing webhook:", {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+      status: err.status,
+      data: err.data
+    });
+    
+    // Return more specific error messages
+    if (err.type?.includes('StripeSignatureVerificationError')) {
+      throw error(400, "Invalid Stripe signature");
+    }
+    
+    throw error(500, `Webhook error: ${err.message}`);
   }
 };

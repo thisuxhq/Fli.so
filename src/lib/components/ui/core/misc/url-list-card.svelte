@@ -7,6 +7,7 @@
     ExternalLink,
     MousePointerClick,
     Earth,
+    Lock,
   } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
@@ -50,10 +51,6 @@
     showDeleteConfirm = false;
     onDelete(url.id);
   }
-
-  function handleEdit() {
-    // showEditForm = true;
-  }
 </script>
 
 <div
@@ -71,16 +68,24 @@
   <div class="space-y-3">
     <!-- URL Info -->
     <div class="flex items-center justify-between gap-2">
-      <div
-        class="group flex size-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors duration-200 group-hover:bg-amber-50 group-hover:text-amber-950"
-      >
-        <Earth class="size-5" />
+      <div class="relative">
+        <div
+          class="group flex size-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors duration-200 group-hover:bg-amber-50 group-hover:text-amber-950"
+        >
+          <Earth class="size-5" />
+        </div>
+        {#if url.password_hash}
+          <div
+            class="absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 shadow-sm dark:bg-slate-800"
+          >
+            <Lock class="size-3.5 text-gray-500 group-hover:text-amber-500" />
+          </div>
+        {/if}
       </div>
       <span
         class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
       >
         <MousePointerClick class="size-3" />
-
         {url.clicks} clicks
       </span>
     </div>
