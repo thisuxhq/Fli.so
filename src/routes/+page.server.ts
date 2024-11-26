@@ -9,6 +9,7 @@ import { zod } from "sveltekit-superforms/adapters";
 import { convertExpirationToDate, hashPassword } from "$lib/utils/index";
 import { env } from "$env/dynamic/private";
 
+
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
 export const load: PageServerLoad = async ({ locals }) => {
