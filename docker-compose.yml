@@ -13,6 +13,8 @@ services:
       - ./pocketbase/pb_hooks:/pb_hooks
     networks:
       - app_network
+    environment:
+      - ORIGIN=http://localhost:3000 # Allow CORS requests from SvelteKit during development
 
   sveltekit-app:
     build:
@@ -26,7 +28,7 @@ services:
     env_file:
       - .env
     environment:
-      - PUBLIC_POCKETBASE_URL=${PUBLIC_POCKETBASE_URL}
+      - PUBLIC_POCKETBASE_URL=http://pocketbase:8090 # Use Docker network service name
       - PUBLIC_APPLICATION_NAME=${PUBLIC_APPLICATION_NAME}
       - PUBLIC_APPLICATION_URL=${PUBLIC_APPLICATION_URL}
       - ENCRYPTION=${ENCRYPTION}
