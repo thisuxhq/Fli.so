@@ -11,8 +11,7 @@ FROM oven/bun:latest
 
 COPY --from=builder /app/build .
 
-ENV PORT 3000
-EXPOSE 3000
+EXPOSE 4173
 
 USER bun
 
