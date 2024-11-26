@@ -6,6 +6,7 @@ import { createInstance } from "$lib/pocketbase";
 
 export const handle: Handle = async ({ event, resolve }) => {
   event.locals.pb = createInstance();
+  event.locals.pb.autoCancellation(false);
   const cookie = event.request.headers.get("cookie") || "";
   event.locals.pb.authStore.loadFromCookie(cookie);
 

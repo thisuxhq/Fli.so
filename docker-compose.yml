@@ -26,8 +26,7 @@ services:
     env_file:
       - .env
     environment:
-      - POCKETBASE_URL=${POCKETBASE_URL:-http://pocketbase:8090}
-      - PUBLIC_POCKETBASE_URL=${PUBLIC_POCKETBASE_URL:-http://localhost:8090}
+      - PUBLIC_POCKETBASE_URL=${PUBLIC_POCKETBASE_URL}
       - PUBLIC_APPLICATION_NAME=${PUBLIC_APPLICATION_NAME}
       - PUBLIC_APPLICATION_URL=${PUBLIC_APPLICATION_URL}
       - ENCRYPTION=${ENCRYPTION}
@@ -42,6 +41,7 @@ services:
       - STRIPE_ENTERPRISE_PRICE_ID=${STRIPE_ENTERPRISE_PRICE_ID}
       - PUBLIC_SITE_URL=${PUBLIC_SITE_URL}
       - STRIPE_PRODUCT_ID=${STRIPE_PRODUCT_ID}
+      - ORIGIN=http://localhost:3000
     networks:
       - app_network
     volumes:

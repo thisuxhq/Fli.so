@@ -299,7 +299,7 @@
         <h1
           class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
         >
-          dun
+          fli.so
         </h1>
       </div>
 
