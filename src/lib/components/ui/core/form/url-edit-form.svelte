@@ -11,14 +11,19 @@
   import { Label } from "$lib/components/ui/label";
   import { Shuffle, Copy, Eye, EyeOff, AlertCircleIcon } from "lucide-svelte";
   import * as Tooltip from "$lib/components/ui/tooltip";
-  import { TagsSelector } from "$lib/components/ui/core/misc";
+  import { TagsSelector, QRCode } from "$lib/components/ui/core/misc";
   import type { TagsResponse, UrlsResponseWithTags } from "$lib/types";
   import { toast } from "svelte-sonner";
-  import { convertExpirationToDate, convertExpirationToHumanReadable } from "$lib/utils/datetime";
+  import {
+    convertExpirationToDate,
+    convertExpirationToHumanReadable,
+  } from "$lib/utils/datetime";
+  import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
 
   type Tab = "edit" | "meta";
   let currentTab = $state<Tab>("edit");
   let showPassword = $state(false);
+  let isSubmitting = $state(false);
 
   interface Props {
     url: UrlsResponseWithTags | null;
@@ -31,6 +36,10 @@
   let url_tags = $state<TagsResponse[]>(tags);
   let rawExpirationInput = $state("");
   let expirationDisplay = $state("");
+
+  let shortUrl = $derived(
+    url?.slug ? `${env.PUBLIC_APPLICATION_NAME}/${url.slug}` : "",
+  );
 
   $effect(() => {
     if (url?.expiration) {
@@ -121,6 +130,41 @@
   function handleTagsSelect(tags: string[]) {
     if (url) url.tags_id = tags;
   }
+
+  // Add keyboard shortcuts
+  const shortcuts: Shortcut[] = [
+    {
+      key: "Escape",
+      handler: (e) => {
+        if (show) {
+          e.preventDefault();
+          onOpenChange?.(false);
+        }
+      }
+    },
+    {
+      key: "Enter",
+      ctrl: true,
+      handler: async (e) => {
+        if (show && !isSubmitting) {
+          e.preventDefault();
+          isSubmitting = true;
+          try {
+            await handleSubmit(new Event('submit', { cancelable: true }));
+          } finally {
+            isSubmitting = false;
+          }
+        }
+      }
+    }
+  ];
+
+  // Add effect for keyboard shortcuts
+  $effect(() => {
+    if (show) {
+      return initKeyboardShortcuts(shortcuts);
+    }
+  });
 </script>
 
 {#if url && isDesktop}
@@ -367,13 +411,17 @@
         class="flex flex-col items-center justify-start rounded-r-3xl bg-preview p-8"
       >
         <h2 class="mb-4 text-lg text-amber-900">QR Code</h2>
-        <div
-          class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-preview-foreground"
-        >
-          <p class="text-balance text-center text-sm text-amber-900">
-            Need short link to generate QR
-          </p>
-        </div>
+        {#if shortUrl}
+          <QRCode url={shortUrl} size={200} />
+        {:else}
+          <div
+            class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-preview-foreground"
+          >
+            <p class="text-balance text-center text-sm text-amber-900">
+              Need short link to generate QR
+            </p>
+          </div>
+        {/if}
 
         <div class="flex w-full items-center justify-between">
           <span class="text-sm font-medium text-amber-900">Meta data</span>

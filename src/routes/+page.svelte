@@ -20,6 +20,7 @@
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
   import { KeyboardShortcutsDialog } from "$lib/components/ui/core";
   import { pbClient } from "../hooks.client";
+  import { tick } from "svelte";
 
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
@@ -36,13 +37,16 @@
   let showAddForm = $state(false);
   let searchQuery = $state("");
 
-  let searchInput: HTMLInputElement | undefined = undefined;
+  // State for the search input
+  let searchInput = $state<HTMLInputElement | null>(null);
 
+  // State for the URLs
   let updatedUrls = $state<UrlsResponseWithTags[]>(data.urls);
 
   // Reference for the long URL input
   let longUrlInput = $state<HTMLInputElement | null>(null);
 
+  // State for the hovered URL
   let hoveredUrl = $state<string | null>(null);
 
   // Modify the derived URLs to work with realtime updates
@@ -88,7 +92,7 @@
           switch (e.action) {
             case "create": {
               console.log("[CREATE] Processing create event");
-              updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls, ];
+              updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls];
 
               console.log("[CREATE] Tags_id from record:", e.record.tags_id);
 
@@ -114,16 +118,18 @@
               console.log("[UPDATE] Current updatedUrls:", updatedUrls);
               // First update the basic URL data
               updatedUrls = updatedUrls.map((url) =>
-                url.id === e.record.id 
-                  ? { 
-                      ...url, 
+                url.id === e.record.id
+                  ? {
+                      ...url,
                       ...e.record,
                       // Clear tags if none exist
                       expand: {
-                        tags_id: e.record.tags_id?.length ? url.expand?.tags_id : []
-                      }
-                    } 
-                  : url
+                        tags_id: e.record.tags_id?.length
+                          ? url.expand?.tags_id
+                          : [],
+                      },
+                    }
+                  : url,
               );
 
               // Only fetch tags if they exist
@@ -133,11 +139,11 @@
                   body: JSON.stringify({ tags_ids: e.record.tags_id }),
                 });
                 const data = await tags.json();
-                
+
                 updatedUrls = updatedUrls.map((url) =>
                   url.id === e.record.id
                     ? { ...url, expand: { tags_id: data } }
-                    : url
+                    : url,
                 );
               }
               break;
@@ -172,7 +178,11 @@
       handler: (e) => {
         if (isInputFocused()) {
           e.preventDefault();
-          searchInput?.blur();
+          // find the search input
+          const searchInput = document.getElementById("search-input");
+          if (searchInput) {
+            searchInput.blur();
+          }
         }
       },
     },
@@ -188,17 +198,15 @@
     {
       key: "/",
       handler: (e) => {
-        if (!isAnyDialogOpen && !showAddForm) {
-          console.log("/ pressed", {
-            searchInput,
-            activeElement: document.activeElement,
-          });
+        if (!isAnyDialogOpen && !showAddForm && !isInputFocused()) {
           e.preventDefault();
           e.stopPropagation();
-          if (!searchInput) return;
-          requestAnimationFrame(() => {
-            searchInput?.focus();
-          });
+
+          // find the search input
+          const searchInput = document.getElementById("search-input");
+          if (searchInput) {
+            searchInput.focus();
+          }
         }
       },
     },
@@ -303,9 +311,13 @@
 
       <div class="relative hidden md:block">
         <Input
+          id="search-input"
           type="text"
-          bind:this={searchInput}
+          bind:this={searchInput!}
           bind:value={searchQuery}
+          on:focus={() => {
+            console.log("focusing search input");
+          }}
           placeholder="Search URLs by URL, slug, or tag"
           class="w-full rounded-full bg-input-foreground py-3 pl-9 pr-16 text-sm backdrop-blur-sm placeholder:text-muted-foreground"
         />
@@ -358,8 +370,8 @@
     <!-- search input -->
     <div class="relative mb-4 block md:hidden">
       <Input
+        id="search-input"
         type="text"
-        bind:this={searchInput!}
         bind:value={searchQuery}
         placeholder="Search URLs by URL, slug, or tag"
         class="w-full rounded-full bg-input-foreground py-3 pl-9 pr-4 text-sm backdrop-blur-sm placeholder:text-muted-foreground"

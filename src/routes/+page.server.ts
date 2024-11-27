@@ -9,7 +9,6 @@ import { zod } from "sveltekit-superforms/adapters";
 import { convertExpirationToDate, hashPassword } from "$lib/utils/index";
 import { env } from "$env/dynamic/private";
 
-
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -166,7 +165,11 @@ export const actions: Actions = {
             }
           : {}),
         ...(formData.get("expiration")
-          ? { expiration: convertExpirationToDate(formData.get("expiration") as string) }
+          ? {
+              expiration: convertExpirationToDate(
+                formData.get("expiration") as string,
+              ),
+            }
           : {}),
         ...(formData.get("expiration_url")
           ? { expiration_url: formData.get("expiration_url") }
@@ -175,10 +178,10 @@ export const actions: Actions = {
 
       const result = await locals.pb.collection("urls").update(id, updateData);
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         data: result,
-        message: "URL updated successfully" 
+        message: "URL updated successfully",
       };
     } catch (error) {
       return fail(400, {

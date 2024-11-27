@@ -8,3 +8,4 @@ export { default as SettingsMenu } from "./settings-menu.svelte";
 export { default as TagsSelector } from "./tags-selector.svelte";
 export { default as KeyboardShortcutsDialog } from "./keyboard-shortcut-dialog.svelte";
 export { default as CreateTagDialog } from "./create-tag-dialog.svelte";
+export { default as QRCode } from "./qr-code.svelte";

@@ -7,6 +7,7 @@
   import type Stripe from "stripe";
   import type { SubscriptionsResponse } from "$lib/types";
   import { convertExpirationToHumanReadable } from "$lib/utils/datetime";
+  import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
 
   interface PageData {
     plans?: Stripe.Price[];
@@ -19,6 +20,42 @@
 
   let currentTab = $state<"monthly" | "yearly">("monthly");
   let isLoading = $state<boolean>(false);
+
+  // Add keyboard shortcuts
+  const shortcuts: Shortcut[] = [
+    {
+      key: "p",
+      handler: (e) => {
+        if (!isLoading && data.plans && !data.hasSubscription) {
+          e.preventDefault();
+          handleSubscribe(currentTab === "monthly" ? data.plans[1] : data.plans[0]);
+        }
+      }
+    },
+    {
+      key: "m",
+      handler: (e) => {
+        if (!isLoading && data.hasSubscription) {
+          e.preventDefault();
+          handleBillingPortal();
+        }
+      }
+    },
+    {
+      key: "Tab",
+      handler: (e) => {
+        if (!data.hasSubscription) {
+          e.preventDefault();
+          handleTabChange(currentTab === "monthly" ? "yearly" : "monthly");
+        }
+      }
+    }
+  ];
+
+  // Add effect for keyboard shortcuts
+  $effect(() => {
+    return initKeyboardShortcuts(shortcuts);
+  });
 
   async function handleSubscribe(plan: Stripe.Price) {
     try {

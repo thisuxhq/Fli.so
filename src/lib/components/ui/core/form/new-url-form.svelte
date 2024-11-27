@@ -14,7 +14,7 @@
   import { browser } from "$app/environment";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { scrapeMetadata } from "$lib/utils/index";
-  import { TagsSelector } from "$lib/components/ui/core/misc";
+  import { TagsSelector, QRCode } from "$lib/components/ui/core/misc";
   import { windowSize } from "$lib/window-size";
 
   import SuperDebug, {
@@ -27,6 +27,7 @@
   import * as chrono from "chrono-node";
   import { Label } from "$lib/components/ui/label";
   import type { TagsResponse } from "$lib/types";
+  import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
 
   interface Props {
     user_id: string;
@@ -41,6 +42,7 @@
   let currentTab = $state<Tab>("edit");
   let { data, user_id, show = false, onOpenChange, tags }: Props = $props();
   let url_tags = $state<TagsResponse[]>(tags);
+  let isSubmitting = $state(false);
 
   $effect(() => {
     url_tags = tags;
@@ -69,6 +71,10 @@
   // check if the window size is greater than 768px
   const isDesktop = $derived($size.width > 768);
 
+  // QR code
+  let shortUrl = $derived(
+    $formData.slug ? `${env.PUBLIC_APPLICATION_NAME}/${$formData.slug}` : "",
+  );
   // Focus input when form opens
   $effect(() => {
     if (show) {
@@ -131,6 +137,41 @@
   function handleTagsSelect(tags: string[]) {
     $formData.tags = tags;
   }
+
+  const shortcuts: Shortcut[] = [
+    {
+      key: "Escape",
+      handler: (e) => {
+        if (show) {
+          e.preventDefault();
+          onOpenChange?.(false);
+        }
+      }
+    },
+    {
+      key: "Enter",
+      ctrl: true,
+      handler: async (e) => {
+        if (show && !isSubmitting) {
+          e.preventDefault();
+          isSubmitting = true;
+          try {
+            await document.querySelector('form#new-url-form')?.dispatchEvent(
+              new Event('submit', { cancelable: true })
+            );
+          } finally {
+            isSubmitting = false;
+          }
+        }
+      }
+    }
+  ];
+
+  $effect(() => {
+    if (show) {
+      return initKeyboardShortcuts(shortcuts);
+    }
+  });
 </script>
 
 {#if isDesktop}
@@ -455,13 +496,17 @@
         class="flex flex-col items-center justify-start rounded-r-3xl bg-preview p-8"
       >
         <h2 class="mb-4 text-lg text-amber-900">QR Code</h2>
-        <div
-          class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-preview-foreground"
-        >
-          <p class="text-balance text-center text-sm text-amber-900">
-            Need short link to generate QR
-          </p>
-        </div>
+        {#if shortUrl}
+          <QRCode url={shortUrl} size={200} />
+        {:else}
+          <div
+            class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-preview-foreground"
+          >
+            <p class="text-balance text-center text-sm text-amber-900">
+              Need short link to generate QR
+            </p>
+          </div>
+        {/if}
         <div class="flex w-full items-center justify-between">
           <span class="text-sm font-medium text-amber-900">Meta data</span>
 
@@ -788,7 +833,11 @@
               <Form.Field {form} name="tags">
                 <Form.Control>
                   <Form.Label class="text-muted-foreground">Tags</Form.Label>
-                  <TagsSelector {tags} onSelect={handleTagsSelect} />
+                  <TagsSelector
+                    {tags}
+                    selectedTags={$formData.tags}
+                    onSelect={handleTagsSelect}
+                  />
                 </Form.Control>
                 <Form.FieldErrors />
                 <input type="hidden" bind:value={$formData.tags} name="tags" />
@@ -858,13 +907,17 @@
             class="flex h-screen w-full flex-col items-center justify-start rounded-t-3xl bg-preview p-3"
           >
             <h2 class="mb-4 text-lg text-amber-900">QR Code</h2>
-            <div
-              class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-preview-foreground"
-            >
-              <p class="text-balance text-center text-sm text-amber-900">
-                Need short link to generate QR
-              </p>
-            </div>
+            {#if shortUrl}
+              <QRCode url={shortUrl} size={200} />
+            {:else}
+              <div
+                class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-preview-foreground"
+              >
+                <p class="text-balance text-center text-sm text-amber-900">
+                  Need short link to generate QR
+                </p>
+              </div>
+            {/if}
             <div class="flex w-full items-center justify-between">
               <span class="text-sm font-medium text-amber-900">Meta data</span>
 

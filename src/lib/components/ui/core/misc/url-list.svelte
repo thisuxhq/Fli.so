@@ -29,7 +29,7 @@
       const urlMatch = url.url.toLowerCase().includes(searchLower);
       const slugMatch = url.slug.toLowerCase().includes(searchLower);
       // Check tags
-      const tagMatch = url.expand?.tags?.some((tag: TagsResponse) =>
+      const tagMatch = url.expand?.tags_id?.some((tag: TagsResponse) =>
         tag.name.toLowerCase().includes(searchLower),
       );
 
