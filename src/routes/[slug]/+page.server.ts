@@ -28,7 +28,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
   // Check if the url is expired and redirect to expiration URL if needed
   if (url.expiration && new Date(url.expiration) < new Date()) {
-    throw redirect(302, url.expiration_url);
+    if (url.expiration_url) {
+      throw redirect(302, url.expiration_url);
+    }
+    throw error(410, "This link has expired");
   }
 
   // If URL has password, return data for password verification
