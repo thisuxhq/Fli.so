@@ -8,6 +8,7 @@
     MousePointerClick,
     Earth,
     Lock,
+    Clock,
   } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
@@ -26,6 +27,7 @@
   let { url, onEdit, onDelete }: Props = $props();
   let hoveredUrl = $state<string | null>(null);
   let showDeleteConfirm = $state(false);
+  let isExpired = $derived(url.expiration && new Date(url.expiration) < new Date());
 
   // Handle keyboard shortcuts when card is hovered
   $effect(() => {
@@ -55,7 +57,10 @@
 </script>
 
 <div
-  class="group relative overflow-hidden rounded-3xl bg-white/80 p-4 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
+  class={cn(
+    "group relative overflow-hidden rounded-3xl bg-white/80 p-4 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50",
+    isExpired && "grayscale-[0.5] hover:grayscale-0"
+  )}
   in:fly|local={{ y: 10, duration: 200, delay: 50 }}
   out:fade|local={{ duration: 150 }}
   onmouseenter={() => (hoveredUrl = url.id)}
@@ -71,7 +76,10 @@
     <div class="flex items-center justify-between gap-2">
       <div class="relative">
         <div
-          class="group flex size-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors duration-200 group-hover:bg-amber-50 group-hover:text-amber-950"
+          class={cn(
+            "group flex size-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors duration-200 group-hover:bg-amber-50 group-hover:text-amber-950",
+            isExpired && "bg-gray-200 group-hover:bg-red-50 group-hover:text-red-950"
+          )}
         >
           <Earth class="size-5" />
         </div>
@@ -80,6 +88,13 @@
             class="absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 shadow-sm dark:bg-slate-800"
           >
             <Lock class="size-3.5 text-gray-500 group-hover:text-amber-950" />
+          </div>
+        {/if}
+        {#if isExpired}
+          <div
+            class="absolute -top-1 -right-1 rounded-full bg-red-100 p-1 shadow-sm dark:bg-red-900"
+          >
+            <Clock class="size-3.5 text-red-500 dark:text-red-300" />
           </div>
         {/if}
       </div>
@@ -96,9 +111,15 @@
       <a
         href={`${env.PUBLIC_APPLICATION_URL}/${url.slug}`}
         target="_blank"
-        class="group/link flex items-center gap-2 font-medium text-slate-900 group-hover/link:text-amber-600 dark:text-slate-100 dark:group-hover/link:text-gray-900"
+        class={cn(
+          "group/link flex items-center gap-2 font-medium text-slate-900 group-hover/link:text-amber-600 dark:text-slate-100 dark:group-hover/link:text-gray-900",
+          isExpired && "text-slate-500 group-hover/link:text-red-600 dark:text-slate-400 dark:group-hover/link:text-red-400"
+        )}
       >
         {env.PUBLIC_APPLICATION_NAME}/{url.slug}
+        {#if isExpired}
+          <span class="text-xs text-red-500 dark:text-red-400">(Expired)</span>
+        {/if}
 
         <ExternalLink
           class="h-4 w-4 opacity-0 transition-opacity group-hover/link:opacity-100"
