@@ -309,7 +309,7 @@
         </h1>
       </div>
 
-      <div class="relative hidden md:block mb-8">
+      <div class="relative hidden md:block">
         <Input
           id="search-input"
           type="text"
