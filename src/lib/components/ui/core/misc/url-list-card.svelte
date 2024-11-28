@@ -105,7 +105,7 @@
         {/if}
       </div>
       <span
-        class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+        class="inline-flex items-center gap-1 rounded-full bg-input/20 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
       >
         <MousePointerClick class="size-3" />
         {url.clicks} clicks
