@@ -42,12 +42,6 @@ export const load: PageServerLoad = async ({ params, locals, setHeaders }) => {
     };
   }
 
-  // Set cache headers for better performance
-  setHeaders({
-    "Cache-Control": "public, max-age=0, s-maxage=60",
-    "Content-Type": "text/html",
-  });
-
   // If URL has meta data, return for brief display
   if (url.meta_title || url.meta_description) {
     return {
