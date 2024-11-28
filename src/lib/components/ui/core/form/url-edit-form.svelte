@@ -34,16 +34,36 @@
   }
 
   let { url, show = false, onOpenChange, tags }: Props = $props();
+  
+  // Initialize localUrl as null
+  let localUrl = $state<UrlsResponseWithTags | null>(null);
+
+  // Update localUrl when url changes, with proper null checking
+  $effect(() => {
+    if (url) {
+      // Create a deep copy manually instead of using structuredClone
+      localUrl = {
+        ...url,
+        expand: url.expand ? {
+          tags_id: url.expand.tags_id ? [...url.expand.tags_id] : []
+        } : { tags_id: [] }
+      };
+    } else {
+      localUrl = null;
+    }
+  });
+
+  // Update all url references to localUrl with null checks
+  let shortUrl = $derived(
+    localUrl?.slug ? `${env.PUBLIC_APPLICATION_NAME}/${localUrl.slug}` : ""
+  );
+
   let url_tags = $state<TagsResponse[]>(tags);
   let rawExpirationInput = $state("");
   let expirationDisplay = $state("");
 
   let expiration_url = $state("");
   let expiration_date = $state("");
-
-  let shortUrl = $derived(
-    url?.slug ? `${env.PUBLIC_APPLICATION_NAME}/${url.slug}` : "",
-  );
 
   async function suggestSlug() {
     console.log("Generating slug");
@@ -120,7 +140,7 @@
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
 
-    if (!url?.id) return;
+    if (!localUrl?.id) return;
 
     try {
       const response = await fetch(`/api/url`, {
@@ -129,22 +149,22 @@
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id: url.id,
-          url: url.url,
-          slug: url.slug,
-          password_hash: url.password_hash || "",
+          id: localUrl.id,
+          url: localUrl.url,
+          slug: localUrl.slug,
+          password_hash: localUrl.password_hash || "",
           expiration: expiration_date,
           expiration_url: expiration_url,
-          meta_title: url.meta_title || "",
-          meta_description: url.meta_description || "",
-          meta_image_url: url.meta_image_url || "",
-          tags_id: url.tags_id || [],
+          meta_title: localUrl.meta_title || "",
+          meta_description: localUrl.meta_description || "",
+          meta_image_url: localUrl.meta_image_url || "",
+          tags_id: localUrl.tags_id || [],
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Failed to update URL");
+        throw new Error(error.error || "Failed to update URL");
       }
 
       toast.success("URL updated successfully");
@@ -204,9 +224,16 @@
         : "";
     }
   });
+
+  // Update localUrl whenever the original url changes
+  $effect(() => {
+    if (url) {
+      localUrl = structuredClone(url);
+    }
+  });
 </script>
 
-{#if url && isDesktop}
+{#if localUrl && isDesktop}
   <Dialog.Root open={show} {onOpenChange}>
     <Dialog.Content
       class="-gap-4 grid max-w-5xl grid-cols-[3fr,2fr] overflow-scroll rounded-3xl border-2 border-white bg-[#ffd78d] p-0"
@@ -220,7 +247,7 @@
             <Dialog.Title class="text-2xl font-medium">Edit link</Dialog.Title>
           </Dialog.Header>
 
-          <input type="hidden" name="id" value={url.id} />
+          <input type="hidden" name="id" value={localUrl.id} />
 
           <!-- URL -->
           <div class="space-y-2">
@@ -240,7 +267,7 @@
             <Input
               id="url"
               name="url"
-              bind:value={url.url}
+              bind:value={localUrl.url}
               type="url"
               required
               class="h-12 rounded-2xl bg-input/20"
@@ -277,7 +304,7 @@
                 <Input
                   name="slug"
                   id="slug"
-                  bind:value={url.slug}
+                  bind:value={localUrl.slug}
                   class="h-12 rounded-none border-none bg-input/20"
                 />
               </div>
@@ -315,7 +342,7 @@
               <Input
                 name="password_hash"
                 type={showPassword ? "text" : "password"}
-                bind:value={url.password_hash}
+                bind:value={localUrl.password_hash}
                 placeholder="••••••••"
                 class="h-12 rounded-r-none bg-input/20"
               />
@@ -423,7 +450,7 @@
             <TagsSelector
               {tags}
               onSelect={handleTagsSelect}
-              selectedTags={url.tags_id}
+              selectedTags={localUrl.tags_id}
               onRefreshTags={async () => {
                 console.log("Refreshing tags");
                 const response = await fetch("/api/tags");
@@ -488,7 +515,7 @@
               <Label class="text-sm font-medium text-amber-900">Title</Label>
               <Input
                 name="meta_title"
-                bind:value={url.meta_title}
+                bind:value={localUrl.meta_title}
                 placeholder="Title"
                 class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
               />
@@ -499,7 +526,7 @@
               >
               <Textarea
                 name="meta_description"
-                bind:value={url.meta_description}
+                bind:value={localUrl.meta_description}
                 placeholder="Description"
                 class="rounded-2xl border-preview-border bg-preview-foreground"
               />
@@ -509,7 +536,7 @@
               >
               <Input
                 name="meta_image_url"
-                bind:value={url.meta_image_url}
+                bind:value={localUrl.meta_image_url}
                 placeholder="Meta Image URL"
                 class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
               />
@@ -519,7 +546,7 @@
       </div>
     </Dialog.Content>
   </Dialog.Root>
-{:else if url}
+{:else if localUrl}
   <Drawer.Root open={show} {onOpenChange}>
     <Drawer.Portal>
       <Drawer.Content class="fixed inset-x-0 bottom-0 h-[97%] rounded-t-3xl bg-white">
@@ -548,7 +575,7 @@
                     <Dialog.Title class="w-full text-2xl font-medium text-start">Edit link</Dialog.Title>
                   </Dialog.Header>
 
-                  <input type="hidden" name="id" value={url.id} />
+                  <input type="hidden" name="id" value={localUrl.id} />
 
                   <!-- URL -->
                   <div class="space-y-2">
@@ -568,7 +595,7 @@
                     <Input
                       id="url"
                       name="url"
-                      bind:value={url.url}
+                      bind:value={localUrl.url}
                       type="url"
                       required
                       class="h-12 rounded-2xl bg-input/20"
@@ -605,7 +632,7 @@
                         <Input
                           name="slug"
                           id="slug"
-                          bind:value={url.slug}
+                          bind:value={localUrl.slug}
                           class="h-12 rounded-none border-none bg-input/20"
                         />
                       </div>
@@ -643,7 +670,7 @@
                       <Input
                         name="password_hash"
                         type={showPassword ? "text" : "password"}
-                        bind:value={url.password_hash}
+                        bind:value={localUrl.password_hash}
                         placeholder="••••••••"
                         class="h-12 rounded-r-none bg-input/20"
                       />
@@ -751,7 +778,7 @@
                     <TagsSelector
                       {tags}
                       onSelect={handleTagsSelect}
-                      selectedTags={url.tags_id}
+                      selectedTags={localUrl.tags_id}
                       onRefreshTags={async () => {
                         console.log("Refreshing tags");
                         const response = await fetch("/api/tags");
@@ -803,7 +830,7 @@
                       <Label class="text-muted-foreground">Title</Label>
                       <Input
                         name="meta_title"
-                        bind:value={url.meta_title}
+                        bind:value={localUrl.meta_title}
                         placeholder="Title"
                         class="h-12 rounded-2xl bg-input/20"
                       />
@@ -814,7 +841,7 @@
                       <Label class="text-muted-foreground">Description</Label>
                       <Textarea
                         name="meta_description"
-                        bind:value={url.meta_description}
+                        bind:value={localUrl.meta_description}
                         placeholder="Description"
                         class="h-12 rounded-2xl bg-input/20"
                       />
@@ -825,7 +852,7 @@
                       <Label class="text-muted-foreground">Image URL</Label>
                       <Input
                         name="meta_image_url"
-                        bind:value={url.meta_image_url}
+                        bind:value={localUrl.meta_image_url}
                         placeholder="Meta Image URL"
                         class="h-12 rounded-2xl bg-input/20"
                       />

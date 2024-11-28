@@ -11,13 +11,11 @@
   import { Switch } from "$lib/components/ui/switch";
   import * as Tabs from "$lib/components/ui/tabs/index.js";
   import { Textarea } from "$lib/components/ui/textarea";
-  import { browser } from "$app/environment";
   import * as Tooltip from "$lib/components/ui/tooltip/index.js";
   import { scrapeMetadata } from "$lib/utils/index";
   import { TagsSelector, QRCode } from "$lib/components/ui/core/misc";
   import { windowSize } from "$lib/window-size";
-
-  import SuperDebug, {
+  import {
     type SuperValidated,
     type Infer,
     superForm,
@@ -55,6 +53,8 @@
       if (result.type === "success") {
         toast.success("URL shortened successfully!");
         onOpenChange?.(false);
+      } else {
+        toast.error(result.data?.message);
       }
     },
   });
