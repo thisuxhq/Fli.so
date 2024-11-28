@@ -585,13 +585,9 @@
             }}
             class="flex w-full flex-col items-center justify-center"
           >
-            <Tabs.List class="sticky top-2 z-50 w-fit rounded-2xl bg-input/20">
-              <Tabs.Trigger value="edit-data" class="rounded-xl"
-                >Edit</Tabs.Trigger
-              >
-              <Tabs.Trigger value="meta-data" class="rounded-xl"
-                >Meta data</Tabs.Trigger
-              >
+            <Tabs.List class="w-fit rounded-2xl bg-input/20 mt-4">
+              <Tabs.Trigger value="edit-data" class="rounded-xl">Edit</Tabs.Trigger>
+              <Tabs.Trigger value="meta-data" class="rounded-xl">Meta data</Tabs.Trigger>
             </Tabs.List>
 
             <div class="h-auto w-full p-5">
