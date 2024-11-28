@@ -29,7 +29,7 @@
         if (data.meta?.url) {
           window.location.href = data.meta.url;
         }
-      }, 1000);
+      }, 5000);
     }
   });
 </script>
