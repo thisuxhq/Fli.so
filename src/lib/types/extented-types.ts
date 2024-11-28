@@ -14,6 +14,6 @@ export type UrlsResponseWithTags<Texpand = unknown> = UrlsResponse<Texpand> & {
 export type UsersResponseWithSubscription<Texpand = unknown> =
   UsersResponse<Texpand> & {
     expand: {
-      subscription: SubscriptionsResponse;
+      subscriptions: SubscriptionsResponse;
     };
   };

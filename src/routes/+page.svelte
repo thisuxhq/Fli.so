@@ -12,8 +12,10 @@
   import { CircleHelp, Search, X, Plus } from "lucide-svelte";
   import type {
     UrlsResponseWithTags,
-    UsersResponseWithSubscription,
+    UsersResponse,
+    SubscriptionsResponse,
     TagsResponse,
+    SubscriptionsStatusOptions,
   } from "$lib/types";
   import { type UrlSchema } from "$lib/schema/url";
   import type { Infer, SuperValidated } from "sveltekit-superforms";
@@ -24,7 +26,8 @@
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
     urls: UrlsResponseWithTags[] | [];
-    user: UsersResponseWithSubscription;
+    user: UsersResponse;
+    userWithSubscription: SubscriptionsResponse[];
     tags: TagsResponse[] | [];
   }
 
@@ -249,14 +252,12 @@
   ];
 
   $effect(() => {
-    console.log("Search input ref:", searchInput);
     return initKeyboardShortcuts(shortcuts);
   });
 
   async function handleEdit(url: UrlsResponseWithTags) {
     editingUrl = url;
     showEditForm = true;
-    console.log("Editing URL:", editingUrl);
   }
 
   async function handleDelete(id: string) {
@@ -281,16 +282,6 @@
       // Use setTimeout to ensure DOM is ready
       setTimeout(() => longUrlInput?.focus(), 50);
     }
-  });
-
-  // Add an effect to monitor the input binding
-  $effect(() => {
-    console.log("searchInput changed:", searchInput);
-  });
-
-  // Add this debug effect to verify the binding
-  $effect(() => {
-    console.log("searchInput ref:", searchInput);
   });
 </script>
 
@@ -362,7 +353,8 @@
           name={data.user.name}
           email={data.user.email}
           avatar={data.user.avatar}
-          showUpgrade={data.user.expand.subscription.status === "active"}
+          showUpgrade={data?.userWithSubscription[0]?.status ===
+            ("inactive" as SubscriptionsStatusOptions)}
         />
       </div>
     </div>

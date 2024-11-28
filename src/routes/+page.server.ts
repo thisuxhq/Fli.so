@@ -2,7 +2,11 @@ import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { generateSlug } from "$lib";
 import { redirect } from "@sveltejs/kit";
-import type { UrlsResponseWithTags, TagsResponse } from "$lib/types";
+import type {
+  UrlsResponseWithTags,
+  TagsResponse,
+  SubscriptionsResponse,
+} from "$lib/types";
 import { superValidate } from "sveltekit-superforms";
 import { urlSchema } from "$lib/schema/url";
 import { zod } from "sveltekit-superforms/adapters";
@@ -17,7 +21,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   }
 
   try {
-    const [urls, tags, user] = await Promise.all([
+    const [urls, tags, userWithSubscription] = await Promise.all([
       locals.pb.collection("urls").getFullList<UrlsResponseWithTags[]>({
         expand: "tags_id",
         sort: "-created",
@@ -26,15 +30,17 @@ export const load: PageServerLoad = async ({ locals }) => {
         filter: `created_by = "${locals.user?.id}"`,
         sort: "-created",
       }),
-      locals.pb.collection("users").getOne(locals.user?.id, {
-        expand: "subscription",
+      locals.pb.collection("subscriptions").getFullList<SubscriptionsResponse[]>({
+          filter: `user_id = "${locals.user?.id}"`,
+        sort: "-created",
       }),
     ]);
 
     return {
       urls: urls,
       tags: tags,
-      user: user,
+      user: locals.user,
+      userWithSubscription: userWithSubscription,
       form: await superValidate(zod(urlSchema)),
     };
   } catch (error) {
