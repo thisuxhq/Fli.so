@@ -20,6 +20,7 @@
   } from "$lib/utils/datetime";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
   import { generatePassword, generateSlug } from "$lib";
+  import { scrapeMetadata } from "$lib/utils/index";
 
   type Tab = "edit-data" | "meta-data";
   let currentTab = $state<Tab>("edit-data");
@@ -66,13 +67,12 @@
   let expiration_date = $state("");
 
   async function suggestSlug() {
-    console.log("Generating slug");
-    if (url) url.slug = generateSlug();
+    if (localUrl) localUrl.slug = generateSlug();
   }
 
   async function suggestPasswordAndCopy() {
     const password = generatePassword();
-    if (url) url.password_hash = password;
+    if (localUrl) localUrl.password_hash = password;
     try {
       await navigator.clipboard.writeText(password);
       toast.success("Password copied to clipboard");
@@ -83,8 +83,8 @@
   }
 
   $effect(() => {
-    if (url?.expiration) {
-      expirationDisplay = convertExpirationToHumanReadable(url.expiration);
+    if (localUrl?.expiration) {
+      expirationDisplay = convertExpirationToHumanReadable(localUrl.expiration);
       rawExpirationInput = expirationDisplay;
     } else {
       expirationDisplay = "";
@@ -99,16 +99,16 @@
 
   function processExpiration() {
     try {
-      if (url) {
+      if (localUrl) {
         if (rawExpirationInput) {
-          // Convert to ISO and store in url
-          url.expiration = convertExpirationToDate(rawExpirationInput);
+          // Convert to ISO and store in localUrl
+          localUrl.expiration = convertExpirationToDate(rawExpirationInput);
           // Update display
-          expirationDisplay = convertExpirationToHumanReadable(url.expiration);
+          expirationDisplay = convertExpirationToHumanReadable(localUrl.expiration);
           rawExpirationInput = expirationDisplay;
         } else {
           // Clear expiration if input is empty
-          url.expiration = "";
+          localUrl.expiration = "";
           expirationDisplay = "";
         }
       }
@@ -130,7 +130,7 @@
 
   let errors = $state<Record<string, string>>({});
   let metaDataEnabled = $state(
-    show || !!(url?.meta_title || url?.meta_description || url?.meta_image_url),
+    show || !!(localUrl?.meta_title || localUrl?.meta_description || localUrl?.meta_image_url),
   );
 
   // window size
@@ -178,7 +178,7 @@
   }
 
   function handleTagsSelect(tags: string[]) {
-    if (url) url.tags_id = tags;
+    if (localUrl) localUrl.tags_id = tags;
   }
 
   // Add keyboard shortcuts
@@ -217,10 +217,10 @@
   });
 
   $effect(() => {
-    if (url) {
-      expiration_url = url.expiration_url || "";
-      expiration_date = url.expiration
-        ? convertExpirationToHumanReadable(url.expiration)
+    if (localUrl) {
+      expiration_url = localUrl.expiration_url || "";
+      expiration_date = localUrl.expiration
+        ? convertExpirationToHumanReadable(localUrl.expiration)
         : "";
     }
   });
@@ -229,6 +229,32 @@
   $effect(() => {
     if (url) {
       localUrl = structuredClone(url);
+    }
+  });
+
+  async function handleMetaFetch() {
+    if (!localUrl) return;
+    
+    const response = await scrapeMetadata(localUrl.url);
+
+    if (response) {
+      metaDataEnabled = true;
+      localUrl.meta_title = response.title;
+      localUrl.meta_description = response.description;
+      localUrl.meta_image_url = response.imageUrl;
+    }
+  }
+
+  // Watch for dialog close and reset localUrl to original url state
+  $effect(() => {
+    if (!show && url) {
+      // Reset to original state when dialog closes
+      localUrl = {
+        ...url,
+        expand: url.expand ? {
+          tags_id: url.expand.tags_id ? [...url.expand.tags_id] : []
+        } : { tags_id: [] }
+      };
     }
   });
 </script>
@@ -271,6 +297,7 @@
               type="url"
               required
               class="h-12 rounded-2xl bg-input/20"
+              on:input={handleMetaFetch}
             />
             {#if errors.url}<p class="text-sm text-destructive">
                 {errors.url}
@@ -376,9 +403,9 @@
                 size="icon"
                 class="h-12 w-16 rounded-l-none rounded-r-2xl bg-input/20"
                 on:click={() => {
-                  if (url)
+                  if (localUrl)
                     navigator.clipboard
-                      .writeText(url.password_hash)
+                      .writeText(localUrl.password_hash)
                       .then(() => {
                         toast.success("Password copied to clipboard");
                       });
@@ -599,6 +626,7 @@
                       type="url"
                       required
                       class="h-12 rounded-2xl bg-input/20"
+                      on:input={handleMetaFetch}
                     />
                     {#if errors.url}<p class="text-sm text-destructive">
                         {errors.url}
@@ -704,9 +732,9 @@
                         size="icon"
                         class="h-12 w-16 rounded-l-none rounded-r-2xl bg-input/20"
                         on:click={() => {
-                          if (url)
+                          if (localUrl)
                             navigator.clipboard
-                              .writeText(url.password_hash)
+                              .writeText(localUrl.password_hash)
                               .then(() => {
                                 toast.success("Password copied to clipboard");
                               });
