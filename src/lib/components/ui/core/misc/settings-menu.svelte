@@ -7,9 +7,10 @@
     name: string;
     email: string;
     avatar: string;
+    showUpgrade?: boolean;
   }
 
-  let { name, email, avatar }: Props = $props();
+  let { name, email, avatar, showUpgrade = true }: Props = $props();
 </script>
 
 <DropdownMenu.Root>
@@ -35,8 +36,9 @@
         href="/billing"
       >
         <Crown class="mr-2 size-5" />
-        Upgrade to Pro
+        {showUpgrade ? "Upgrade to Pro" : "Manage billing"}
       </DropdownMenu.Item>
+
       <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
         <MessageCircle class="mr-2 size-5" />
         <span class="text-base">Feedback</span>
