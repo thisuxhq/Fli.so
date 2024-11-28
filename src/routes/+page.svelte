@@ -6,6 +6,7 @@
     NewUrlForm,
     UrlEditForm,
     KeyboardShortcutsDialog,
+    KbdShortcut,
   } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
@@ -22,6 +23,7 @@
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
   import { pbClient } from "../hooks.client";
   import SettingsMenu from "$lib/components/ui/core/misc/settings-menu.svelte";
+  import { env } from "$env/dynamic/public";
 
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
@@ -29,6 +31,7 @@
     user: UsersResponse;
     userWithSubscription: SubscriptionsResponse[];
     tags: TagsResponse[] | [];
+    totalUrls: number;
   }
 
   let {
@@ -39,11 +42,18 @@
   let showAddForm = $state(false);
   let searchQuery = $state("");
 
-  // State for the search input
-  let searchInput = $state<HTMLInputElement | null>(null);
-
   // State for the URLs
   let updatedUrls = $state<UrlsResponseWithTags[]>(data.urls);
+
+  // URL limit from env
+  const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "10");
+  const isPremium = $derived(
+    data?.userWithSubscription[0]?.status === "active",
+  );
+  const isAtLimit = $derived(updatedUrls.length >= URL_LIMIT && !isPremium);
+
+  // State for the search input
+  let searchInput = $state<HTMLInputElement | null>(null);
 
   // Reference for the long URL input
   let longUrlInput = $state<HTMLInputElement | null>(null);
@@ -148,6 +158,7 @@
                     : url,
                 );
               }
+
               break;
             }
             case "delete":
@@ -271,6 +282,7 @@
 
     if (res.success) {
       toast.success("URL deleted");
+      showAddForm = false;
     } else {
       toast.error(res.error);
     }
@@ -282,6 +294,11 @@
       // Use setTimeout to ensure DOM is ready
       setTimeout(() => longUrlInput?.focus(), 50);
     }
+  });
+
+  $effect(() => {
+    // Update data.totalUrls whenever updatedUrls changes
+    data.totalUrls = updatedUrls.length;
   });
 </script>
 
@@ -325,27 +342,41 @@
         <!-- Add URL Button -->
         <Button
           class="rounded-2xl"
-          onclick={() => (showAddForm = !showAddForm)}
+          href={isAtLimit ? "/billing" : undefined}
+          onclick={() => {
+            if (!isAtLimit) {
+              showAddForm = !showAddForm;
+            }
+          }}
         >
-          {#if showAddForm}
-            <X class="h-4 w-4" />
-          {:else}
-            <Plus class="h-4 w-4" />
-          {/if}
+          {#if isAtLimit}
+            <span class="flex items-center gap-2">
+              Upgrade now
+              <span class="text-xs opacity-75">$9/m</span>
 
-          <span>{showAddForm ? "Cancel" : "New link"}</span>
-          {#if showAddForm}
-            <kbd
-              class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
-            >
-              Esc
-            </kbd>
+              <KbdShortcut shortcut="u" />
+            </span>
           {:else}
-            <kbd
-              class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
-            >
-              N
-            </kbd>
+            {#if showAddForm}
+              <X class="h-4 w-4" />
+            {:else}
+              <Plus class="h-4 w-4" />
+            {/if}
+
+            <span>{showAddForm ? "Cancel" : "New link"}</span>
+            {#if showAddForm}
+              <kbd
+                class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+              >
+                Esc
+              </kbd>
+            {:else}
+              <kbd
+                class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+              >
+                N
+              </kbd>
+            {/if}
           {/if}
         </Button>
 
@@ -382,7 +413,7 @@
       onDelete={(id: string) => {
         handleDelete(id);
       }}
-      showAddForm={true}
+      {showAddForm}
       setShowAddForm={(show: boolean) => {
         showAddForm = show;
       }}
@@ -412,9 +443,15 @@
 
 <NewUrlForm
   data={data.form}
-  show={showAddForm}
+  show={showAddForm && !isAtLimit}
   user_id={data.user.id}
   onOpenChange={(open) => {
+    if (isAtLimit) {
+      toast.error(
+        `You've reached the ${URL_LIMIT} URL limit. Please upgrade to premium for unlimited URLs.`,
+      );
+      return;
+    }
     showAddForm = open;
   }}
   tags={data.tags}

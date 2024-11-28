@@ -30,17 +30,20 @@ export const load: PageServerLoad = async ({ locals }) => {
         filter: `created_by = "${locals.user?.id}"`,
         sort: "-created",
       }),
-      locals.pb.collection("subscriptions").getFullList<SubscriptionsResponse[]>({
+      locals.pb
+        .collection("subscriptions")
+        .getFullList<SubscriptionsResponse[]>({
           filter: `user_id = "${locals.user?.id}"`,
-        sort: "-created",
-      }),
+          sort: "-created",
+        }),
     ]);
 
     return {
-      urls: urls,
-      tags: tags,
+      urls,
+      tags,
       user: locals.user,
-      userWithSubscription: userWithSubscription,
+      userWithSubscription,
+      totalUrls: urls.length || 0,
       form: await superValidate(zod(urlSchema)),
     };
   } catch (error) {
@@ -57,18 +60,39 @@ export const actions: Actions = {
     }
 
     const form = await superValidate(request, zod(urlSchema));
-
-    if (!form.data.slug) {
-      form.data.slug = generateSlug();
-    }
-
-    if (!/^[a-zA-Z0-9-]+$/.test(form.data.slug)) {
-      return fail(400, {
-        message: "Slug can only contain letters, numbers, and hyphens",
-      });
-    }
+    const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "25");
 
     try {
+      // Check subscription status
+      const subscription = await locals.pb
+        .collection("subscriptions")
+        .getFirstListItem(`user_id = "${locals.user?.id}"`);
+      const isPremium = subscription?.status === "active";
+
+      if (!isPremium) {
+        // Count user's URLs
+        const urlCount = await locals.pb.collection("urls").getList(1, 1, {
+          filter: `created_by = "${locals.user?.id}"`,
+          $cancelKey: locals.user?.id,
+        });
+
+        if (urlCount.totalItems >= URL_LIMIT) {
+          return fail(400, {
+            message: `You've reached the ${URL_LIMIT} URL limit. Please upgrade to premium for unlimited URLs.`,
+          });
+        }
+      }
+
+      if (!form.data.slug) {
+        form.data.slug = generateSlug();
+      }
+
+      if (!/^[a-zA-Z0-9-]+$/.test(form.data.slug)) {
+        return fail(400, {
+          message: "Slug can only contain letters, numbers, and hyphens",
+        });
+      }
+
       const exists = await locals.pb
         .collection("urls")
         .getFirstListItem(`slug = "${form.data.slug}"`)
