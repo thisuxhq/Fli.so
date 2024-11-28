@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     throw error(410, "This link has expired");
   }
 
-  // If URL has password, return data for password verification
+  // If URL has password
   if (url.password_hash) {
     return {
       isProtected: true,
@@ -42,7 +42,19 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     };
   }
 
-  // Otherwise redirect directly to the target URL
+  // If URL has meta data, return for brief display
+  if (url.meta_title || url.meta_description) {
+    return {
+      meta: {
+        title: url.meta_title,
+        description: url.meta_description,
+        image: url.meta_image_url,
+        url: url.url,
+      },
+    };
+  }
+
+  // No meta or password - direct redirect
   throw redirect(302, url.url);
 };
 
