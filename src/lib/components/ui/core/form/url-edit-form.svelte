@@ -66,6 +66,9 @@
     if (url?.expiration) {
       expirationDisplay = convertExpirationToHumanReadable(url.expiration);
       rawExpirationInput = expirationDisplay;
+    } else {
+      expirationDisplay = "";
+      rawExpirationInput = "";
     }
   });
 
@@ -76,12 +79,18 @@
 
   function processExpiration() {
     try {
-      if (url && rawExpirationInput) {
-        // Convert to ISO and store in url
-        url.expiration = convertExpirationToDate(rawExpirationInput);
-        // Update display
-        expirationDisplay = convertExpirationToHumanReadable(url.expiration);
-        rawExpirationInput = expirationDisplay;
+      if (url) {
+        if (rawExpirationInput) {
+          // Convert to ISO and store in url
+          url.expiration = convertExpirationToDate(rawExpirationInput);
+          // Update display
+          expirationDisplay = convertExpirationToHumanReadable(url.expiration);
+          rawExpirationInput = expirationDisplay;
+        } else {
+          // Clear expiration if input is empty
+          url.expiration = "";
+          expirationDisplay = "";
+        }
       }
     } catch (error) {
       console.error("Failed to parse date:", error);
@@ -190,7 +199,9 @@
   $effect(() => {
     if (url) {
       expiration_url = url.expiration_url || "";
-      expiration_date = convertExpirationToHumanReadable(url.expiration);
+      expiration_date = url.expiration
+        ? convertExpirationToHumanReadable(url.expiration)
+        : "";
     }
   });
 </script>
@@ -339,9 +350,11 @@
                 class="h-12 w-16 rounded-l-none rounded-r-2xl bg-input/20"
                 on:click={() => {
                   if (url)
-                    navigator.clipboard.writeText(url.password_hash).then(() => {
-                      toast.success("Password copied to clipboard");
-                    });
+                    navigator.clipboard
+                      .writeText(url.password_hash)
+                      .then(() => {
+                        toast.success("Password copied to clipboard");
+                      });
                 }}
               >
                 <Copy class="h-4 w-4" />
