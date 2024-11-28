@@ -21,8 +21,8 @@
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
   import { generatePassword, generateSlug } from "$lib";
 
-  type Tab = "edit" | "meta";
-  let currentTab = $state<Tab>("edit");
+  type Tab = "edit-data" | "meta-data";
+  let currentTab = $state<Tab>("edit-data");
   let showPassword = $state(false);
   let isSubmitting = $state(false);
 
@@ -521,26 +521,321 @@
   </Dialog.Root>
 {:else if url}
   <Drawer.Root open={show} {onOpenChange}>
-    <Drawer.Portal class="overflow-auto">
-      <Drawer.Content class="h-full max-h-[95%] max-w-full bg-white">
-        <Tabs.Root
-          value={currentTab}
-          onValueChange={(e) => {
-            currentTab = e as Tab;
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          class="mt-8 flex w-full flex-col items-center justify-center overflow-auto"
-        >
-          <Tabs.List class="w-fit rounded-2xl bg-input/20">
-            <Tabs.Trigger value="edit" class="rounded-xl">Edit</Tabs.Trigger>
-            <Tabs.Trigger value="meta" class="rounded-xl"
-              >Meta data</Tabs.Trigger
-            >
-          </Tabs.List>
+    <Drawer.Portal>
+      <Drawer.Content class="fixed inset-x-0 bottom-0 h-[97%] rounded-t-3xl bg-white">
+        <div class="h-full overflow-y-auto">
+          <Tabs.Root
+            value={currentTab}
+            onValueChange={(e) => {
+              currentTab = e as Tab;
+              // Scroll to top when switching tabs
+              const drawerContent = document.querySelector(".drawer-content");
+              if (drawerContent) {
+                drawerContent.scrollTop = 0;
+              }
+            }}
+            class="flex w-full flex-col items-center justify-center"
+          >
+            <Tabs.List class="sticky top-2 z-50 w-fit rounded-2xl bg-input/20">
+              <Tabs.Trigger value="edit-data" class="rounded-xl">Edit</Tabs.Trigger>
+              <Tabs.Trigger value="meta-data" class="rounded-xl">Meta data</Tabs.Trigger>
+            </Tabs.List>
 
-          <!-- Mobile version of the form fields -->
-          <!-- ... Same fields as desktop but in tabbed layout ... -->
-        </Tabs.Root>
+            <div class="h-auto w-full p-5">
+              <Tabs.Content value="edit-data" class="h-auto w-full space-y-6">
+                <form onsubmit={handleSubmit} class="space-y-6">
+                  <Dialog.Header>
+                    <Dialog.Title class="w-full text-2xl font-medium text-start">Edit link</Dialog.Title>
+                  </Dialog.Header>
+
+                  <input type="hidden" name="id" value={url.id} />
+
+                  <!-- URL -->
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <Label for="url" class="flex items-center text-muted-foreground">
+                        Destination URL <span class="text-destructive">*</span>
+                      </Label>
+                      <Tooltip.Root openDelay={200}>
+                        <Tooltip.Trigger>
+                          <AlertCircleIcon class="ml-2 size-4" />
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          <p>Enter the URL you want to shorten</p>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    </div>
+                    <Input
+                      id="url"
+                      name="url"
+                      bind:value={url.url}
+                      type="url"
+                      required
+                      class="h-12 rounded-2xl bg-input/20"
+                    />
+                    {#if errors.url}<p class="text-sm text-destructive">
+                        {errors.url}
+                      </p>{/if}
+                  </div>
+
+                  <!-- Slug -->
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <Label for="slug" class="flex items-center text-muted-foreground"
+                        >Custom URL</Label
+                      >
+                      <Tooltip.Root openDelay={200}>
+                        <Tooltip.Trigger>
+                          <AlertCircleIcon class="ml-2 size-4" />
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          <p>Enter a custom URL</p>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    </div>
+                    <div class="flex rounded-2xl">
+                      <div
+                        class="relative flex flex-1 rounded-l-2xl border bg-input/20"
+                      >
+                        <span
+                          class="flex items-center rounded-l-2xl bg-transparent px-3 py-2 pl-3 font-mono text-sm text-muted-foreground"
+                        >
+                          {env.PUBLIC_APPLICATION_NAME}/
+                        </span>
+                        <Input
+                          name="slug"
+                          id="slug"
+                          bind:value={url.slug}
+                          class="h-12 rounded-none border-none bg-input/20"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        class="h-12 w-12 rounded-l-none rounded-r-2xl bg-input/20"
+                        onclick={suggestSlug}
+                      >
+                        <Shuffle class="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {#if errors.slug}<p class="text-sm text-destructive">
+                        {errors.slug}
+                      </p>{/if}
+                  </div>
+
+                  <!-- Password -->
+                  <div class="space-y-2">
+                    <div class="flex items-center">
+                      <Label class="flex items-center text-muted-foreground"
+                        >Password</Label
+                      >
+                      <Tooltip.Root openDelay={200}>
+                        <Tooltip.Trigger>
+                          <AlertCircleIcon class="ml-2 size-4" />
+                        </Tooltip.Trigger>
+                        <Tooltip.Content>
+                          <p>Enter a password to protect your link</p>
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    </div>
+                    <div class="flex">
+                      <Input
+                        name="password_hash"
+                        type={showPassword ? "text" : "password"}
+                        bind:value={url.password_hash}
+                        placeholder="••••••••"
+                        class="h-12 rounded-r-none bg-input/20"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        on:click={() => {
+                          showPassword = !showPassword;
+                        }}
+                        class="h-12 w-16 rounded-none border-l-0 bg-input/20"
+                      >
+                        {#if showPassword}
+                          <EyeOff class="h-4 w-4" />
+                        {:else}
+                          <Eye class="h-4 w-4" />
+                        {/if}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        class="h-12 w-16 rounded-none border-l-0 border-r-0 bg-input/20"
+                        on:click={suggestPasswordAndCopy}
+                      >
+                        <Shuffle class="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        class="h-12 w-16 rounded-l-none rounded-r-2xl bg-input/20"
+                        on:click={() => {
+                          if (url)
+                            navigator.clipboard
+                              .writeText(url.password_hash)
+                              .then(() => {
+                                toast.success("Password copied to clipboard");
+                              });
+                        }}
+                      >
+                        <Copy class="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <!-- Expiration -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                      <div class="flex items-center">
+                        <Label class="flex items-center text-muted-foreground"
+                          >Expiration date</Label
+                        >
+                        <Tooltip.Root openDelay={200}>
+                          <Tooltip.Trigger>
+                            <AlertCircleIcon class="ml-2 size-4" />
+                          </Tooltip.Trigger>
+                          <Tooltip.Content>
+                            <p>Enter an expiration date for your link.</p>
+                          </Tooltip.Content>
+                        </Tooltip.Root>
+                      </div>
+                      <Input
+                        type="text"
+                        name="expiration"
+                        bind:value={expiration_date}
+                        placeholder="tomorrow at 5pm"
+                        class="h-12 rounded-2xl bg-input/20"
+                        on:input={handleExpirationInput}
+                        on:keydown={handleExpirationKeyDown}
+                        on:blur={handleExpirationBlur}
+                      />
+                    </div>
+
+                    <div class="space-y-2">
+                      <div class="flex items-center">
+                        <Label class="flex items-center text-muted-foreground"
+                          >Expiration link</Label
+                        >
+                        <Tooltip.Root openDelay={200}>
+                          <Tooltip.Trigger>
+                            <AlertCircleIcon class="ml-2 size-4" />
+                          </Tooltip.Trigger>
+                          <Tooltip.Content>
+                            <p>
+                              Enter an expiration link for your link. When the link is
+                              visited, it will redirect to the secondary URL.
+                            </p>
+                          </Tooltip.Content>
+                        </Tooltip.Root>
+                      </div>
+                      <Input
+                        type="text"
+                        name="expiration_url"
+                        bind:value={expiration_url}
+                        placeholder="Secondary-URL"
+                        class="h-12 rounded-2xl bg-input/20"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Tags -->
+                  <div class="space-y-2">
+                    <Label class="text-muted-foreground">Tags</Label>
+                    <TagsSelector
+                      {tags}
+                      onSelect={handleTagsSelect}
+                      selectedTags={url.tags_id}
+                      onRefreshTags={async () => {
+                        console.log("Refreshing tags");
+                        const response = await fetch("/api/tags");
+                        console.log("response from fetch", response);
+                        url_tags = await response.json();
+                        console.log("tags", url_tags);
+                      }}
+                    />
+                  </div>
+
+                  <div class="flex justify-end">
+                    <Button type="submit" class="w-full rounded-2xl">
+                      Save changes
+                      <kbd class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block">
+                        ⏎
+                      </kbd>
+                    </Button>
+                  </div>
+                </form>
+              </Tabs.Content>
+
+              <Tabs.Content value="meta-data" class="h-auto w-full space-y-6">
+                <h2 class="mb-4 text-lg">QR Code</h2>
+                {#if shortUrl}
+                  <QRCode url={shortUrl} size={200} />
+                {:else}
+                  <div class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-input/20">
+                    <p class="text-balance text-center text-sm text-muted-foreground">
+                      Need short link to generate QR
+                    </p>
+                  </div>
+                {/if}
+
+                <div class="flex w-full items-center justify-between">
+                  <span class="text-sm font-medium text-muted-foreground">Meta data</span>
+                  <Switch
+                    checked={metaDataEnabled}
+                    onCheckedChange={(e) => {
+                      metaDataEnabled = e;
+                    }}
+                    class="data-[state=unchecked]:bg-input/60"
+                  />
+                </div>
+
+                {#if metaDataEnabled}
+                  <div class="mt-3 flex w-full flex-col space-y-4">
+                    <!-- Meta title -->
+                    <div class="flex flex-col items-start justify-start gap-2">
+                      <Label class="text-muted-foreground">Title</Label>
+                      <Input
+                        name="meta_title"
+                        bind:value={url.meta_title}
+                        placeholder="Title"
+                        class="h-12 rounded-2xl bg-input/20"
+                      />
+                    </div>
+
+                    <!-- Meta description -->
+                    <div class="flex flex-col items-start justify-start gap-2">
+                      <Label class="text-muted-foreground">Description</Label>
+                      <Textarea
+                        name="meta_description"
+                        bind:value={url.meta_description}
+                        placeholder="Description"
+                        class="h-12 rounded-2xl bg-input/20"
+                      />
+                    </div>
+
+                    <!-- Meta image URL -->
+                    <div class="flex flex-col items-start justify-start gap-2">
+                      <Label class="text-muted-foreground">Image URL</Label>
+                      <Input
+                        name="meta_image_url"
+                        bind:value={url.meta_image_url}
+                        placeholder="Meta Image URL"
+                        class="h-12 rounded-2xl bg-input/20"
+                      />
+                    </div>
+                  </div>
+                {/if}
+              </Tabs.Content>
+            </div>
+          </Tabs.Root>
+        </div>
       </Drawer.Content>
     </Drawer.Portal>
   </Drawer.Root>
