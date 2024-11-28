@@ -12,7 +12,7 @@
   import { CircleHelp, Search, X, Plus } from "lucide-svelte";
   import type {
     UrlsResponseWithTags,
-    UsersResponse,
+    UsersResponseWithSubscription,
     TagsResponse,
   } from "$lib/types";
   import { type UrlSchema } from "$lib/schema/url";
@@ -24,7 +24,7 @@
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
     urls: UrlsResponseWithTags[] | [];
-    user: UsersResponse;
+    user: UsersResponseWithSubscription;
     tags: TagsResponse[] | [];
   }
 
@@ -362,6 +362,7 @@
           name={data.user.name}
           email={data.user.email}
           avatar={data.user.avatar}
+          showUpgrade={data.user.expand.subscription.status === "active"}
         />
       </div>
     </div>
