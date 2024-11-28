@@ -8,7 +8,7 @@ import { arrayBufferToHex } from "$lib/utils/buffer";
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, setHeaders }) => {
   if (!params.slug) {
     throw error(400, "Slug is required");
   }
@@ -41,6 +41,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       url_id: url.id,
     };
   }
+
+  // Set cache headers for better performance
+  setHeaders({
+    "Cache-Control": "public, max-age=0, s-maxage=60",
+    "Content-Type": "text/html",
+  });
 
   // If URL has meta data, return for brief display
   if (url.meta_title || url.meta_description) {
