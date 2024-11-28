@@ -573,7 +573,7 @@
 {:else}
   <Drawer.Root open={show} {onOpenChange}>
     <Drawer.Portal class="overflow-auto">
-      <Drawer.Content class="h-full max-h-[97%] max-w-fi;; bg-white">
+      <Drawer.Content class="h-full max-h-[97%] max-w-full bg-white">
         <Tabs.Root
           value={currentTab}
           onValueChange={(e) => {
