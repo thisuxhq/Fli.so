@@ -573,7 +573,7 @@
 {:else}
   <Drawer.Root open={show} {onOpenChange}>
     <Drawer.Portal class="overflow-auto">
-      <Drawer.Content class="h-full max-h-[97%] max-w-xl bg-white">
+      <Drawer.Content class="h-full max-h-[97%] max-w-fi;; bg-white">
         <Tabs.Root
           value={currentTab}
           onValueChange={(e) => {
@@ -835,7 +835,7 @@
                   <Form.Label class="text-muted-foreground">Tags</Form.Label>
                   <TagsSelector
                     {tags}
-                    selectedTags={$formData.tags}
+                    selectedTags={$formData.tags || []}
                     onSelect={handleTagsSelect}
                   />
                 </Form.Control>
