@@ -8,6 +8,7 @@
     MousePointerClick,
     Earth,
     Lock,
+    QrCode,
     Clock,
   } from "lucide-svelte";
   import type { UrlsResponseWithTags } from "$lib/types";
@@ -16,6 +17,7 @@
   import { cn } from "$lib/utils";
   import { getTagStyles } from "$lib/utils";
   import { toast } from "svelte-sonner";
+  import { QRCodeDialog } from "$lib/components/ui/core/misc";
   import type { TailwindColor } from "$lib/types/colors";
 
   interface Props {
@@ -27,7 +29,10 @@
   let { url, onEdit, onDelete }: Props = $props();
   let hoveredUrl = $state<string | null>(null);
   let showDeleteConfirm = $state(false);
-  let isExpired = $derived(url.expiration && new Date(url.expiration) < new Date());
+  let showQRDialog = $state(false);
+  let isExpired = $derived(
+    url.expiration && new Date(url.expiration) < new Date(),
+  );
 
   // Handle keyboard shortcuts when card is hovered
   $effect(() => {
@@ -59,7 +64,7 @@
 <div
   class={cn(
     "group relative overflow-hidden rounded-3xl bg-white/80 p-4 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50",
-    isExpired && "grayscale-[0.5] hover:grayscale-0"
+    isExpired && "grayscale-[0.5] hover:grayscale-0",
   )}
   in:fly|local={{ y: 10, duration: 200, delay: 50 }}
   out:fade|local={{ duration: 150 }}
@@ -78,7 +83,8 @@
         <div
           class={cn(
             "group flex size-10 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors duration-200 group-hover:bg-amber-50 group-hover:text-amber-950",
-            isExpired && "bg-gray-200 group-hover:bg-red-50 group-hover:text-red-950"
+            isExpired &&
+              "bg-gray-200 group-hover:bg-red-50 group-hover:text-red-950",
           )}
         >
           <Earth class="size-5" />
@@ -92,7 +98,7 @@
         {/if}
         {#if isExpired}
           <div
-            class="absolute -top-1 -right-1 rounded-full bg-red-100 p-1 shadow-sm dark:bg-red-900"
+            class="absolute -right-1 -top-1 rounded-full bg-red-100 p-1 shadow-sm dark:bg-red-900"
           >
             <Clock class="size-3.5 text-red-500 dark:text-red-300" />
           </div>
@@ -113,14 +119,17 @@
         target="_blank"
         class={cn(
           "group/link flex items-center gap-2 font-medium text-slate-900 group-hover/link:text-amber-600 dark:text-slate-100 dark:group-hover/link:text-gray-900",
-          isExpired && "text-slate-500 group-hover/link:text-red-600 dark:text-slate-400 dark:group-hover/link:text-red-400",
-          "transition-colors duration-150 ease-out"
+          isExpired &&
+            "text-slate-500 group-hover/link:text-red-600 dark:text-slate-400 dark:group-hover/link:text-red-400",
+          "transition-colors duration-150 ease-out",
         )}
       >
-        <div class="line-clamp-1">{env.PUBLIC_APPLICATION_NAME}/{url.slug}</div>
-        {#if isExpired}
-          <span class="text-xs text-red-500 dark:text-red-400">(Expired)</span>
-        {/if}
+        <div class="line-clamp-1">
+          {env.PUBLIC_APPLICATION_NAME}/{url.slug}
+          {#if isExpired}
+            <span class="text-xs text-red-500 dark:text-red-400">(Expired)</span>
+          {/if}
+        </div>
 
         <ExternalLink
           class="h-4 w-4 opacity-0 transition-opacity group-hover/link:opacity-100"
@@ -150,9 +159,7 @@
             class="flex items-center gap-x-1 transition-opacity duration-200 group-hover:opacity-0"
           >
             {#each url.expand.tags_id as tag}
-              {@const styles = getTagStyles(
-                tag.color as TailwindColor,
-              )}
+              {@const styles = getTagStyles(tag.color as TailwindColor)}
               <span
                 class={cn(
                   "inline-flex max-w-[150px] items-center gap-1 rounded-full border-[0.5px] border-gray-200  px-2 py-0.5 text-xs first:ml-0 hover:z-10",
@@ -201,6 +208,17 @@
         class:opacity-0={showDeleteConfirm}
         class:invisible={showDeleteConfirm}
       >
+        <Button
+          id={`qr-${url.id}`}
+          onclick={() => (showQRDialog = true)}
+          class="group/btn relative rounded-full p-2 text-gray-600 opacity-0 transition-opacity duration-200 hover:bg-gray-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          variant="ghost"
+          size="icon"
+          title="Show QR Code"
+        >
+          <QrCode class="h-4 w-4" />
+        </Button>
+
         <Button
           id={`edit-${url.id}`}
           onclick={() => onEdit(url)}
@@ -253,3 +271,9 @@
     </div>
   </div>
 </div>
+
+<QRCodeDialog
+  url={`${env.PUBLIC_APPLICATION_URL}/${url.slug}`}
+  open={showQRDialog}
+  onOpenChange={(open) => (showQRDialog = open)}
+/>
