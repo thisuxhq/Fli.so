@@ -49,13 +49,13 @@
 
       <!-- URL Display -->
       <div class="flex items-center justify-center gap-2">
-        <span class="text-sm font-medium text-center break-all line-clamp-1">
+        <span class="line-clamp-1 break-all text-center text-sm font-medium">
           {url}
         </span>
         <Button
           variant="ghost"
           size="icon"
-          class="rounded-full shrink-0"
+          class="shrink-0 rounded-full"
           onclick={copyUrl}
         >
           <Copy class="h-4 w-4" />
