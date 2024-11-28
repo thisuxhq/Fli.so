@@ -8,7 +8,7 @@ import { arrayBufferToHex } from "$lib/utils/buffer";
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
-export const load: PageServerLoad = async ({ params, locals, setHeaders }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
   if (!params.slug) {
     throw error(400, "Slug is required");
   }
