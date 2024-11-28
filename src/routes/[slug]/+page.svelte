@@ -24,7 +24,12 @@
 
   onMount(() => {
     if (data.meta?.url && !data.isProtected) {
-      window.location.href = data.meta.url;
+      // add a delay to allow the page to load
+      setTimeout(() => {
+        if (data.meta?.url) {
+          window.location.href = data.meta.url;
+        }
+      }, 100);
     }
   });
 </script>
