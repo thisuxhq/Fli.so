@@ -113,10 +113,11 @@
         target="_blank"
         class={cn(
           "group/link flex items-center gap-2 font-medium text-slate-900 group-hover/link:text-amber-600 dark:text-slate-100 dark:group-hover/link:text-gray-900",
-          isExpired && "text-slate-500 group-hover/link:text-red-600 dark:text-slate-400 dark:group-hover/link:text-red-400"
+          isExpired && "text-slate-500 group-hover/link:text-red-600 dark:text-slate-400 dark:group-hover/link:text-red-400",
+          "transition-colors duration-150 ease-out"
         )}
       >
-        {env.PUBLIC_APPLICATION_NAME}/{url.slug}
+        <div class="line-clamp-1">{env.PUBLIC_APPLICATION_NAME}/{url.slug}</div>
         {#if isExpired}
           <span class="text-xs text-red-500 dark:text-red-400">(Expired)</span>
         {/if}
