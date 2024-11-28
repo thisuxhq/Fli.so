@@ -129,6 +129,11 @@ export const actions: Actions = {
     const id = formData.get("id") as string;
     const slug = formData.get("slug") as string;
     const password = formData.get("password_hash") as string;
+    const expiration = formData.get("expiration") as string;
+    const expiration_url = formData.get("expiration_url") as string;
+
+    console.log("expiration", expiration);
+    console.log("expiration_url", expiration_url);
 
     if (!id) {
       return fail(400, { message: "ID is required" });
@@ -164,17 +169,15 @@ export const actions: Actions = {
               password_hash: await hashPassword(password, HASH_SECRET),
             }
           : {}),
-        ...(formData.get("expiration")
+        ...(expiration
           ? {
-              expiration: convertExpirationToDate(
-                formData.get("expiration") as string,
-              ),
+              expiration: convertExpirationToDate(expiration),
             }
           : {}),
-        ...(formData.get("expiration_url")
-          ? { expiration_url: formData.get("expiration_url") }
-          : {}),
+        ...(expiration_url ? { expiration_url: expiration_url } : {}),
       };
+
+      console.log("updateData", updateData);
 
       const result = await locals.pb.collection("urls").update(id, updateData);
 

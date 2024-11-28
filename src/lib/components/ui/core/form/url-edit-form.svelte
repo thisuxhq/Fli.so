@@ -19,6 +19,7 @@
     convertExpirationToHumanReadable,
   } from "$lib/utils/datetime";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
+  import { generatePassword, generateSlug } from "$lib";
 
   type Tab = "edit" | "meta";
   let currentTab = $state<Tab>("edit");
@@ -37,9 +38,29 @@
   let rawExpirationInput = $state("");
   let expirationDisplay = $state("");
 
+  let expiration_url = $state("");
+  let expiration_date = $state("");
+
   let shortUrl = $derived(
     url?.slug ? `${env.PUBLIC_APPLICATION_NAME}/${url.slug}` : "",
   );
+
+  async function suggestSlug() {
+    console.log("Generating slug");
+    if (url) url.slug = generateSlug();
+  }
+
+  async function suggestPasswordAndCopy() {
+    const password = generatePassword();
+    if (url) url.password_hash = password;
+    try {
+      await navigator.clipboard.writeText(password);
+      toast.success("Password copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy password:", err);
+      toast.error("Failed to copy password to clipboard");
+    }
+  }
 
   $effect(() => {
     if (url?.expiration) {
@@ -103,8 +124,8 @@
           url: url.url,
           slug: url.slug,
           password_hash: url.password_hash || "",
-          expiration: url.expiration || "",
-          expiration_url: url.expiration_url || "",
+          expiration: expiration_date,
+          expiration_url: expiration_url,
           meta_title: url.meta_title || "",
           meta_description: url.meta_description || "",
           meta_image_url: url.meta_image_url || "",
@@ -140,7 +161,7 @@
           e.preventDefault();
           onOpenChange?.(false);
         }
-      }
+      },
     },
     {
       key: "Enter",
@@ -150,19 +171,26 @@
           e.preventDefault();
           isSubmitting = true;
           try {
-            await handleSubmit(new Event('submit', { cancelable: true }));
+            await handleSubmit(new Event("submit", { cancelable: true }));
           } finally {
             isSubmitting = false;
           }
         }
-      }
-    }
+      },
+    },
   ];
 
   // Add effect for keyboard shortcuts
   $effect(() => {
     if (show) {
       return initKeyboardShortcuts(shortcuts);
+    }
+  });
+
+  $effect(() => {
+    if (url) {
+      expiration_url = url.expiration_url || "";
+      expiration_date = convertExpirationToHumanReadable(url.expiration);
     }
   });
 </script>
@@ -247,6 +275,7 @@
                 variant="outline"
                 size="icon"
                 class="h-12 w-12 rounded-l-none rounded-r-2xl bg-input/20"
+                onclick={suggestSlug}
               >
                 <Shuffle class="h-4 w-4" />
               </Button>
@@ -299,6 +328,7 @@
                 variant="outline"
                 size="icon"
                 class="h-12 w-16 rounded-none border-l-0 border-r-0 bg-input/20"
+                on:click={suggestPasswordAndCopy}
               >
                 <Shuffle class="h-4 w-4" />
               </Button>
@@ -307,6 +337,12 @@
                 variant="outline"
                 size="icon"
                 class="h-12 w-16 rounded-l-none rounded-r-2xl bg-input/20"
+                on:click={() => {
+                  if (url)
+                    navigator.clipboard.writeText(url.password_hash).then(() => {
+                      toast.success("Password copied to clipboard");
+                    });
+                }}
               >
                 <Copy class="h-4 w-4" />
               </Button>
@@ -332,7 +368,7 @@
               <Input
                 type="text"
                 name="expiration"
-                bind:value={rawExpirationInput}
+                bind:value={expiration_date}
                 placeholder="tomorrow at 5pm"
                 class="h-12 rounded-2xl bg-input/20"
                 on:input={handleExpirationInput}
@@ -361,7 +397,7 @@
               <Input
                 type="text"
                 name="expiration_url"
-                bind:value={url.expiration_url}
+                bind:value={expiration_url}
                 placeholder="Secondary-URL"
                 class="h-12 rounded-2xl bg-input/20"
               />

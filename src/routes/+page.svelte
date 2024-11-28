@@ -4,8 +4,8 @@
   import {
     UrlList,
     NewUrlForm,
-    SettingsMenu,
     UrlEditForm,
+    KeyboardShortcutsDialog,
   } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
@@ -18,9 +18,8 @@
   import { type UrlSchema } from "$lib/schema/url";
   import type { Infer, SuperValidated } from "sveltekit-superforms";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
-  import { KeyboardShortcutsDialog } from "$lib/components/ui/core";
   import { pbClient } from "../hooks.client";
-  import { tick } from "svelte";
+  import SettingsMenu from "$lib/components/ui/core/misc/settings-menu.svelte";
 
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
