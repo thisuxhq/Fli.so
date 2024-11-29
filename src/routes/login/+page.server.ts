@@ -60,6 +60,8 @@ export const actions: Actions = {
 
       console.log("User created", user);
 
+      // request verification
+      await locals.pb.collection("users").requestVerification(user.email);
       console.log("Creating Stripe customer");
       await createOrRetrieveStripeCustomer(user, locals.pb);
       console.log("Stripe customer created");
