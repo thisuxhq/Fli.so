@@ -37,26 +37,27 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
       url: data.url,
       slug: data.slug,
       tags_id: data.tags_id,
-      meta_title: data.meta_title,
-      meta_description: data.meta_description,
-      meta_image_url: data.meta_image_url,
-      ...(data.password_hash
+      // Only include non-null fields
+      ...(data.meta_title !== null && { meta_title: data.meta_title }),
+      ...(data.meta_description !== null && { meta_description: data.meta_description }),
+      ...(data.meta_image_url !== null && { meta_image_url: data.meta_image_url }),
+      // Handle password separately
+      ...(data.password_hash !== null
         ? {
-            password_hash: await hashPassword(
-              data.password_hash,
-              HASH_SECRET,
-            ),
+            password_hash: await hashPassword(data.password_hash, HASH_SECRET),
           }
-        : {}),
-      ...(data.expiration
+        : { password_hash: null }), // Explicitly set null to clear password
+      // Handle expiration separately
+      ...(data.expiration !== null
         ? { expiration: convertExpirationToDate(data.expiration) }
-        : {}),
-      ...(data.expiration_url ? { expiration_url: data.expiration_url } : {}),
+        : { expiration: null }), // Explicitly set null to clear expiration
+      // Handle expiration URL separately
+      ...(data.expiration_url !== null
+        ? { expiration_url: data.expiration_url }
+        : { expiration_url: null }), // Explicitly set null to clear expiration URL
     };
 
-    const updatedUrl = await locals.pb
-      .collection("urls")
-      .update(id, updateData);
+    const updatedUrl = await locals.pb.collection("urls").update(id, updateData);
     return json(updatedUrl);
   } catch (error) {
     console.error("Failed to update URL", error);

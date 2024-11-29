@@ -96,11 +96,11 @@
             <Lock class="size-3.5 text-gray-500 group-hover:text-amber-950" />
           </div>
         {/if}
-        {#if isExpired}
+        {#if url.expiration}
           <div
-            class="absolute -right-1 -top-1 rounded-full bg-red-100 p-1 shadow-sm dark:bg-red-900"
+            class="absolute -right-1 -top-1 rounded-full bg-white p-1 shadow-sm dark:bg-slate-800"
           >
-            <Clock class="size-3.5 text-red-500 dark:text-red-300" />
+            <Clock class="size-3.5 text-gray-500 group-hover:text-amber-950 dark:group-hover:text-amber-400" />
           </div>
         {/if}
       </div>
@@ -127,7 +127,8 @@
         <div class="line-clamp-1">
           {env.PUBLIC_APPLICATION_NAME}/{url.slug}
           {#if isExpired}
-            <span class="text-xs text-red-500 dark:text-red-400">(Expired)</span>
+            <span class="text-xs text-red-500 dark:text-red-400">(Expired)</span
+            >
           {/if}
         </div>
 

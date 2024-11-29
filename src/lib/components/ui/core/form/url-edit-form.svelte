@@ -35,7 +35,7 @@
   }
 
   let { url, show = false, onOpenChange, tags }: Props = $props();
-  
+
   // Initialize localUrl as null
   let localUrl = $state<UrlsResponseWithTags | null>(null);
 
@@ -45,9 +45,11 @@
       // Create a deep copy manually instead of using structuredClone
       localUrl = {
         ...url,
-        expand: url.expand ? {
-          tags_id: url.expand.tags_id ? [...url.expand.tags_id] : []
-        } : { tags_id: [] }
+        expand: url.expand
+          ? {
+              tags_id: url.expand.tags_id ? [...url.expand.tags_id] : [],
+            }
+          : { tags_id: [] },
       };
     } else {
       localUrl = null;
@@ -56,7 +58,7 @@
 
   // Update all url references to localUrl with null checks
   let shortUrl = $derived(
-    localUrl?.slug ? `${env.PUBLIC_APPLICATION_NAME}/${localUrl.slug}` : ""
+    localUrl?.slug ? `${env.PUBLIC_APPLICATION_NAME}/${localUrl.slug}` : "",
   );
 
   let url_tags = $state<TagsResponse[]>(tags);
@@ -104,7 +106,9 @@
           // Convert to ISO and store in localUrl
           localUrl.expiration = convertExpirationToDate(rawExpirationInput);
           // Update display
-          expirationDisplay = convertExpirationToHumanReadable(localUrl.expiration);
+          expirationDisplay = convertExpirationToHumanReadable(
+            localUrl.expiration,
+          );
           rawExpirationInput = expirationDisplay;
         } else {
           // Clear expiration if input is empty
@@ -130,7 +134,12 @@
 
   let errors = $state<Record<string, string>>({});
   let metaDataEnabled = $state(
-    show || !!(localUrl?.meta_title || localUrl?.meta_description || localUrl?.meta_image_url),
+    show ||
+      !!(
+        localUrl?.meta_title ||
+        localUrl?.meta_description ||
+        localUrl?.meta_image_url
+      ),
   );
 
   // window size
@@ -152,12 +161,12 @@
           id: localUrl.id,
           url: localUrl.url,
           slug: localUrl.slug,
-          password_hash: localUrl.password_hash || "",
-          expiration: expiration_date,
-          expiration_url: expiration_url,
-          meta_title: localUrl.meta_title || "",
-          meta_description: localUrl.meta_description || "",
-          meta_image_url: localUrl.meta_image_url || "",
+          password_hash: localUrl.password_hash || null,
+          expiration: expiration_date || null,
+          expiration_url: expiration_url || null,
+          meta_title: localUrl.meta_title || null,
+          meta_description: localUrl.meta_description || null,
+          meta_image_url: localUrl.meta_image_url || null,
           tags_id: localUrl.tags_id || [],
         }),
       });
@@ -234,7 +243,7 @@
 
   async function handleMetaFetch() {
     if (!localUrl) return;
-    
+
     const response = await scrapeMetadata(localUrl.url);
 
     if (response) {
@@ -251,9 +260,11 @@
       // Reset to original state when dialog closes
       localUrl = {
         ...url,
-        expand: url.expand ? {
-          tags_id: url.expand.tags_id ? [...url.expand.tags_id] : []
-        } : { tags_id: [] }
+        expand: url.expand
+          ? {
+              tags_id: url.expand.tags_id ? [...url.expand.tags_id] : [],
+            }
+          : { tags_id: [] },
       };
     }
   });
@@ -576,7 +587,9 @@
 {:else if localUrl}
   <Drawer.Root open={show} {onOpenChange}>
     <Drawer.Portal>
-      <Drawer.Content class="fixed inset-x-0 bottom-0 h-[97%] rounded-t-3xl bg-white">
+      <Drawer.Content
+        class="fixed inset-x-0 bottom-0 h-[97%] rounded-t-3xl bg-white"
+      >
         <div class="h-full overflow-y-auto">
           <Tabs.Root
             value={currentTab}
@@ -590,16 +603,22 @@
             }}
             class="flex w-full flex-col items-center justify-center"
           >
-            <Tabs.List class="w-fit rounded-2xl bg-input/20 mt-4">
-              <Tabs.Trigger value="edit-data" class="rounded-xl">Edit</Tabs.Trigger>
-              <Tabs.Trigger value="meta-data" class="rounded-xl">Meta data</Tabs.Trigger>
+            <Tabs.List class="mt-4 w-fit rounded-2xl bg-input/20">
+              <Tabs.Trigger value="edit-data" class="rounded-xl"
+                >Edit</Tabs.Trigger
+              >
+              <Tabs.Trigger value="meta-data" class="rounded-xl"
+                >Meta data</Tabs.Trigger
+              >
             </Tabs.List>
 
             <div class="h-auto w-full p-5">
               <Tabs.Content value="edit-data" class="h-auto w-full space-y-6">
                 <form onsubmit={handleSubmit} class="space-y-6">
                   <Dialog.Header>
-                    <Dialog.Title class="w-full text-2xl font-medium text-start">Edit link</Dialog.Title>
+                    <Dialog.Title class="w-full text-start text-2xl font-medium"
+                      >Edit link</Dialog.Title
+                    >
                   </Dialog.Header>
 
                   <input type="hidden" name="id" value={localUrl.id} />
@@ -607,7 +626,10 @@
                   <!-- URL -->
                   <div class="space-y-2">
                     <div class="flex items-center">
-                      <Label for="url" class="flex items-center text-muted-foreground">
+                      <Label
+                        for="url"
+                        class="flex items-center text-muted-foreground"
+                      >
                         Destination URL <span class="text-destructive">*</span>
                       </Label>
                       <Tooltip.Root openDelay={200}>
@@ -636,7 +658,9 @@
                   <!-- Slug -->
                   <div class="space-y-2">
                     <div class="flex items-center">
-                      <Label for="slug" class="flex items-center text-muted-foreground"
+                      <Label
+                        for="slug"
+                        class="flex items-center text-muted-foreground"
                         >Custom URL</Label
                       >
                       <Tooltip.Root openDelay={200}>
@@ -784,8 +808,9 @@
                           </Tooltip.Trigger>
                           <Tooltip.Content>
                             <p>
-                              Enter an expiration link for your link. When the link is
-                              visited, it will redirect to the secondary URL.
+                              Enter an expiration link for your link. When the
+                              link is visited, it will redirect to the secondary
+                              URL.
                             </p>
                           </Tooltip.Content>
                         </Tooltip.Root>
@@ -820,7 +845,9 @@
                   <div class="flex justify-end">
                     <Button type="submit" class="w-full rounded-2xl">
                       Save changes
-                      <kbd class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block">
+                      <kbd
+                        class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+                      >
                         ⏎
                       </kbd>
                     </Button>
@@ -833,15 +860,21 @@
                 {#if shortUrl}
                   <QRCode url={shortUrl} size={200} />
                 {:else}
-                  <div class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-input/20">
-                    <p class="text-balance text-center text-sm text-muted-foreground">
+                  <div
+                    class="mb-8 flex h-48 w-48 items-center justify-center rounded-lg bg-input/20"
+                  >
+                    <p
+                      class="text-balance text-center text-sm text-muted-foreground"
+                    >
                       Need short link to generate QR
                     </p>
                   </div>
                 {/if}
 
                 <div class="flex w-full items-center justify-between">
-                  <span class="text-sm font-medium text-muted-foreground">Meta data</span>
+                  <span class="text-sm font-medium text-muted-foreground"
+                    >Meta data</span
+                  >
                   <Switch
                     checked={metaDataEnabled}
                     onCheckedChange={(e) => {
