@@ -52,6 +52,8 @@
             } else {
               toast.error("An error occurred");
             }
+          } else if (!isLogin && result.type === "success") {
+            toast.success("Account created successfully! Please check your email to verify your account.");
           }
           await update();
           isLoading = false;

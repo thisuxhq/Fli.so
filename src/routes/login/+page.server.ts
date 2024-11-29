@@ -49,6 +49,7 @@ export const actions: Actions = {
     console.log("Creating user");
 
     try {
+      console.log("Attempting to create user with email:", email);
       const user: UsersResponse = await locals.pb.collection("users").create({
         username: email.split("@")[0].length <= 2 ? `${email.split("@")[0]}-${Math.random().toString(36).slice(2, 11)}` : email.split("@")[0],
         email: email,
@@ -58,17 +59,23 @@ export const actions: Actions = {
         emailVisibility: true,
       });
 
-      console.log("User created", user);
+      console.log("User created successfully:", user);
 
-      // request verification
+      console.log("Requesting verification for user:", user.email);
       await locals.pb.collection("users").requestVerification(user.email);
-      console.log("Creating Stripe customer");
-      await createOrRetrieveStripeCustomer(user, locals.pb);
-      console.log("Stripe customer created");
+      console.log("Verification request sent for user:", user.email);
 
-      console.log("Signed up", user);
+      console.log("Creating Stripe customer for user:", user.email);
+      await createOrRetrieveStripeCustomer(user, locals.pb);
+      console.log("Stripe customer created for user:", user.email);
+
+      console.log("Signed up user:", user);
+      
+      return { success: true };
+      
     } catch (err) {
-      console.log("Error: ", err);
+      console.error("Error during signup:", err);
+      return fail(400, { message: "Signup failed" });
     }
   },
 };
