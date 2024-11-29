@@ -50,7 +50,7 @@ export const actions: Actions = {
 
     try {
       const user: UsersResponse = await locals.pb.collection("users").create({
-        username: email.split("@")[0],
+        username: email.split("@")[0].length <= 2 ? `${email.split("@")[0]}-${Math.random().toString(36).slice(2, 11)}` : email.split("@")[0],
         email: email,
         password: password,
         passwordConfirm: password,
