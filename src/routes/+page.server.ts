@@ -60,13 +60,19 @@ export const actions: Actions = {
     }
 
     const form = await superValidate(request, zod(urlSchema));
+    
+    if (!form.valid) {
+      return fail(400, { form });
+    }
+
     const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "25");
 
     try {
       // Check subscription status
       const subscription = await locals.pb
         .collection("subscriptions")
-        .getFirstListItem(`user_id = "${locals.user?.id}"`);
+        .getFirstListItem(`user_id = "${locals.user?.id}"`)
+        .catch(() => null);
       const isPremium = subscription?.status === "active";
 
       if (!isPremium) {
@@ -83,72 +89,47 @@ export const actions: Actions = {
         }
       }
 
-      if (!form.data.slug) {
-        form.data.slug = generateSlug();
-      }
-
-      if (!/^[a-zA-Z0-9-]+$/.test(form.data.slug)) {
-        return fail(400, {
-          message: "Slug can only contain letters, numbers, and hyphens",
-        });
-      }
-
-      const exists = await locals.pb
-        .collection("urls")
-        .getFirstListItem(`slug = "${form.data.slug}"`)
-        .catch(() => null);
-
-      if (exists) {
-        return fail(400, {
-          message: "This custom URL is already taken",
-        });
-      }
-
-      await locals.pb.collection("urls").create({
+      const urlData = {
         url: form.data.url,
-        slug: form.data.slug,
+        slug: form.data.slug || generateSlug(),
         clicks: 0,
         created_by: locals.user?.id,
-        tags_id: form.data.tags,
-        expiration: form.data.expiration
-          ? convertExpirationToDate(form.data.expiration)
-          : null,
-        expiration_url: form.data.expiration_url
-          ? form.data.expiration_url
-          : null,
-        ...(form.data.password_hash
-          ? {
-              password_hash: await hashPassword(
-                form.data.password_hash,
-                HASH_SECRET,
-              ),
-            }
-          : {}),
-        ...(form.data.expiration
-          ? { expiration: convertExpirationToDate(form.data.expiration) }
-          : {}),
-        ...(form.data.expiration_url
-          ? { expiration_url: form.data.expiration_url }
-          : {}),
-        ...(form.data.meta_title ? { meta_title: form.data.meta_title } : {}),
-        ...(form.data.meta_description
-          ? { meta_description: form.data.meta_description }
-          : {}),
-        ...(form.data.meta_image_url
-          ? { meta_image_url: form.data.meta_image_url }
-          : {}),
-      });
+        tags_id: form.data.tags || [],
+      };
+
+      if (form.data.password_hash) {
+        urlData.password_hash = await hashPassword(form.data.password_hash, HASH_SECRET);
+      }
+      if (form.data.expiration) {
+        urlData.expiration = convertExpirationToDate(form.data.expiration);
+      }
+      if (form.data.expiration_url) {
+        urlData.expiration_url = form.data.expiration_url;
+      }
+      if (form.data.meta_title) {
+        urlData.meta_title = form.data.meta_title;
+      }
+      if (form.data.meta_description) {
+        urlData.meta_description = form.data.meta_description;
+      }
+      if (form.data.meta_image_url) {
+        urlData.meta_image_url = form.data.meta_image_url;
+      }
+
+      const record = await locals.pb.collection("urls").create(urlData);
 
       return {
         form,
         type: "success",
         status: 201,
         message: "URL shortened successfully",
-        shortUrl: `https://dun.sh/${form.data.slug}`,
+        shortUrl: `https://dun.sh/${record.slug}`,
       };
     } catch (error) {
+      console.error("Error creating URL:", error);
       return fail(500, {
-        message: "Failed to create shortened URL: " + error,
+        form,
+        message: "Failed to create shortened URL. Please try again.",
       });
     }
   },
