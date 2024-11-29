@@ -385,7 +385,7 @@
           email={data.user.email}
           avatar={data.user.avatar}
           showUpgrade={data?.userWithSubscription[0]?.status ===
-            ("inactive" as SubscriptionsStatusOptions)}
+            ("active" as SubscriptionsStatusOptions)}
         />
       </div>
     </div>
