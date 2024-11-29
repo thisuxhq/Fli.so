@@ -107,13 +107,42 @@
   }
 
   async function handleMetaFetch() {
-    const response = await scrapeMetadata($formData.url);
+    try {
+      const response = await scrapeMetadata($formData.url);
 
-    if (response) {
-      metaDataEnabled = true;
-      $formData.meta_title = response.title;
-      $formData.meta_description = response.description;
-      $formData.meta_image_url = response.imageUrl;
+      if (response) {
+        metaDataEnabled = true;
+        $formData.meta_title = response.title || '';
+        $formData.meta_description = response.description || '';
+        
+        if (response.imageUrl) {
+          let imageUrl = response.imageUrl;
+          
+          // Handle relative paths by adding base URL
+          if (imageUrl.startsWith('/')) {
+            try {
+              const baseUrl = new URL($formData.url);
+              imageUrl = `${baseUrl.origin}${imageUrl}`;
+            } catch (e) {
+              console.warn('Invalid base URL:', $formData.url);
+            }
+          }
+          
+          // Validate final URL
+          try {
+            new URL(imageUrl);
+            $formData.meta_image_url = imageUrl;
+          } catch (e) {
+            console.warn('Invalid meta image URL:', imageUrl);
+            $formData.meta_image_url = '';
+          }
+        } else {
+          $formData.meta_image_url = '';
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching metadata:', error);
+      toast.error('Failed to fetch metadata');
     }
   }
 
