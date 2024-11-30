@@ -103,6 +103,7 @@ export type TagsRecord = {
 export type UrlsRecord = {
 	clicks?: number
 	created_by?: RecordIdString
+	domain_id?: RecordIdString
 	expiration?: IsoDateString
 	expiration_url?: string
 	meta_description?: string
