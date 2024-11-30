@@ -8,6 +8,7 @@ export const GET: RequestHandler = async ({ locals }) => {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    // Fetching tags for the current user, sorted by name and including the creator
     const tags = await pb.collection("tags").getFullList({
       sort: "name",
       filter: `created_by = "${locals.user.id}"`,
@@ -38,22 +39,17 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       return new Response("Name and color are required", { status: 400 });
     }
 
-    console.log("Checking if tag with same name already exists for this user");
-
     // Check if tag with same name already exists for this user
     const existingTags = await pb.collection("tags").getFullList({
       filter: `name = "${name}" && created_by = "${locals.user.id}"`,
     });
-
-    console.log("existingTags", existingTags);
 
     if (existingTags.length > 0) {
       console.log("Tag with this name already exists");
       return new Response("Tag with this name already exists", { status: 409 });
     }
 
-    console.log("Creating tag");
-
+    // Creating a new tag
     try {
       const tag = await locals.pb.collection("tags").create({
         name: name.trim(),
@@ -62,8 +58,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       });
       console.log("Tag created successfully");
       return json(tag);
-    } catch (pbError: any) {
-      console.error("PocketBase Error:", pbError.response?.data || pbError);
+    } catch (error) {
+      console.error("PocketBase Error:", error.response?.data || error);
       return new Response("Failed to create tag", { status: 500 });
     }
   } catch (error) {
@@ -100,6 +96,7 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
       return new Response("Tag with this name already exists", { status: 409 });
     }
 
+    // Updating the tag
     const updatedTag = await pb.collection("tags").update(id, {
       name,
       color,
@@ -131,6 +128,7 @@ export const DELETE: RequestHandler = async ({ request, locals }) => {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    // Deleting the tag
     await pb.collection("tags").delete(id);
 
     return new Response(null, { status: 204 });

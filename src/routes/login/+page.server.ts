@@ -4,43 +4,52 @@ import { createOrRetrieveStripeCustomer } from "$lib/server/stripe-utils";
 import type { UsersResponse } from "$lib/types";
 
 export const load = (async ({ locals }) => {
+  // Redirect to the home page if the user is already authenticated
   if (locals.pb.authStore.isValid) {
     throw redirect(302, "/");
   }
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
+  // Action to handle login form submission
   login: async ({ request, locals }) => {
     const formData = await request.formData();
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    // Validate form data
     if (!email || !password) {
       return fail(400, { message: "Please provide both email and password." });
     }
 
     try {
+      // Attempt to authenticate the user
       await locals.pb.collection("users").authWithPassword(email, password);
     } catch (err) {
+      // Handle authentication failure
       throw error(
         401,
         "Login failed. Please check your email and password." + err,
       );
     }
 
-    throw redirect(303, "/"); // Redirect to home page
+    // Redirect to the home page on successful login
+    throw redirect(303, "/");
   },
 
+  // Action to handle signup form submission
   signup: async ({ request, locals }) => {
     const formData = await request.formData();
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    // Validate form data
     if (!email || !password) {
       return fail(400, { message: "Please provide both email and password." });
     }
 
     try {
+      // Create a new user
       const user: UsersResponse = await locals.pb.collection("users").create({
         username:
           email.split("@")[0].length <= 2
@@ -53,11 +62,15 @@ export const actions: Actions = {
         emailVisibility: true,
       });
 
+      // Request verification for the new user
       await locals.pb.collection("users").requestVerification(user.email);
+      // Create or retrieve a Stripe customer for the new user
       await createOrRetrieveStripeCustomer(user, locals.pb);
 
+      // Return success response
       return { success: true };
     } catch (err) {
+      // Handle signup failure
       return fail(400, { message: "Signup failed" });
     }
   },

@@ -1,5 +1,4 @@
 <script lang="ts">
-  // Importing necessary libraries and components
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import {
@@ -328,7 +327,7 @@
         </h1>
       </div>
 
-      <div class="relative hidden md:block max-w-sm w-full">
+      <div class="relative hidden w-full max-w-sm md:block">
         <Input
           id="search-input"
           type="text"
@@ -434,7 +433,7 @@
     />
 
     <!-- Update the help button -->
-    <div class="hidden md:block md:fixed md:bottom-4 md:right-4">
+    <div class="hidden md:fixed md:bottom-4 md:right-4 md:block">
       <Button
         variant="ghost"
         size="icon"

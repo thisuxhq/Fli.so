@@ -9,6 +9,7 @@
   import { convertExpirationToHumanReadable } from "$lib/utils/datetime";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
 
+  // Define the interface for the page data
   interface PageData {
     plans?: Stripe.Price[];
     subscription?: SubscriptionsResponse;
@@ -16,21 +17,25 @@
     hasSubscription: boolean;
   }
 
+  // Get the page data from the props
   let { data } = $props<{ data: PageData }>();
 
+  // Initialize the current tab and loading state
   let currentTab = $state<"monthly" | "yearly">("monthly");
   let isLoading = $state<boolean>(false);
 
-  // Add keyboard shortcuts
+  // Define keyboard shortcuts
   const shortcuts: Shortcut[] = [
     {
       key: "p",
       handler: (e) => {
         if (!isLoading && data.plans && !data.hasSubscription) {
           e.preventDefault();
-          handleSubscribe(currentTab === "monthly" ? data.plans[1] : data.plans[0]);
+          handleSubscribe(
+            currentTab === "monthly" ? data.plans[1] : data.plans[0],
+          );
         }
-      }
+      },
     },
     {
       key: "m",
@@ -39,7 +44,7 @@
           e.preventDefault();
           handleBillingPortal();
         }
-      }
+      },
     },
     {
       key: "Tab",
@@ -48,19 +53,21 @@
           e.preventDefault();
           handleTabChange(currentTab === "monthly" ? "yearly" : "monthly");
         }
-      }
-    }
+      },
+    },
   ];
 
-  // Add effect for keyboard shortcuts
+  // Initialize keyboard shortcuts
   $effect(() => {
     return initKeyboardShortcuts(shortcuts);
   });
 
+  // Function to handle subscription
   async function handleSubscribe(plan: Stripe.Price) {
     try {
       isLoading = true;
 
+      // Create a checkout session
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
@@ -74,6 +81,7 @@
 
       const result = await response.json();
 
+      // Redirect to the checkout URL if successful
       if (response.ok && result.url) {
         window.location.href = result.url;
       } else {
@@ -87,10 +95,12 @@
     }
   }
 
+  // Function to handle billing portal
   async function handleBillingPortal() {
     try {
       isLoading = true;
 
+      // Create a billing portal session
       const response = await fetch("/api/create-billing-portal-session", {
         method: "POST",
         headers: {
@@ -103,6 +113,7 @@
 
       const result = await response.json();
 
+      // Redirect to the billing portal URL if successful
       if (response.ok && result.url) {
         window.location.href = result.url;
       } else {
@@ -116,10 +127,12 @@
     }
   }
 
+  // Function to handle tab change
   function handleTabChange(value: "monthly" | "yearly") {
     currentTab = value;
   }
 
+  // Effect to set the current tab based on the page data
   $effect(() => {
     if (data.tab) {
       currentTab = data.tab;
@@ -159,7 +172,7 @@
             {#if isLoading}
               <Loader2 class="mr-2 size-4 animate-spin" />
             {/if}
-            
+
             Manage Subscription
           </Button>
         </div>

@@ -20,7 +20,6 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
   }
 
   try {
-    // Check if slug exists but belongs to different URL
     const exists = await locals.pb
       .collection("urls")
       .getFirstListItem(`slug = "${slug}" && id != "${id}"`)
@@ -37,27 +36,29 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
       url: data.url,
       slug: data.slug,
       tags_id: data.tags_id,
-      // Only include non-null fields
       ...(data.meta_title !== null && { meta_title: data.meta_title }),
-      ...(data.meta_description !== null && { meta_description: data.meta_description }),
-      ...(data.meta_image_url !== null && { meta_image_url: data.meta_image_url }),
-      // Handle password separately
+      ...(data.meta_description !== null && {
+        meta_description: data.meta_description,
+      }),
+      ...(data.meta_image_url !== null && {
+        meta_image_url: data.meta_image_url,
+      }),
       ...(data.password_hash !== null
         ? {
             password_hash: await hashPassword(data.password_hash, HASH_SECRET),
           }
-        : { password_hash: null }), // Explicitly set null to clear password
-      // Handle expiration separately
+        : { password_hash: null }),
       ...(data.expiration !== null
         ? { expiration: convertExpirationToDate(data.expiration) }
-        : { expiration: null }), // Explicitly set null to clear expiration
-      // Handle expiration URL separately
+        : { expiration: null }),
       ...(data.expiration_url !== null
         ? { expiration_url: data.expiration_url }
-        : { expiration_url: null }), // Explicitly set null to clear expiration URL
+        : { expiration_url: null }),
     };
 
-    const updatedUrl = await locals.pb.collection("urls").update(id, updateData);
+    const updatedUrl = await locals.pb
+      .collection("urls")
+      .update(id, updateData);
     return json(updatedUrl);
   } catch (error) {
     console.error("Failed to update URL", error);
@@ -73,13 +74,11 @@ export const DELETE: RequestHandler = async ({ locals, request }) => {
   const { id } = await request.json();
 
   try {
-    // check if the user is the owner of the url
     const url = await locals.pb.collection("urls").getOne(id);
     if (url.created_by !== locals.user?.id) {
       return json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // delete the url
     await locals.pb.collection("urls").delete(id);
     return json({ success: true });
   } catch (error) {

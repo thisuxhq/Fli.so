@@ -6,23 +6,26 @@ import type { UsersResponse } from "$lib/types";
 
 export const POST: RequestHandler = async ({ request, url, locals }) => {
   try {
+    // Check if the user is authenticated
     if (!locals.pb.authStore.isValid) {
       throw redirect(303, "/login");
     }
 
+    // Extract priceId and tab from the request body
     const { priceId, tab } = await request.json();
 
+    // Ensure the user is logged in
     if (!locals.user) {
       throw redirect(303, "/login");
     }
 
-    // Get or create customer
+    // Retrieve or create a Stripe customer for the user
     const customer = await createOrRetrieveStripeCustomer(
       locals.user as UsersResponse,
       locals.pb,
     );
 
-    // Create checkout session
+    // Create a new checkout session for the user
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
@@ -41,9 +44,11 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
       },
     });
 
-  return json({ url: session.url });
+    // Return the URL of the checkout session
+    return json({ url: session.url });
   } catch (error) {
     console.error("Error creating checkout session:", error);
+    // Return an error response if checkout session creation fails
     return json(
       { error: "Failed to create checkout session" },
       { status: 500 },

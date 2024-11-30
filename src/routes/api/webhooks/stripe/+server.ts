@@ -10,7 +10,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   if (!signature) throw error(400, "Missing stripe-signature header");
 
   try {
-    // Authenticate as admin
     await locals.pb.admins.authWithPassword(
       env.POCKETBASE_ADMIN_EMAIL!,
       env.POCKETBASE_ADMIN_PASSWORD!
@@ -94,7 +93,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
     return json({ received: true });
   } catch (err) {
-    if (err.type?.includes('StripeSignatureVerificationError')) {
+    if (err instanceof Error && (err as any).type?.includes('StripeSignatureVerificationError')) {
       throw error(400, "Invalid Stripe signature");
     }
     throw error(500, err instanceof Error ? err.message : "Unknown error");

@@ -9,6 +9,7 @@
   import { tick } from "svelte";
   import { CreateTagDialog } from "$lib/components/ui/core/misc";
 
+  // Define the interface for component props
   interface Props {
     tags: TagsResponse[];
     onSelect: (tags: string[]) => void;
@@ -16,28 +17,39 @@
     onRefreshTags?: () => void;
   }
 
+  // Initialize component props
   let { tags, onSelect, selectedTags, onRefreshTags }: Props = $props();
 
+  // State for managing the popover's open state
   let open = $state(false);
+  // State for managing the selected tags
   let selectedValues = $state<string[]>(selectedTags);
 
+  // Derived state for selected labels based on selected tags
   let selectedLabels = $derived(
     tags
       .filter((tag: TagsResponse) => selectedValues.includes(tag.id))
       .map((tag: TagsResponse) => tag.name),
   );
 
+  // Derived state for display text based on selected labels
   let displayText = $derived(
     selectedLabels.length > 0 ? selectedLabels.join(", ") : "Choose tags...",
   );
 
+  // State for managing the search query
   let searchQuery = $state("");
+  // Derived state for the count of selected tags
   let selectedCount = $derived(selectedValues.length);
 
+  // State for managing the create tag dialog
   let showCreateTagDialog = $state(false);
+  // State for managing the new tag name
   let newTagName = $state("");
+  // State for managing the tag creation process
   let isCreatingTag = $state(false);
 
+  // Function to toggle the selection of a tag
   function toggleValue(value: string) {
     const index = selectedValues.indexOf(value);
     if (index === -1) {
@@ -47,6 +59,7 @@
     }
   }
 
+  // Function to close the popover and focus the trigger element
   function closeAndFocusTrigger(triggerId: string) {
     open = false;
     tick().then(() => {

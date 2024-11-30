@@ -66,7 +66,6 @@ export const actions: Actions = {
     }
 
     try {
-      // Check if slug already exists
       const exists = await locals.pb
         .collection("urls")
         .getFirstListItem(`slug = "${form.data.slug}"`)
@@ -75,13 +74,11 @@ export const actions: Actions = {
       if (exists) {
         return fail(400, {
           form,
-          message: "This custom URL is already taken"
+          message: "This custom URL is already taken",
         });
       }
 
       const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "25");
-
-      // Check subscription status
       const subscription = await locals.pb
         .collection("subscriptions")
         .getFirstListItem(`user_id = "${locals.user?.id}"`)
@@ -89,7 +86,6 @@ export const actions: Actions = {
       const isPremium = subscription?.status === "active";
 
       if (!isPremium) {
-        // Count user's URLs
         const urlCount = await locals.pb.collection("urls").getList(1, 1, {
           filter: `created_by = "${locals.user?.id}"`,
           $cancelKey: locals.user?.id,
@@ -162,21 +158,13 @@ export const actions: Actions = {
     const expiration = formData.get("expiration") as string;
     const expiration_url = formData.get("expiration_url") as string;
 
-    console.log("expiration", expiration);
-    console.log("expiration_url", expiration_url);
-
-    if (!id) {
-      return fail(400, { message: "ID is required" });
-    }
-
     if (!/^[a-zA-Z0-9-]+$/.test(slug)) {
       return fail(400, {
-        message: "Slug can only contain letters, numbers, and hyphens"
+        message: "Slug can only contain letters, numbers, and hyphens",
       });
     }
 
     try {
-      // Check if slug exists but exclude current URL
       const exists = await locals.pb
         .collection("urls")
         .getFirstListItem(`slug = "${slug}" && id != "${id}"`)
@@ -207,8 +195,6 @@ export const actions: Actions = {
           : {}),
         ...(expiration_url ? { expiration_url: expiration_url } : {}),
       };
-
-      console.log("updateData", updateData);
 
       const result = await locals.pb.collection("urls").update(id, updateData);
 
@@ -251,6 +237,7 @@ export const actions: Actions = {
       message: "URL deleted successfully",
     };
   },
+
   logout: async ({ locals }) => {
     locals.pb.authStore.clear();
     throw redirect(302, "/login");
