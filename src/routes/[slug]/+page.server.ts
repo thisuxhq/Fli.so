@@ -5,10 +5,18 @@ import { SHA256 } from "@oslojs/crypto/sha2";
 import { env } from "$env/dynamic/private";
 import type { UrlsResponse } from "$lib/types";
 import { arrayBufferToHex } from "$lib/utils/buffer";
+import { createInstance } from "$lib/pocketbase";
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
 export const load: PageServerLoad = async ({ params, locals }) => {
+  // Authenticate as admin
+  const pb = createInstance();
+  await pb.admins.authWithPassword(
+    env.POCKETBASE_ADMIN_EMAIL!,
+    env.POCKETBASE_ADMIN_PASSWORD!,
+  );
+
   if (!params.slug) {
     throw error(400, "Slug is required");
   }

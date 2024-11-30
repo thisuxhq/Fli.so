@@ -7,7 +7,6 @@
     UrlEditForm,
     KeyboardShortcutsDialog,
     KbdShortcut,
-    Logo,
   } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
@@ -23,6 +22,7 @@
   import type { Infer, SuperValidated } from "sveltekit-superforms";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
   import { pbClient } from "../hooks.client";
+  import Logo from "$lib/components/ui/core/misc/logo.svelte";
   import SettingsMenu from "$lib/components/ui/core/misc/settings-menu.svelte";
   import { env } from "$env/dynamic/public";
 
