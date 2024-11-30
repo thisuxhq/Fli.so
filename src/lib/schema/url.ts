@@ -1,8 +1,18 @@
 import { z } from "zod";
 
 export const urlSchema = z.object({
-  url: z.string().min(2).max(500),
-  slug: z.string().min(2).max(50),
+  url: z
+    .string()
+    .min(2, "Please enter a valid URL")
+    .max(500, "URL is too long"),
+  slug: z
+    .string()
+    .min(2, "Custom URL is too short")
+    .max(50, "Custom URL is too long")
+    .regex(
+      /^[a-zA-Z0-9-]+$/,
+      "The custom URL can only contain letters, numbers, and hyphens",
+    ),
   created_by: z.string(),
   tags: z.array(z.string()).optional(),
   password_hash: z.string().optional(),

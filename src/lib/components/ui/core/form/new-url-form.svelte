@@ -49,7 +49,8 @@
   const form = superForm(data, {
     dataType: "json",
     validators: zodClient(urlSchema),
-    onResult: ({ result }) => {
+    onResult: async ({ result }) => {
+      isSubmitting = false;
       if (result.type === "success") {
         toast.success("URL shortened successfully!");
         onOpenChange?.(false);
@@ -112,37 +113,37 @@
 
       if (response) {
         metaDataEnabled = true;
-        $formData.meta_title = response.title || '';
-        $formData.meta_description = response.description || '';
-        
+        $formData.meta_title = response.title || "";
+        $formData.meta_description = response.description || "";
+
         if (response.imageUrl) {
           let imageUrl = response.imageUrl;
-          
+
           // Handle relative paths by adding base URL
-          if (imageUrl.startsWith('/')) {
+          if (imageUrl.startsWith("/")) {
             try {
               const baseUrl = new URL($formData.url);
               imageUrl = `${baseUrl.origin}${imageUrl}`;
             } catch (e) {
-              console.warn('Invalid base URL:', $formData.url);
+              console.warn("Invalid base URL:", $formData.url);
             }
           }
-          
+
           // Validate final URL
           try {
             new URL(imageUrl);
             $formData.meta_image_url = imageUrl;
           } catch (e) {
-            console.warn('Invalid meta image URL:', imageUrl);
-            $formData.meta_image_url = '';
+            console.warn("Invalid meta image URL:", imageUrl);
+            $formData.meta_image_url = "";
           }
         } else {
-          $formData.meta_image_url = '';
+          $formData.meta_image_url = "";
         }
       }
     } catch (error) {
-      console.error('Error fetching metadata:', error);
-      toast.error('Failed to fetch metadata');
+      console.error("Error fetching metadata:", error);
+      toast.error("Failed to fetch metadata");
     }
   }
 
@@ -216,7 +217,10 @@
           id="new-url-form"
           method="POST"
           action="?/shorten"
-          use:enhance
+          use:enhance={() => {
+            isSubmitting = true;
+            return {};
+          }}
           class="space-y-6"
         >
           <Dialog.Header>
@@ -246,6 +250,7 @@
                 type="url"
                 placeholder="https://www.example.com/path-to-destination"
                 required
+                disabled={isSubmitting}
                 on:input={handleMetaFetch}
                 on:keydown={(e) => {
                   if (e.key === "/") {
@@ -286,9 +291,17 @@
                     placeholder="work"
                     pattern="[a-zA-Z0-9-]+"
                     class="h-12 rounded-none border-none bg-input/20"
+                    on:input={(e) => {
+                      // Remove spaces and special characters on input
+                      e.currentTarget.value = e.currentTarget.value.replace(
+                        /[^a-zA-Z0-9-]/g,
+                        "",
+                      );
+                      $formData.slug = e.currentTarget.value;
+                    }}
                     on:keydown={(e) => {
-                      if (e.key === "/") {
-                        e.stopPropagation();
+                      if (e.key === "/" || e.key === " ") {
+                        e.preventDefault();
                       }
                     }}
                   />
@@ -304,6 +317,7 @@
                 </Button>
               </div>
             </Form.Control>
+            <Form.FieldErrors />
           </Form.Field>
 
           <!-- Password -->
@@ -503,8 +517,12 @@
 
           <div class="flex justify-end">
             <!-- Create link button -->
-            <Button type="submit" class="rounded-2xl">
-              Create link
+            <Button type="submit" class="rounded-2xl" disabled={isSubmitting}>
+              {#if isSubmitting}
+                Creating...
+              {:else}
+                Create Link
+              {/if}
               <kbd
                 class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
               >
@@ -614,9 +632,13 @@
             }}
             class="flex w-full flex-col items-center justify-center"
           >
-            <Tabs.List class="w-fit rounded-2xl bg-input/20 mt-4">
-              <Tabs.Trigger value="edit-data" class="rounded-xl">Edit</Tabs.Trigger>
-              <Tabs.Trigger value="meta-data" class="rounded-xl">Meta data</Tabs.Trigger>
+            <Tabs.List class="mt-4 w-fit rounded-2xl bg-input/20">
+              <Tabs.Trigger value="edit-data" class="rounded-xl"
+                >Edit</Tabs.Trigger
+              >
+              <Tabs.Trigger value="meta-data" class="rounded-xl"
+                >Meta data</Tabs.Trigger
+              >
             </Tabs.List>
 
             <div class="h-auto w-full p-5">
@@ -624,7 +646,10 @@
                 <form
                   method="POST"
                   action="?/shorten"
-                  use:enhance
+                  use:enhance={() => {
+                    isSubmitting = true;
+                    return {};
+                  }}
                   class="space-y-6"
                 >
                   <Dialog.Header>
@@ -659,6 +684,7 @@
                         type="url"
                         placeholder="https://www.example.com/path-to-destination"
                         required
+                        disabled={isSubmitting}
                         on:input={handleMetaFetch}
                         on:keydown={(e) => {
                           if (e.key === "/") {
@@ -701,9 +727,18 @@
                             placeholder="work"
                             pattern="[a-zA-Z0-9-]+"
                             class="h-12 rounded-none border-none bg-input/20"
+                            on:input={(e) => {
+                              // Remove spaces and special characters on input
+                              e.currentTarget.value =
+                                e.currentTarget.value.replace(
+                                  /[^a-zA-Z0-9-]/g,
+                                  "",
+                                );
+                              $formData.slug = e.currentTarget.value;
+                            }}
                             on:keydown={(e) => {
-                              if (e.key === "/") {
-                                e.stopPropagation();
+                              if (e.key === "/" || e.key === " ") {
+                                e.preventDefault();
                               }
                             }}
                           />
@@ -926,8 +961,12 @@
 
                   <div class="flex justify-end">
                     <!-- Create link button -->
-                    <Button type="submit" class="w-full rounded-2xl">
-                      Create link
+                    <Button type="submit" class="w-full rounded-2xl" disabled={isSubmitting}>
+                      {#if isSubmitting}
+                        Creating...
+                      {:else}
+                        Create Link
+                      {/if}
                       <kbd
                         class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
                       >

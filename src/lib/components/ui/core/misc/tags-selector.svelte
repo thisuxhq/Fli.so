@@ -36,6 +36,7 @@
 
   let showCreateTagDialog = $state(false);
   let newTagName = $state("");
+  let isCreatingTag = $state(false);
 
   function toggleValue(value: string) {
     const index = selectedValues.indexOf(value);
@@ -61,6 +62,7 @@
       variant="outline"
       role="combobox"
       aria-expanded={open}
+      disabled={isCreatingTag}
       class="h-12 w-full justify-between rounded-2xl bg-input/20"
     >
       <div class="flex items-center gap-2">
@@ -83,10 +85,10 @@
           <Button
             variant="outline"
             class="w-full rounded-2xl"
+            disabled={isCreatingTag}
             onclick={() => {
               showCreateTagDialog = true;
               newTagName = searchQuery;
-              console.log("clicked new tag");
             }}
           >
             <span class="truncate">+ Create "{searchQuery}" tag</span>
@@ -127,6 +129,7 @@
   open={showCreateTagDialog}
   onOpenChange={(open) => (showCreateTagDialog = open)}
   initialName={newTagName}
+  bind:loading={isCreatingTag}
   onSuccess={(newTag) => {
     tags = [...tags, newTag];
     onRefreshTags?.();

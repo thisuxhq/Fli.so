@@ -60,14 +60,27 @@ export const actions: Actions = {
     }
 
     const form = await superValidate(request, zod(urlSchema));
-    
+
     if (!form.valid) {
       return fail(400, { form });
     }
 
-    const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "25");
-
     try {
+      // Check if slug already exists
+      const exists = await locals.pb
+        .collection("urls")
+        .getFirstListItem(`slug = "${form.data.slug}"`)
+        .catch(() => null);
+
+      if (exists) {
+        return fail(400, {
+          form,
+          message: "This custom URL is already taken"
+        });
+      }
+
+      const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "25");
+
       // Check subscription status
       const subscription = await locals.pb
         .collection("subscriptions")
@@ -98,7 +111,10 @@ export const actions: Actions = {
       };
 
       if (form.data.password_hash) {
-        urlData.password_hash = await hashPassword(form.data.password_hash, HASH_SECRET);
+        urlData.password_hash = await hashPassword(
+          form.data.password_hash,
+          HASH_SECRET,
+        );
       }
       if (form.data.expiration) {
         urlData.expiration = convertExpirationToDate(form.data.expiration);
@@ -155,11 +171,12 @@ export const actions: Actions = {
 
     if (!/^[a-zA-Z0-9-]+$/.test(slug)) {
       return fail(400, {
-        message: "Slug can only contain letters, numbers, and hyphens",
+        message: "Slug can only contain letters, numbers, and hyphens"
       });
     }
 
     try {
+      // Check if slug exists but exclude current URL
       const exists = await locals.pb
         .collection("urls")
         .getFirstListItem(`slug = "${slug}" && id != "${id}"`)

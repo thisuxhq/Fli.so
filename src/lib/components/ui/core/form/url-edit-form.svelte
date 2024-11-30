@@ -148,9 +148,9 @@
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
-
     if (!localUrl?.id) return;
 
+    isSubmitting = true;
     try {
       const response = await fetch(`/api/url`, {
         method: "PUT",
@@ -183,6 +183,8 @@
       toast.error(
         error instanceof Error ? error.message : "Failed to update URL",
       );
+    } finally {
+      isSubmitting = false;
     }
   }
 
@@ -309,6 +311,7 @@
               required
               class="h-12 rounded-2xl bg-input/20"
               on:input={handleMetaFetch}
+              disabled={isSubmitting}
             />
             {#if errors.url}<p class="text-sm text-destructive">
                 {errors.url}
@@ -508,13 +511,17 @@
             >
               Cancel
             </Button>
-            <Button type="submit" class="rounded-2xl"
-              >Save changes <kbd
-                class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
-              >
-                ⏎
-              </kbd></Button
-            >
+            <Button type="submit" class="rounded-2xl" disabled={isSubmitting}>
+              {#if isSubmitting}
+                Updating...
+              {:else}
+                Save changes <kbd
+                  class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+                >
+                  ⏎
+                </kbd>
+              {/if}
+            </Button>
           </div>
         </form>
       </div>
@@ -649,6 +656,7 @@
                       required
                       class="h-12 rounded-2xl bg-input/20"
                       on:input={handleMetaFetch}
+                      disabled={isSubmitting}
                     />
                     {#if errors.url}<p class="text-sm text-destructive">
                         {errors.url}
@@ -843,13 +851,12 @@
                   </div>
 
                   <div class="flex justify-end">
-                    <Button type="submit" class="w-full rounded-2xl">
-                      Save changes
-                      <kbd
-                        class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
-                      >
-                        ⏎
-                      </kbd>
+                    <Button type="submit" class="w-full rounded-2xl" disabled={isSubmitting}>
+                      {#if isSubmitting}
+                        Updating...
+                      {:else}
+                        Update Link
+                      {/if}
                     </Button>
                   </div>
                 </form>

@@ -421,7 +421,7 @@
     />
 
     <!-- Update the help button -->
-    <div class="fixed bottom-4 right-4">
+    <div class="hidden md:fixed md:bottom-4 md:right-4">
       <Button
         variant="ghost"
         size="icon"
