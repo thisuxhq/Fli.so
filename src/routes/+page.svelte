@@ -307,7 +307,7 @@
 >
   <div class="mx-auto w-full p-6">
     <!-- Header -->
-    <div class="mb-4 flex items-center justify-between">
+    <div class="mb-9 flex items-center justify-between">
       <div>
         <h1
           class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
@@ -316,7 +316,7 @@
         </h1>
       </div>
 
-      <div class="relative hidden md:block">
+      <div class="relative hidden md:block max-w-sm w-full">
         <Input
           id="search-input"
           type="text"
@@ -391,7 +391,7 @@
     </div>
 
     <!-- search input -->
-    <div class="relative mb-4 block md:hidden">
+    <div class="relative mb-6 block md:hidden">
       <Input
         id="search-input"
         type="text"
@@ -405,6 +405,7 @@
       />
     </div>
 
+    <!--Url list-->
     <UrlList
       urls={updatedUrls}
       onEdit={(url: UrlsResponseWithTags) => {
@@ -421,7 +422,7 @@
     />
 
     <!-- Update the help button -->
-    <div class="hidden md:fixed md:bottom-4 md:right-4">
+    <div class="hidden md:block md:fixed md:bottom-4 md:right-4">
       <Button
         variant="ghost"
         size="icon"
@@ -431,13 +432,6 @@
         <CircleHelp class="h-4 w-4" />
       </Button>
     </div>
-
-    <KeyboardShortcutsDialog
-      open={showKeyboardShortcuts}
-      onOpenChange={(open: boolean) => {
-        showKeyboardShortcuts = open;
-      }}
-    />
   </div>
 </div>
 
@@ -464,4 +458,11 @@
     showEditForm = open;
   }}
   tags={data.tags}
+/>
+
+<KeyboardShortcutsDialog
+  open={showKeyboardShortcuts}
+  onOpenChange={(open: boolean) => {
+    showKeyboardShortcuts = open;
+  }}
 />

@@ -34,14 +34,14 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
           quantity: 1,
         },
       ],
-      success_url: `${url.origin}/success`,
+      success_url: `${url.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${url.origin}/billing?tab=${tab}`,
       metadata: {
         user_id: locals.user.id,
       },
     });
 
-    return json({ url: session.url });
+  return json({ url: session.url });
   } catch (error) {
     console.error("Error creating checkout session:", error);
     return json(
