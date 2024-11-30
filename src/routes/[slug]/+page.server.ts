@@ -9,7 +9,7 @@ import { createInstance } from "$lib/pocketbase";
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params }) => {
   // Authenticate as admin
   const pb = createInstance();
   await pb.admins.authWithPassword(
@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
     throw error(400, "Slug is required");
   }
 
-  const url = await locals.pb
+  const url = await pb
     .collection("urls")
     .getFirstListItem<UrlsResponse>(`slug = "${params.slug}"`);
 
@@ -30,7 +30,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   }
 
   // Increment clicks
-  await locals.pb.collection("urls").update(url.id, {
+  await pb.collection("urls").update(url.id, {
     clicks: url.clicks + 1,
   });
 
