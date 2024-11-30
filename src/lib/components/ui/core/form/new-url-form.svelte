@@ -292,17 +292,17 @@
                     pattern="[a-zA-Z0-9-]+"
                     class="h-12 rounded-none border-none bg-input/20"
                     on:input={(e) => {
-                      // Remove spaces and special characters on input
-                      e.currentTarget.value = e.currentTarget.value.replace(
-                        /[^a-zA-Z0-9-]/g,
-                        "",
-                      );
+                      // Replace spaces with hyphens and remove other special characters
+                      e.currentTarget.value = e.currentTarget.value
+                        .replace(/\s+/g, '-')  // Replace one or more spaces with single hyphen
+                        .replace(/[^a-zA-Z0-9-]/g, ''); // Remove remaining special chars
                       $formData.slug = e.currentTarget.value;
                     }}
                     on:keydown={(e) => {
-                      if (e.key === "/" || e.key === " ") {
+                      if (e.key === "/") {
                         e.preventDefault();
                       }
+                      // Remove space prevention since we now handle it
                     }}
                   />
                 </div>
@@ -728,18 +728,17 @@
                             pattern="[a-zA-Z0-9-]+"
                             class="h-12 rounded-none border-none bg-input/20"
                             on:input={(e) => {
-                              // Remove spaces and special characters on input
-                              e.currentTarget.value =
-                                e.currentTarget.value.replace(
-                                  /[^a-zA-Z0-9-]/g,
-                                  "",
-                                );
+                              // Replace spaces with hyphens and remove other special characters
+                              e.currentTarget.value = e.currentTarget.value
+                                .replace(/\s+/g, '-')  // Replace one or more spaces with single hyphen
+                                .replace(/[^a-zA-Z0-9-]/g, ''); // Remove remaining special chars
                               $formData.slug = e.currentTarget.value;
                             }}
                             on:keydown={(e) => {
                               if (e.key === "/" || e.key === " ") {
                                 e.preventDefault();
                               }
+                              // Remove space prevention since we now handle it
                             }}
                           />
                         </div>

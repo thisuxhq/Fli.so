@@ -346,7 +346,20 @@
                   name="slug"
                   id="slug"
                   bind:value={localUrl.slug}
+                  pattern="[a-zA-Z0-9-]+"
                   class="h-12 rounded-none border-none bg-input/20"
+                  on:input={(e) => {
+                    // Replace spaces with hyphens and remove other special characters
+                    e.currentTarget.value = e.currentTarget.value
+                      .replace(/\s+/g, '-')  // Replace one or more spaces with single hyphen
+                      .replace(/[^a-zA-Z0-9-]/g, ''); // Remove remaining special chars
+                    localUrl.slug = e.currentTarget.value;
+                  }}
+                  on:keydown={(e) => {
+                    if (e.key === "/") {
+                      e.preventDefault();
+                    }
+                  }}
                 />
               </div>
               <Button
@@ -693,7 +706,20 @@
                           name="slug"
                           id="slug"
                           bind:value={localUrl.slug}
+                          pattern="[a-zA-Z0-9-]+"
                           class="h-12 rounded-none border-none bg-input/20"
+                          on:input={(e) => {
+                            // Replace spaces with hyphens and remove other special characters
+                            e.currentTarget.value = e.currentTarget.value
+                              .replace(/\s+/g, '-')  // Replace one or more spaces with single hyphen
+                              .replace(/[^a-zA-Z0-9-]/g, ''); // Remove remaining special chars
+                            localUrl.slug = e.currentTarget.value;
+                          }}
+                          on:keydown={(e) => {
+                            if (e.key === "/") {
+                              e.preventDefault();
+                            }
+                          }}
                         />
                       </div>
                       <Button
