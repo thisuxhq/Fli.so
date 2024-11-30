@@ -108,9 +108,10 @@
   }
 
   async function handleMetaFetch() {
+    if (!$formData.url || isSubmitting) return;
+    
     try {
       const response = await scrapeMetadata($formData.url);
-
       if (response) {
         metaDataEnabled = true;
         $formData.meta_title = response.title || "";
@@ -251,6 +252,7 @@
                 placeholder="https://www.example.com/path-to-destination"
                 required
                 disabled={isSubmitting}
+                class={isSubmitting ? "opacity-50" : ""}
                 on:input={handleMetaFetch}
                 on:keydown={(e) => {
                   if (e.key === "/") {
@@ -519,15 +521,16 @@
             <!-- Create link button -->
             <Button type="submit" class="rounded-2xl" disabled={isSubmitting}>
               {#if isSubmitting}
+                <div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 Creating...
               {:else}
                 Create Link
+                <kbd
+                  class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+                >
+                  C
+                </kbd>
               {/if}
-              <kbd
-                class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
-              >
-                C
-              </kbd>
             </Button>
           </div>
         </form>
@@ -685,6 +688,7 @@
                         placeholder="https://www.example.com/path-to-destination"
                         required
                         disabled={isSubmitting}
+                        class={isSubmitting ? "opacity-50" : ""}
                         on:input={handleMetaFetch}
                         on:keydown={(e) => {
                           if (e.key === "/") {
@@ -962,15 +966,16 @@
                     <!-- Create link button -->
                     <Button type="submit" class="w-full rounded-2xl" disabled={isSubmitting}>
                       {#if isSubmitting}
+                        <div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                         Creating...
                       {:else}
                         Create Link
+                        <kbd
+                          class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
+                        >
+                          C
+                        </kbd>
                       {/if}
-                      <kbd
-                        class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
-                      >
-                        C
-                      </kbd>
                     </Button>
                   </div>
                 </form>

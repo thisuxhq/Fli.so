@@ -21,6 +21,7 @@
   let { data }: { data: PageData } = $props();
   let password = $state("");
   let showPassword = $state(false);
+  let isLoading = $state(false);
 
   onMount(() => {
     if (data.meta?.url && !data.isProtected) {
@@ -80,7 +81,9 @@
         action="?/verify_password"
         class="flex flex-col gap-4 rounded-3xl bg-white p-4"
         use:enhance={() => {
+          isLoading = true;
           return async ({ result, update }) => {
+            isLoading = false;
             if (result.type === "failure") {
               if (result.status === 401) {
                 toast.error("Password is incorrect");
@@ -91,7 +94,6 @@
                 toast.error("An error occurred");
               }
             }
-
             update();
           };
         }}
@@ -121,7 +123,11 @@
           type="submit"
           class="w-full gap-2 rounded-2xl"
           variant="default"
+          disabled={isLoading}
         >
+          {#if isLoading}
+            <div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          {/if}
           Open link
           <KbdShortcut shortcut="⌘O" />
         </Button>
