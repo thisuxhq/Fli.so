@@ -367,7 +367,7 @@
                 variant="outline"
                 size="icon"
                 class="h-12 w-12 rounded-l-none rounded-r-2xl bg-input/20"
-                onclick={suggestSlug}
+                on:click={suggestSlug}
               >
                 <Shuffle class="h-4 w-4" />
               </Button>

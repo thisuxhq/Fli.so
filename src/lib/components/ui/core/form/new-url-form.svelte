@@ -304,7 +304,6 @@
                       if (e.key === "/") {
                         e.preventDefault();
                       }
-                      // Remove space prevention since we now handle it
                     }}
                   />
                 </div>

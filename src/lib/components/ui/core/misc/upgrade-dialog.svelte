@@ -2,7 +2,6 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
   import { toast } from "svelte-sonner";
-  import { env } from "$env/dynamic/public";
   import { Check, Loader2 } from "lucide-svelte";
 
   let { open = false, onOpenChange } = $props<{
@@ -10,7 +9,6 @@
     onOpenChange: (open: boolean) => void;
   }>();
 
-  const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "10");
   let isLoading = $state(false);
 
   const features = [
