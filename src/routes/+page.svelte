@@ -25,6 +25,7 @@
   import Logo from "$lib/components/ui/core/misc/logo.svelte";
   import SettingsMenu from "$lib/components/ui/core/misc/settings-menu.svelte";
   import { env } from "$env/dynamic/public";
+  import UpgradeDialog from "$lib/components/ui/core/misc/upgrade-dialog.svelte";
 
   // Defining the structure of the page data
   interface PageData {
@@ -85,6 +86,9 @@
 
   // Add these state variables at the top with other state declarations
   let isAnyDialogOpen = $derived(showAddForm || showEditForm);
+
+  // Add state for upgrade dialog
+  let showUpgradeDialog = $state(false);
 
   // Helper function to check if input is focused
   const isInputFocused = () => {
@@ -212,6 +216,10 @@
       handler: (e) => {
         if (!isInputFocused()) {
           e.preventDefault();
+          if (isAtLimit) {
+            showUpgradeDialog = true;
+            return;
+          }
           showAddForm = !showAddForm;
         }
       },
@@ -476,4 +484,10 @@
   onOpenChange={(open: boolean) => {
     showKeyboardShortcuts = open;
   }}
+/>
+
+<!-- Add this before the closing </div> -->
+<UpgradeDialog
+  open={showUpgradeDialog} 
+  onOpenChange={(open) => showUpgradeDialog = open}
 />
