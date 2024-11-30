@@ -1,4 +1,5 @@
 <script lang="ts">
+  // Importing necessary libraries and components
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import {
@@ -25,6 +26,7 @@
   import SettingsMenu from "$lib/components/ui/core/misc/settings-menu.svelte";
   import { env } from "$env/dynamic/public";
 
+  // Defining the structure of the page data
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
     urls: UrlsResponseWithTags[] | [];
@@ -34,12 +36,17 @@
     totalUrls: number;
   }
 
+  // Initializing the page data
   let {
     data,
   }: {
     data: PageData;
   } = $props();
+
+  // State for the add form
   let showAddForm = $state(false);
+
+  // State for the search query
   let searchQuery = $state("");
 
   // State for the URLs
@@ -99,6 +106,7 @@
         });
       });
 
+      // Subscribe to the 'urls' collection
       await pbClient.collection("urls").subscribe("*", async (e) => {
         try {
           switch (e.action) {
@@ -262,15 +270,18 @@
     },
   ];
 
+  // Initialize keyboard shortcuts
   $effect(() => {
     return initKeyboardShortcuts(shortcuts);
   });
 
+  // Function to handle editing a URL
   async function handleEdit(url: UrlsResponseWithTags) {
     editingUrl = url;
     showEditForm = true;
   }
 
+  // Function to handle deleting a URL
   async function handleDelete(id: string) {
     const data = await fetch(`/api/url/`, {
       method: "DELETE",
@@ -296,12 +307,13 @@
     }
   });
 
+  // Update totalUrls whenever updatedUrls changes
   $effect(() => {
-    // Update data.totalUrls whenever updatedUrls changes
     data.totalUrls = updatedUrls.length;
   });
 </script>
 
+<!-- Main page layout -->
 <div
   class="min-h-screen w-full bg-gradient-to-br dark:from-gray-900 dark:to-black"
 >
@@ -435,6 +447,7 @@
   </div>
 </div>
 
+<!-- New URL form -->
 <NewUrlForm
   data={data.form}
   show={showAddForm && !isAtLimit}
@@ -451,6 +464,7 @@
   tags={data.tags}
 />
 
+<!-- URL edit form -->
 <UrlEditForm
   url={editingUrl}
   show={showEditForm}
@@ -460,6 +474,7 @@
   tags={data.tags}
 />
 
+<!-- Keyboard shortcuts dialog -->
 <KeyboardShortcutsDialog
   open={showKeyboardShortcuts}
   onOpenChange={(open: boolean) => {
