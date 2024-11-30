@@ -92,6 +92,7 @@
     }}
   >
     <input type="hidden" name="id" value={domain.id} />
+    <input type="hidden" name="domain" value={domain.domain} />
     <Button
       type="submit"
       variant="ghost"

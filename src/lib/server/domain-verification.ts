@@ -64,7 +64,7 @@ export async function verifyDomain(domain) {
   }
 }
 
-async function addCustomDomainToCloudflare(domainName: string) {
+export async function addCustomDomainToCloudflare(domainName: string) {
   const url = `${env.CLOUDFLARE_API_URL}/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/pages/projects/${env.CLOUDFLARE_PROJECT_NAME}/domains`;
 
   try {
@@ -92,6 +92,34 @@ async function addCustomDomainToCloudflare(domainName: string) {
     }
   } catch (err) {
     console.error("Cloudflare API call failed:", err);
+    return false;
+  }
+}
+
+export async function removeCustomDomainFromCloudflare(domainName: string) {
+  const url = `${env.CLOUDFLARE_API_URL}/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/pages/projects/${env.CLOUDFLARE_PROJECT_NAME}/domains/${domainName}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log(`Successfully removed ${domainName} from Cloudflare Pages.`);
+      return true;
+    } else {
+      console.error(
+        `Failed to remove domain from Cloudflare. Error: ${data.errors || data}`,
+      );
+      return false;
+    }
+  } catch (err) {
+    console.error("Cloudflare API call failed while removing domain:", err);
     return false;
   }
 }

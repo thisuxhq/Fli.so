@@ -2,7 +2,10 @@ import { redirect, fail, type Actions } from "@sveltejs/kit";
 import { superValidate } from "sveltekit-superforms";
 import { domainSchema } from "$lib/schema/domain";
 import { zod } from "sveltekit-superforms/adapters";
-import { verifyDomain } from "$lib/server/domain-verification";
+import {
+  removeCustomDomainFromCloudflare,
+  verifyDomain,
+} from "$lib/server/domain-verification";
 import { nanoid } from "$lib";
 
 export const load = async ({ locals }) => {
@@ -74,9 +77,20 @@ export const actions: Actions = {
   remove: async ({ request, locals }) => {
     const data = await request.formData();
     const id = data.get("id") as string;
+    const domainName = data.get("domain") as string;
+    
+    if (!id) {
+      return fail(400, { error: "Invalid domain id" });
+    }
 
     try {
-      await locals.pb.collection("domains").delete(id);
+      await locals.pb
+        .collection("domains")
+        .delete(id)
+        .then(() => {
+          console.log("Domain deleted");
+          removeCustomDomainFromCloudflare(domainName);
+        });
       return { success: true };
     } catch (err) {
       return fail(400, { error: "Failed to remove domain" });
