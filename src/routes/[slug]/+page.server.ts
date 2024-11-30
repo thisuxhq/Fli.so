@@ -10,7 +10,7 @@ import { createInstance } from "$lib/pocketbase";
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
 export const load: PageServerLoad = async ({ params }) => {
-  // Authenticate as admin
+  // Authenticate as admin because we have api rules that prevent unauthenticated access
   const pb = createInstance();
   await pb.admins.authWithPassword(
     env.POCKETBASE_ADMIN_EMAIL!,

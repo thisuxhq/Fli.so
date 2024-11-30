@@ -7,6 +7,7 @@ import type { RecordService } from 'pocketbase'
 
 export enum Collections {
 	Customers = "customers",
+	Domains = "domains",
 	PaymentMethods = "payment_methods",
 	Subscriptions = "subscriptions",
 	Tags = "tags",
@@ -41,6 +42,23 @@ export type AuthSystemFields<T = never> = {
 export type CustomersRecord = {
 	stripe_customer_id: string
 	user_id?: RecordIdString
+}
+
+export enum DomainsStatusOptions {
+	"pending" = "pending",
+	"verified" = "verified",
+}
+
+export enum DomainsVerificationMethodOptions {
+	"dns" = "dns",
+	"file" = "file",
+}
+export type DomainsRecord = {
+	domain?: string
+	status?: DomainsStatusOptions
+	user_id?: RecordIdString
+	verification_method?: DomainsVerificationMethodOptions
+	verification_token?: string
 }
 
 export type PaymentMethodsRecord = {
@@ -104,6 +122,7 @@ export type UsersRecord = {
 
 // Response types include system fields and match responses from the PocketBase API
 export type CustomersResponse<Texpand = unknown> = Required<CustomersRecord> & BaseSystemFields<Texpand>
+export type DomainsResponse<Texpand = unknown> = Required<DomainsRecord> & BaseSystemFields<Texpand>
 export type PaymentMethodsResponse<Texpand = unknown> = Required<PaymentMethodsRecord> & BaseSystemFields<Texpand>
 export type SubscriptionsResponse<Texpand = unknown> = Required<SubscriptionsRecord> & BaseSystemFields<Texpand>
 export type TagsResponse<Texpand = unknown> = Required<TagsRecord> & BaseSystemFields<Texpand>
@@ -114,6 +133,7 @@ export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSyste
 
 export type CollectionRecords = {
 	customers: CustomersRecord
+	domains: DomainsRecord
 	payment_methods: PaymentMethodsRecord
 	subscriptions: SubscriptionsRecord
 	tags: TagsRecord
@@ -123,6 +143,7 @@ export type CollectionRecords = {
 
 export type CollectionResponses = {
 	customers: CustomersResponse
+	domains: DomainsResponse
 	payment_methods: PaymentMethodsResponse
 	subscriptions: SubscriptionsResponse
 	tags: TagsResponse
@@ -135,6 +156,7 @@ export type CollectionResponses = {
 
 export type TypedPocketBase = PocketBase & {
 	collection(idOrName: 'customers'): RecordService<CustomersResponse>
+	collection(idOrName: 'domains'): RecordService<DomainsResponse>
 	collection(idOrName: 'payment_methods'): RecordService<PaymentMethodsResponse>
 	collection(idOrName: 'subscriptions'): RecordService<SubscriptionsResponse>
 	collection(idOrName: 'tags'): RecordService<TagsResponse>

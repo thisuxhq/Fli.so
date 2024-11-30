@@ -11,3 +11,4 @@ export { default as CreateTagDialog } from "./create-tag-dialog.svelte";
 export { default as QRCode } from "./qr-code.svelte";
 export { default as QRCodeDialog } from "./qr-dialog.svelte";
 export { default as Logo } from "./logo.svelte";
+export { default as DomainCard } from "./domain-card.svelte";

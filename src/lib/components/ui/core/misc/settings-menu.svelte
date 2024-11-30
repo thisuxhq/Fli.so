@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import * as Avatar from "$lib/components/ui/avatar/index.js";
-  import { Crown, MessageCircle, Gift, LogOut } from "lucide-svelte";
+  import { Crown, MessageCircle, Gift, LogOut, Globe } from "lucide-svelte";
 
   interface Props {
     name: string;
@@ -37,6 +37,14 @@
       >
         <Crown class="mr-2 size-5" />
         {showUpgrade ? "Upgrade to Pro" : "Manage billing"}
+      </DropdownMenu.Item>
+
+      <DropdownMenu.Item
+        class="hover:cursor-pointer hover:bg-white/10"
+        href="/domains"
+      >
+        <Globe class="mr-2 size-5" />
+        <span class="text-base">Domains</span>
       </DropdownMenu.Item>
 
       <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
