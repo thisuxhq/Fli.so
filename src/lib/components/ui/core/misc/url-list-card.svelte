@@ -211,7 +211,7 @@
       >
         <Button
           id={`qr-${url.id}`}
-          onclick={() => (showQRDialog = true)}
+          on:click={() => (showQRDialog = true)}
           class="group/btn relative rounded-full p-2 text-gray-600 opacity-0 transition-opacity duration-200 hover:bg-gray-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-800"
           variant="ghost"
           size="icon"
@@ -222,7 +222,7 @@
 
         <Button
           id={`edit-${url.id}`}
-          onclick={() => onEdit(url)}
+          on:click={() => onEdit(url)}
           class="group/btn relative rounded-full p-2 text-gray-600 opacity-0 transition-opacity duration-200 hover:bg-gray-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-800"
           variant="ghost"
           size="icon"

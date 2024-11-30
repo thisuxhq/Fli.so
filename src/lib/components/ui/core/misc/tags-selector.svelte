@@ -86,7 +86,7 @@
             variant="outline"
             class="w-full rounded-2xl"
             disabled={isCreatingTag}
-            onclick={() => {
+            on:click={() => {
               showCreateTagDialog = true;
               newTagName = searchQuery;
             }}
@@ -129,7 +129,7 @@
   open={showCreateTagDialog}
   onOpenChange={(open) => (showCreateTagDialog = open)}
   initialName={newTagName}
-  bind:loading={isCreatingTag}
+  loading={isCreatingTag}
   onSuccess={(newTag) => {
     tags = [...tags, newTag];
     onRefreshTags?.();

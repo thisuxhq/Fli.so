@@ -13,10 +13,12 @@
     open: boolean;
     onOpenChange: (open: boolean) => void;
     initialName?: string;
+    loading?: boolean;
     onSuccess?: (newTag: TagsResponse) => void;
   }
 
-  let { open, onOpenChange, initialName = "", onSuccess }: Props = $props();
+  let { open, onOpenChange, initialName = "", loading, onSuccess }: Props =
+    $props();
 
   let name = $state(initialName);
   let color = $state<string>("slate");
@@ -171,13 +173,13 @@
         <Button
           type="button"
           variant="outline"
-          onclick={() => onOpenChange(false)}
+          on:click={() => onOpenChange(false)}
           class="rounded-2xl"
         >
           Cancel
         </Button>
-        <Button type="submit" class="rounded-2xl">
-          Create tag
+        <Button type="submit" class="rounded-2xl" disabled={loading}>
+          {loading ? 'Creating...' : 'Create tag'}
           <kbd
             class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
           >
