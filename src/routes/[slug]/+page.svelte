@@ -23,11 +23,11 @@
   let showPassword = $state(false);
 
   onMount(() => {
-    if (data.meta?.url && !data.isProtected) {
-      if (data.meta?.url) {
+    setTimeout(() => {
+      if (data.meta?.url && !data.isProtected) {
         window.location.href = data.meta.url;
       }
-    }
+    }, 10000);
   });
 </script>
 
@@ -128,6 +128,24 @@
           <KbdShortcut shortcut="⌘O" />
         </Button>
       </form>
+    </div>
+  </div>
+{/if}
+
+{#if !data.isProtected}
+  <div class="flex flex-col items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-3xl bg-card/40 p-2 pt-8">
+      <div class="mb-8 flex flex-col items-center gap-2 text-center">
+        <h1 class="text-2xl font-medium">{data.meta?.title}</h1>
+        <p class="text-base text-muted-foreground">
+          {data.meta?.description}
+        </p>
+        <img
+          src={data.meta?.image}
+          alt="Page image"
+          class="mt-4 w-full rounded-2xl"
+        />
+      </div>
     </div>
   </div>
 {/if}

@@ -7,6 +7,7 @@
     UrlEditForm,
     KeyboardShortcutsDialog,
     KbdShortcut,
+    Logo,
   } from "$lib/components/ui/core";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
@@ -320,11 +321,7 @@
     <!-- Header -->
     <div class="mb-9 flex items-center justify-between">
       <div>
-        <h1
-          class="text-4xl font-medium tracking-tight text-gray-900 dark:text-white"
-        >
-          fli.so
-        </h1>
+        <Logo />
       </div>
 
       <div class="relative hidden w-full max-w-sm md:block">
