@@ -10,6 +10,7 @@
   let showPassword = $state(false);
   let isLogin = $state(true);
   let isLoading = $state(false);
+  let showForgotPassword = $state(false);
 </script>
 
 <div class="flex h-screen flex-col items-center justify-center p-4">
@@ -39,90 +40,157 @@
       </Button>
     </div>
 
-    <form
-      method="POST"
-      action={isLogin ? "?/login" : "?/signup"}
-      class="flex flex-col gap-4 rounded-3xl bg-white p-4"
-      use:enhance={() => {
-        isLoading = true;
-        return async ({ result, update }) => {
-          if (result.type === "failure") {
-            if (result.status === 401) {
-              toast.error("Invalid credentials");
+    {#if showForgotPassword}
+      <form
+        method="POST"
+        action="?/forgotPassword"
+        class="flex flex-col gap-4 rounded-3xl bg-white p-4"
+        use:enhance={() => {
+          isLoading = true;
+          return async ({ result, update }) => {
+            if (result.type === "failure") {
+              toast.error("Failed to send reset email");
             } else {
-              toast.error("An error occurred");
+              toast.success("Password reset email sent! Please check your inbox.");
             }
-          } else if (!isLogin && result.type === "success") {
-            toast.success("Account created successfully! Please check your email to verify your account.");
-          }
-          await update();
-          isLoading = false;
-        };
-      }}
-    >
-      <Input
-        name="email"
-        type="email"
-        placeholder="Email"
-        bind:value={email}
-        required
-      />
-      
-      <div class="relative">
+            await update();
+            isLoading = false;
+          };
+        }}
+      >
         <Input
-          name="password"
-          type={showPassword ? "text" : "password"}
-          placeholder="Password"
-          bind:value={password}
-          class="pr-10"
+          name="email"
+          type="email"
+          placeholder="Email"
+          bind:value={email}
           required
         />
-        <button
-          type="button"
-          class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-          onclick={() => (showPassword = !showPassword)}
-        >
-          {#if showPassword}
-            <EyeOff class="h-4 w-4" />
+        <Button type="submit" class="w-full rounded-2xl" disabled={isLoading}>
+          {#if isLoading}
+            <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+                fill="none"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
           {:else}
-            <Eye class="h-4 w-4" />
+            Send Reset Link
           {/if}
-        </button>
-      </div>
-
-      <Button type="submit" class="w-full rounded-2xl" disabled={isLoading}>
-        {#if isLoading}
-          <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-              fill="none"
-            />
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-        {:else}
-          {isLogin ? "Log in" : "Sign up"}
-        {/if}
-      </Button>
-
-      <p class="text-center text-sm text-muted-foreground">
-        {isLogin ? "Don't have an account?" : "Already have an account?"}
+        </Button>
         <button
           type="button"
-          class="ml-1 text-foreground hover:underline"
-          onclick={() => (isLogin = !isLogin)}
+          class="text-sm text-muted-foreground hover:underline"
+          onclick={() => (showForgotPassword = false)}
         >
-          {isLogin ? "Sign up" : "Log in"}
+          Back to login
         </button>
-      </p>
-    </form>
+      </form>
+    {:else}
+      <form
+        method="POST"
+        action={isLogin ? "?/login" : "?/signup"}
+        class="flex flex-col gap-4 rounded-3xl bg-white p-4"
+        use:enhance={() => {
+          isLoading = true;
+          return async ({ result, update }) => {
+            if (result.type === "failure") {
+              if (result.status === 401) {
+                toast.error("Invalid credentials");
+              } else {
+                toast.error("An error occurred");
+              }
+            } else if (!isLogin && result.type === "success") {
+              toast.success("Account created successfully! Please check your email to verify your account.");
+            }
+            await update();
+            isLoading = false;
+          };
+        }}
+      >
+        <Input
+          name="email"
+          type="email"
+          placeholder="Email"
+          bind:value={email}
+          required
+        />
+        
+        <div class="relative">
+          <Input
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            bind:value={password}
+            class="pr-10"
+            required
+          />
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            onclick={() => (showPassword = !showPassword)}
+          >
+            {#if showPassword}
+              <EyeOff class="h-4 w-4" />
+            {:else}
+              <Eye class="h-4 w-4" />
+            {/if}
+          </button>
+        </div>
+
+        {#if isLogin}
+          <button
+            type="button"
+            class="text-sm text-muted-foreground hover:underline"
+            onclick={() => (showForgotPassword = true)}
+          >
+            Forgot password?
+          </button>
+        {/if}
+
+        <Button type="submit" class="w-full rounded-2xl" disabled={isLoading}>
+          {#if isLoading}
+            <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+                fill="none"
+              />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          {:else}
+            {isLogin ? "Log in" : "Sign up"}
+          {/if}
+        </Button>
+
+        <p class="text-center text-sm text-muted-foreground">
+          {isLogin ? "Don't have an account?" : "Already have an account?"}
+          <button
+            type="button"
+            class="ml-1 text-foreground hover:underline"
+            onclick={() => (isLogin = !isLogin)}
+          >
+            {isLogin ? "Sign up" : "Log in"}
+          </button>
+        </p>
+      </form>
+    {/if}
   </div>
 </div>

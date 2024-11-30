@@ -2,7 +2,8 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import * as Avatar from "$lib/components/ui/avatar/index.js";
   import { Crown, MessageCircle, Gift, LogOut, Globe } from "lucide-svelte";
-
+  import { Badge } from "$lib/components/ui/badge";
+    import { toast } from 'svelte-sonner';
   interface Props {
     name: string;
     email: string;
@@ -41,10 +42,13 @@
 
       <DropdownMenu.Item
         class="hover:cursor-pointer hover:bg-white/10"
-        href="/domains"
+        onclick={() => {
+          toast.info("This feature is coming soon!");
+        }}
       >
         <Globe class="mr-2 size-5" />
         <span class="text-base">Domains</span>
+        <Badge class="ml-2">Coming Soon</Badge>
       </DropdownMenu.Item>
 
       <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">

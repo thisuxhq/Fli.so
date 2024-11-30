@@ -74,4 +74,20 @@ export const actions: Actions = {
       return fail(400, { message: "Signup failed" });
     }
   },
+
+  forgotPassword: async ({ request, locals }) => {
+    const formData = await request.formData();
+    const email = formData.get("email") as string;
+
+    if (!email) {
+      return fail(400, { message: "Please provide an email address." });
+    }
+
+    try {
+      await locals.pb.collection("users").requestPasswordReset(email);
+      return { success: true };
+    } catch (err) {
+      return fail(400, { message: "Failed to send reset email" });
+    }
+  },
 };
