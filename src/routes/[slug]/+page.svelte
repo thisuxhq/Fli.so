@@ -19,6 +19,8 @@
   }
 
   let { data }: { data: PageData } = $props();
+
+  console.log("Meta data:", data.meta);
   let password = $state("");
   let showPassword = $state(false);
   let isLoading = $state(false);
@@ -128,7 +130,9 @@
           disabled={isLoading}
         >
           {#if isLoading}
-            <div class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            <div
+              class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+            />
           {/if}
           Open link
           <KbdShortcut shortcut="⌘O" />
