@@ -51,11 +51,11 @@ export const load: PageServerLoad = async ({ params }) => {
   }
 
   // If URL has meta data, return for brief display
-  if (url.meta_title || url.meta_description) {
+  if (url.meta_title || url.meta_description || url.meta_image_url) {
     return {
       meta: {
         title: url.meta_title,
-        description: url.meta_description,
+        description: url.meta_description || "not working",
         image: url.meta_image_url,
         url: url.url,
       },
