@@ -14,13 +14,12 @@ export const POST: RequestHandler = async ({ locals, url }) => {
     // Get or create Stripe customer
     const customer = await createOrRetrieveStripeCustomer(
       locals?.user as UsersResponse,
-      locals.pb
     );
 
     // Create Stripe billing portal session
     const session = await stripe.billingPortal.sessions.create({
       customer: customer?.stripe_customer_id || "",
-      return_url: `${url.origin}/billing`,
+      return_url: `${url.origin}/app/billing`,
     });
 
     return json({ url: session.url });

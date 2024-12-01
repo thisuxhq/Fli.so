@@ -67,7 +67,7 @@
         >
           Maybe later
         </Button>
-        <Button class="w-full rounded-2xl sm:w-auto" href="/billing">
+        <Button class="w-full rounded-2xl sm:w-auto" href="/app/billing">
           Upgrade to Pro
           <KbdShortcut shortcut="p" />
         </Button>

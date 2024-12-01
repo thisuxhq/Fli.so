@@ -22,7 +22,6 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
     // Retrieve or create a Stripe customer for the user
     const customer = await createOrRetrieveStripeCustomer(
       locals.user as UsersResponse,
-      locals.pb,
     );
 
     // Create a new checkout session for the user
@@ -37,8 +36,8 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
           quantity: 1,
         },
       ],
-      success_url: `${url.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${url.origin}/billing?tab=${tab}`,
+      success_url: `${url.origin}/app/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${url.origin}/app/billing?tab=${tab}`,
       metadata: {
         user_id: locals.user.id,
       },

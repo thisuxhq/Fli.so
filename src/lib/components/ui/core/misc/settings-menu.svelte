@@ -34,7 +34,7 @@
     >
       <DropdownMenu.Item
         class="text-base hover:cursor-pointer  hover:bg-white/10"
-        href="/billing"
+        href="/app/billing"
       >
         <Crown class="mr-2 size-5" />
         {showUpgrade ? "Upgrade to Pro" : "Manage billing"}

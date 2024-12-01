@@ -17,7 +17,7 @@
       designed for modern web sharing
     </p>
 
-    <Button href="/login" class="w-fit">Get started it's FREE</Button>
+    <Button href="/app/login" class="w-fit">Get started it's FREE</Button>
   </div>
 
   <img

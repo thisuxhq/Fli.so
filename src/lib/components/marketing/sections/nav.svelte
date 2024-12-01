@@ -35,12 +35,14 @@
           {label}
         </a>
       {/each}
-      <Button href="/">Try for FREE</Button>
+      <Button href="/app/login">Try for FREE</Button>
     </nav>
 
     <!-- Mobile Menu Button -->
-    <button
-      class={cn("p-2 hover:bg-gray-100 md:hidden", isMenuOpen && "bg-gray-100")}
+    <Button
+      size='icon'
+      variant='ghost'
+      class={cn("p-2 hover:bg-gray-100 md:hidden transition-all duration-100 ease-in-out", isMenuOpen && "bg-gray-100")}
       onclick={toggleMenu}
       aria-label="Toggle menu"
     >
@@ -49,7 +51,7 @@
       {:else}
         <Menu class="h-6 w-6" />
       {/if}
-    </button>
+    </Button>
   </div>
 
   <!-- Mobile Navigation -->
@@ -72,7 +74,7 @@
           </a>
         {/each}
         <div class="pt-2">
-          <Button href="/" class="w-full">Try for FREE</Button>
+          <Button href="/app/login" class="w-full">Try for FREE</Button>
         </div>
       </div>
     </div>

@@ -20,7 +20,7 @@
     </p>
   </div>
 
-  <Button href="/" class="rounded-2xl">
+  <Button href="/app" class="rounded-2xl">
     Take me home
     <KbdShortcut shortcut="H" />
   </Button>

@@ -8,7 +8,7 @@ import { env } from "$env/dynamic/private";
 export const load = (async ({ locals }) => {
   // Redirect to the home page if the user is already authenticated
   if (locals.pb.authStore.isValid) {
-    throw redirect(302, "/");
+    throw redirect(302, "/app");
   }
 }) satisfies PageServerLoad;
 
