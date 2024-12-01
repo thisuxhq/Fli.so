@@ -53,10 +53,11 @@
         </Badge>
       </DropdownMenu.Item>
 
-      <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
+      <!-- hide for now -->
+      <!-- <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
         <MessageCircle class="mr-2 size-5" />
         <span class="text-base">Feedback</span>
-      </DropdownMenu.Item>
+      </DropdownMenu.Item> -->
       <DropdownMenu.Item
         class="hover:cursor-pointer hover:bg-white/10"
         href="https://thisux.com?utm_source=blink"
