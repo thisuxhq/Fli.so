@@ -81,7 +81,14 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-  verify_password: async ({ request, locals }) => {
+  verify_password: async ({ request }) => {
+    
+    const pb = createInstance();
+    await pb.admins.authWithPassword(
+      env.POCKETBASE_ADMIN_EMAIL!,
+      env.POCKETBASE_ADMIN_PASSWORD!,
+    );
+    
     // Get form data from request
     const formData = await request.formData();
     const url_id = formData.get("url_id") as string;
@@ -102,7 +109,7 @@ export const actions: Actions = {
     const digest = hasher.digest();
 
     // Get URL from database
-    const url = await locals.pb.collection("urls").getOne(url_id);
+    const url = await pb.collection("urls").getOne(url_id);
 
     // Verify URL exists
     if (!url) {
