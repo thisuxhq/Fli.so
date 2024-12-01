@@ -17,9 +17,9 @@
     },
     {
       name: "Join our community",
-      description: "Deploy and run in just minutes",
+      description: "Join our Discord community for more updates",
       icon: Discord,
-      href: "https://discord.gg/thisux",
+      href: "https://discord.gg/SGkjHvhg",
     },
     {
       name: "Follow for updates",
