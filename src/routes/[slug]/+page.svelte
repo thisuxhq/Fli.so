@@ -27,9 +27,7 @@
 
   onMount(() => {
     if (data.meta?.url && !data.isProtected) {
-      setTimeout(() => {
-        window.location.href = data.meta.url;
-      }, 3000);
+      window.location.href = data.meta.url;
     }
   });
 </script>
@@ -44,7 +42,7 @@
   {/if}
 
   {#if data.meta?.description}
-    <meta name="description" content={data.meta.description} />
+    <meta name="og:description" content={data.meta.description} />
   {/if}
 
   {#if data.meta?.image}

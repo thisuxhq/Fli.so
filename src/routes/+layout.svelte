@@ -17,7 +17,7 @@
   <title>{defaultMeta.title}</title>
 
   <meta property="og:title" content={defaultMeta.title} />
-  <meta name="description" content={defaultMeta.description} />
+  <meta name="og:description" content={defaultMeta.description} />
   <meta property="og:image" content={defaultMeta.image} />
   <meta property="og:url" content={defaultMeta.url} />
   <meta property="og:type" content="website" />
