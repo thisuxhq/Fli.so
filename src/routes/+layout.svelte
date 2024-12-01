@@ -15,7 +15,7 @@
 
 <svelte:head>
   <title>{defaultMeta.title}</title>
-
+  <meta name="description" content={defaultMeta.description} />
   <meta property="og:title" content={defaultMeta.title} />
   <meta name="og:description" content={defaultMeta.description} />
   <meta property="og:image" content={defaultMeta.image} />
