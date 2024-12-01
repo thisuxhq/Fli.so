@@ -25,7 +25,9 @@
 
   onMount(() => {
     if (data.meta?.url && !data.isProtected) {
-      window.location.href = data.meta.url;
+      setTimeout(() => {
+        window.location.href = data.meta.url;
+      }, 3000);
     }
   });
 </script>
