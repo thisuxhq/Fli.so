@@ -2,6 +2,8 @@ import { fail, error, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { createOrRetrieveStripeCustomer } from "$lib/server/stripe-utils";
 import type { UsersResponse } from "$lib/types";
+import { createInstance } from "$lib/pocketbase";
+import { env } from "$env/dynamic/private";
 
 export const load = (async ({ locals }) => {
   // Redirect to the home page if the user is already authenticated
@@ -43,12 +45,35 @@ export const actions: Actions = {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
+    console.log(`Attempting signup with email: ${email}`); // Log for debugging
+
     // Validate form data
     if (!email || !password) {
+      console.error("Missing email or password during signup"); // Log for debugging
       return fail(400, { message: "Please provide both email and password." });
     }
 
+    const pb = createInstance();
+
+    await pb.admins.authWithPassword(
+      env.POCKETBASE_ADMIN_EMAIL!,
+      env.POCKETBASE_ADMIN_PASSWORD!,
+    );
+
     try {
+      // Check if user already exists
+      const existingUsers = await pb.collection("users").getList(1, 1, {
+        filter: `email = "${email}"`,
+      });
+
+      if (existingUsers.items.length > 0) {
+        console.log(`User already exists: ${email}`); // Log for debugging
+        return fail(400, {
+          message:
+            "An account with this email already exists. Please login instead.",
+        });
+      }
+
       // Create a new user
       const user: UsersResponse = await locals.pb.collection("users").create({
         username:
@@ -62,14 +87,20 @@ export const actions: Actions = {
         emailVisibility: true,
       });
 
+      console.log(`User created successfully: ${user.email}`); // Log for debugging
+
       // Request verification for the new user
-      await locals.pb.collection("users").requestVerification(user.email);
+      // await locals.pb.collection("users").requestVerification(user.email);
+      console.log(`Verification request sent for: ${user.email}`); // Log for debugging
+
       // Create or retrieve a Stripe customer for the new user
-      await createOrRetrieveStripeCustomer(user, locals.pb);
+      await createOrRetrieveStripeCustomer(user);
+      console.log(`Stripe customer created or retrieved for: ${user.email}`); // Log for debugging
 
       // Return success response
       return { success: true };
     } catch (err) {
+      console.error(`Signup failed: ${err}`); // Log for debugging
       // Handle signup failure
       return fail(400, { message: "Signup failed" });
     }

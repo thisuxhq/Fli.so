@@ -12,12 +12,12 @@
   const features = [
     "Unlimited URLs",
     "Custom domains",
-    "Click analytics",
-    "Priority support",
-    "Password protection",
     "Custom QR codes",
     "Metadata for URLs",
+    "Click analytics",
+    "Password protection",
     "Url expiration",
+    "Priority support",
   ];
 </script>
 

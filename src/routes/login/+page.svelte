@@ -104,7 +104,9 @@
           isLoading = true;
           return async ({ result, update }) => {
             if (result.type === "failure") {
-              if (result.status === 401) {
+              if (result.data?.message) {
+                toast.error(result.data.message);
+              } else if (result.status === 401) {
                 toast.error("Invalid credentials");
               } else {
                 toast.error("An error occurred");

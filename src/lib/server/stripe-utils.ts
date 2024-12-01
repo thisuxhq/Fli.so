@@ -1,16 +1,30 @@
 import { stripe } from "./stripe";
-import type { TypedPocketBase } from "$lib/types";
 import type { UsersResponse } from "$lib/types";
+import { env } from "$env/dynamic/private";
+import { createInstance } from "$lib/pocketbase";
 
-export async function createOrRetrieveStripeCustomer(user: UsersResponse, pb: TypedPocketBase) {
+export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
   try {
-    console.log("Attempting to create or retrieve Stripe customer for user:", user.id);
+    console.log(
+      "Attempting to create or retrieve Stripe customer for user:",
+      user.id,
+    );
+
+    // Create new pocketbase client as admin
+    const pb = createInstance();
+
+    // Authenticate as admin
+    await pb.admins.authWithPassword(
+      env.POCKETBASE_ADMIN_EMAIL!,
+      env.POCKETBASE_ADMIN_PASSWORD!,
+    );
+
     // Check if customer already exists in PocketBase
     const existingCustomer = await pb
       .collection("customers")
       .getFirstListItem(`user_id="${user.id}"`)
-      .catch((error) => {
-        console.error("Error fetching existing customer from PocketBase:", error);
+      .catch(() => {
+        console.log("No customer found for user:", user.id);
         return null;
       });
 
