@@ -42,7 +42,7 @@
   {/if}
 
   {#if data.meta?.description}
-    <meta name="og:description" content={data.meta.description} />
+    <meta name="description" content={data.meta.description} />
   {/if}
 
   {#if data.meta?.image}
