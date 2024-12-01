@@ -23,6 +23,6 @@
   <img
     src="/images/features/home.png"
     alt="hero"
-    class="aspect-auto h-full rounded-3xl border-2 border-white"
+    class="aspect-auto h-full rounded-3xl"
   />
 </section>
