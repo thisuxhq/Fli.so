@@ -3,7 +3,7 @@
   import * as Avatar from "$lib/components/ui/avatar/index.js";
   import { Crown, MessageCircle, Gift, LogOut, Globe } from "lucide-svelte";
   import { Badge } from "$lib/components/ui/badge";
-    import { toast } from 'svelte-sonner';
+  import { toast } from "svelte-sonner";
   interface Props {
     name: string;
     email: string;
@@ -48,7 +48,9 @@
       >
         <Globe class="mr-2 size-5" />
         <span class="text-base">Domains</span>
-        <Badge class="ml-2">Coming Soon</Badge>
+        <Badge variant="secondary" class="ml-2">
+          Soon
+        </Badge>
       </DropdownMenu.Item>
 
       <DropdownMenu.Item class="hover:cursor-pointer hover:bg-white/10">
