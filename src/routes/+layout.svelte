@@ -28,9 +28,16 @@
   <meta name="keywords" content={defaultMeta.keywords} />
   <meta name="author" content={defaultMeta.author} />
   <link rel="canonical" href={defaultMeta.url} />
-  <meta name="theme-color" content="#4f46e5" />
+  <meta name="theme-color" content="#DCD5C7" />
   <meta name="robots" content="index, follow" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="Fli.so" />
+  <link rel="manifest" href="/site.webmanifest" />
 </svelte:head>
 
 <Toaster />
