@@ -19,6 +19,7 @@ export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.pb.authStore.isValid) {
     throw redirect(302, "/login");
   }
+  
 
   try {
     const [urls, tags, userWithSubscription] = await Promise.all([

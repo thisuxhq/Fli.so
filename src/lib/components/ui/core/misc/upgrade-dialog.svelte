@@ -1,55 +1,24 @@
 <script lang="ts">
   import * as Dialog from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
-  import { toast } from "svelte-sonner";
-  import { Check, Loader2 } from "lucide-svelte";
+  import { Check } from "lucide-svelte";
+  import { KbdShortcut } from "$lib/components/ui/core/misc";
 
   let { open = false, onOpenChange } = $props<{
     open: boolean;
     onOpenChange: (open: boolean) => void;
   }>();
 
-  let isLoading = $state(false);
-
   const features = [
     "Unlimited URLs",
     "Custom domains",
-    "Advanced analytics",
+    "Click analytics",
     "Priority support",
     "Password protection",
     "Custom QR codes",
+    "Metadata for URLs",
+    "Url expiration",
   ];
-
-  async function handleSubscribe() {
-    try {
-      isLoading = true;
-
-      // Create a checkout session for monthly plan
-      const response = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tab: "monthly",
-        }),
-      });
-
-      const result = await response.json();
-
-      // Redirect to the checkout URL if successful
-      if (response.ok && result.url) {
-        window.location.href = result.url;
-      } else {
-        toast.error("Checkout process failed");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      toast.error("Checkout process failed");
-    } finally {
-      isLoading = false;
-    }
-  }
 </script>
 
 <Dialog.Root {open} {onOpenChange}>
@@ -79,7 +48,7 @@
           <h3 class="mb-2 text-lg font-medium">
             Unlock Pro features for just $9/month:
           </h3>
-          <ul class="space-y-3">
+          <ul class="space-y-1">
             {#each features as feature}
               <li class="flex items-center">
                 <Check class="mr-2 h-5 w-5 text-green-500" />
@@ -98,22 +67,9 @@
         >
           Maybe later
         </Button>
-        <Button
-          class="w-full rounded-2xl sm:w-auto"
-          onclick={handleSubscribe}
-          disabled={isLoading}
-        >
-          {#if isLoading}
-            <Loader2 class="mr-2 size-4 animate-spin" />
-            Processing...
-          {:else}
-            Upgrade to Pro
-            <kbd
-              class="ml-2 hidden rounded-md bg-white/20 px-2 py-0.5 text-xs font-light text-white/80 backdrop-blur-sm sm:inline-block"
-            >
-              P
-            </kbd>
-          {/if}
+        <Button class="w-full rounded-2xl sm:w-auto" href="/billing">
+          Upgrade to Pro
+          <KbdShortcut shortcut="p" />
         </Button>
       </Dialog.Footer>
     </div>

@@ -28,7 +28,6 @@ export const load: PageServerLoad = async ({ url, locals }) => {
       return {
         subscription,
         tab,
-
         hasSubscription: true,
       };
     }
