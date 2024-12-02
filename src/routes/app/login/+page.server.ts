@@ -1,4 +1,4 @@
-import { fail, error, redirect, type Actions } from "@sveltejs/kit";
+import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { createOrRetrieveStripeCustomer } from "$lib/server/stripe-utils";
 import type { UsersResponse } from "$lib/types";
@@ -29,14 +29,13 @@ export const actions: Actions = {
       await locals.pb.collection("users").authWithPassword(email, password);
     } catch (err) {
       // Handle authentication failure
-      throw error(
-        401,
-        "Login failed. Please check your email and password." + err,
-      );
+      return fail(401, {
+        message: "Login failed. Please check your email and password.",
+      });
     }
 
     // Redirect to the home page on successful login
-    throw redirect(303, "/");
+    throw redirect(303, "/app");
   },
 
   // Action to handle signup form submission
