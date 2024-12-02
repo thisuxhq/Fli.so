@@ -95,17 +95,21 @@
       <Command.Empty>
         <div class="flex flex-col items-center gap-2 p-4">
           <p class="text-sm text-muted-foreground">No tag found.</p>
-          <Button
-            variant="outline"
-            class="w-full rounded-2xl"
-            disabled={isCreatingTag}
-            on:click={() => {
-              showCreateTagDialog = true;
-              newTagName = searchQuery;
-            }}
-          >
-            <span class="truncate">+ Create "{searchQuery}" tag</span>
-          </Button>
+          {#if searchQuery.trim() || tags.length === 0}
+            <Button
+              variant="outline"
+              class="w-full rounded-2xl"
+              disabled={isCreatingTag}
+              on:click={() => {
+                showCreateTagDialog = true;
+                newTagName = searchQuery.trim();
+              }}
+            >
+              <span class="truncate">
+                + Create {searchQuery.trim() ? `"${searchQuery}"` : "new"} tag
+              </span>
+            </Button>
+          {/if}
         </div>
       </Command.Empty>
       <Command.List>
