@@ -30,3 +30,9 @@ pb_data/
 
 # docs
 docs
+
+# Umami
+.umami
+
+# Hide .cursorrules
+.cursorrules
