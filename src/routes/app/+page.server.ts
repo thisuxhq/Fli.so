@@ -241,7 +241,7 @@ export const actions: Actions = {
 
   logout: async ({ locals }) => {
     locals.pb.authStore.clear();
-    throw redirect(302, "/login");
+    throw redirect(302, "/app/login");
   },
 
   create_tag: async ({ request, locals }) => {

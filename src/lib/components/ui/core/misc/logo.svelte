@@ -1,4 +1,18 @@
-<a href="/" class="flex items-center gap-2">
+<script lang="ts">
+  import { Button } from "$lib/components/ui/button";
+
+  interface LogoProps {
+    href?: string;
+  }
+
+  let { href = "/" }: LogoProps = $props();
+</script>
+
+<Button
+  {href}
+  variant="ghost"
+  class="flex items-center gap-2 hover:bg-transparent"
+>
   <div>
     <svg
       width="37"
@@ -20,4 +34,4 @@
   </div>
 
   <span class="text-2xl font-medium">fli.so</span>
-</a>
+</Button>

@@ -4,7 +4,7 @@
   import { Eye, EyeOff } from "lucide-svelte";
   import { enhance } from "$app/forms";
   import { toast } from "svelte-sonner";
-
+  import { Logo } from "$lib/components/ui/core/misc";
   let email = $state("");
   let password = $state("");
   let showPassword = $state(false);
@@ -16,10 +16,17 @@
 <div class="flex h-screen flex-col items-center justify-center p-4">
   <div class="w-full max-w-md rounded-3xl bg-card/40 p-2 pt-8">
     <div class="mb-8 flex flex-col items-center gap-2 text-center">
-      <h1 class="text-2xl font-medium">{isLogin ? "Your fli.so awaits" : "Join the fli.so crew"}</h1>
-      <p class="text-base text-muted-foreground">
-        {isLogin ? "Pick up where you left off" : "Create your account and get started"}
-      </p>
+      <Logo href="/app/login" />
+      <div class="mt-4 flex flex-col gap-2">
+        <h1 class="text-2xl font-medium">
+          {isLogin ? "Log in to your account" : "Create an account"}
+        </h1>
+        <p class="text-base text-muted-foreground">
+          {isLogin
+            ? "Resume managing your links"
+            : "Start organizing your links today"}
+        </p>
+      </div>
     </div>
 
     <!-- Auth Toggle -->
@@ -51,7 +58,9 @@
             if (result.type === "failure") {
               toast.error("Failed to send reset email");
             } else {
-              toast.success("Password reset email sent! Please check your inbox.");
+              toast.success(
+                "Password reset email sent! Please check your inbox.",
+              );
             }
             await update();
             isLoading = false;
@@ -112,7 +121,9 @@
                 toast.error("An error occurred");
               }
             } else if (!isLogin && result.type === "success") {
-              toast.success("Account created successfully! Please check your email to verify your account.");
+              toast.success(
+                "Account created successfully! Please check your email to verify your account.",
+              );
             }
             await update();
             isLoading = false;
@@ -126,7 +137,7 @@
           bind:value={email}
           required
         />
-        
+
         <div class="relative">
           <Input
             name="password"

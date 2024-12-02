@@ -2,6 +2,7 @@
   import { NotFound, KbdShortcut } from "$lib/components/ui/core";
   import { Button } from "$lib/components/ui/button";
   import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
 
   const isExpired = $page.status === 410;
 </script>
@@ -20,7 +21,17 @@
     </p>
   </div>
 
-  <Button href="/app" class="rounded-2xl">
+  <Button
+    href="/app"
+    class="rounded-2xl"
+    on:keydown={(e) => {
+      if (e.key === "h") {
+        e.preventDefault();
+        e.stopPropagation();
+        goto("/app");
+      }
+    }}
+  >
     Take me home
     <KbdShortcut shortcut="H" />
   </Button>
