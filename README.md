@@ -69,8 +69,8 @@ Found a security issue? We move fast on these. Check our [Security Policy](SECUR
 We're building open-source business tools that respect privacy and freedom. Support us through:
 
 - [GitHub Sponsors](https://github.com/sponsors/thisux)
-- [Open Collective](https://opencollective.com/fliso)
-- [Ko-fi](https://ko-fi.com/thisux)
+- [Buy Me a Coffee](https://buymeacoffee.com/imsanju)
+- [Paypal](https://www.paypal.com/paypalme2/spikeysanju)
 
 ## 📝 License
 
