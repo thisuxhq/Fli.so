@@ -113,7 +113,12 @@
           isLoading = true;
           return async ({ result, update }) => {
             if (result.type === "failure") {
-              if (result.data?.message) {
+              if (result.data?.unverified) {
+                toast.error(result.data.message, {
+                  duration: 10000,
+                  description: "Please check your inbox and spam folder for the verification email."
+                });
+              } else if (result.data?.message) {
                 toast.error(result.data.message);
               } else if (result.status === 401) {
                 toast.error("Invalid credentials");
@@ -125,7 +130,7 @@
                 "Account created successfully! Please check your email to verify your account. It may take a few minutes to arrive or you may need to check your spam folder.",
                 {
                   duration: 10000,
-                },
+                }
               );
             }
             await update();

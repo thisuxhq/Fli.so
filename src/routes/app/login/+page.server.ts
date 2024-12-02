@@ -26,7 +26,23 @@ export const actions: Actions = {
 
     try {
       // Attempt to authenticate the user
-      await locals.pb.collection("users").authWithPassword(email, password);
+      const authData = await locals.pb
+        .collection("users")
+        .authWithPassword(email, password);
+
+      // Check if user is verified
+      if (!authData.record.verified) {
+        // Clear auth store since we don't want unverified users to remain logged in
+        locals.pb.authStore.clear();
+        
+        // Send another verification email
+        await locals.pb.collection("users").requestVerification(email);
+        
+        return fail(403, {
+          message: "Please verify your email address. A new verification email has been sent.",
+          unverified: true
+        });
+      }
     } catch (err) {
       // Handle authentication failure
       return fail(401, {
