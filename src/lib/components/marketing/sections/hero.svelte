@@ -28,9 +28,19 @@
     >
   </div>
 
-  <img
+  <!-- <img
     src="/images/features/home.png"
     alt="hero"
     class="aspect-auto h-full rounded-3xl duration-500 animate-in slide-in-from-bottom-60"
-  />
+  /> -->
+
+  <div style="position: relative; padding-top: 79.17888563049853%;">
+    <iframe
+      src="https://customer-ww5ktj2newryx9x7.cloudflarestream.com/a1104e0e7c15edcb4531bfd7b98b9952/iframe?poster=https%3A%2F%2Fcustomer-ww5ktj2newryx9x7.cloudflarestream.com%2Fa1104e0e7c15edcb4531bfd7b98b9952%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&title=Fli.so+%E2%80%93+Shorten%2C+Brand%2C+Track.+All+in+One.&logo=https%3A%2F%2Ffli.so%2Fog-image.png"
+      loading="lazy"
+      style="border: none; position: absolute; top: 0; left: 0; height: 100%; width: 100%;"
+      allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+      title="Fli.so – Shorten, Brand, Track. All in One."
+    ></iframe>
+  </div>
 </section>
