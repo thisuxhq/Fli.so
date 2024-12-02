@@ -1,9 +1,10 @@
 <script lang="ts">
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import * as Avatar from "$lib/components/ui/avatar/index.js";
-  import { Crown, MessageCircle, Gift, LogOut, Globe } from "lucide-svelte";
+  import { Crown, Gift, LogOut, Globe } from "lucide-svelte";
   import { Badge } from "$lib/components/ui/badge";
   import { toast } from "svelte-sonner";
+  
   interface Props {
     name: string;
     email: string;

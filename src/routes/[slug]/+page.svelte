@@ -12,8 +12,8 @@
     meta?: {
       title?: string;
       description?: string;
-      url: string;
       image?: string;
+      url: string;
     };
     isProtected?: boolean;
   }
@@ -33,16 +33,21 @@
 </script>
 
 <svelte:head>
+  <!-- Title and description meta tags -->
   {#if data.meta?.title}
     <title>{data.meta.title}</title>
   {/if}
+  {#if data.meta?.description}
+    <meta name="description" content={data.meta.description} />
+  {/if}
 
+  <!-- Open graph meta tags -->
   {#if data.meta?.title}
     <meta property="og:title" content={data.meta.title} />
   {/if}
 
   {#if data.meta?.description}
-    <meta name="description" content={data.meta.description} />
+    <meta property="og:description" content={data.meta.description} />
   {/if}
 
   {#if data.meta?.image}
@@ -52,7 +57,10 @@
   {#if data.meta?.url}
     <meta property="og:url" content={data.meta.url} />
   {/if}
+
   <meta property="og:type" content="website" />
+
+  <!-- Open graph for twitter -->
   <meta name="twitter:card" content="summary_large_image" />
   {#if data.meta?.title}
     <meta name="twitter:title" content={data.meta.title} />
@@ -63,6 +71,9 @@
   {#if data.meta?.image}
     <meta name="twitter:image" content={data.meta.image} />
   {/if}
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" />
 </svelte:head>
 
 {#if data.isProtected}
