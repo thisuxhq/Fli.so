@@ -8,6 +8,7 @@
     MousePointerClick,
     Earth,
     Lock,
+    Copy,
     QrCode,
     Clock,
   } from "lucide-svelte";
@@ -44,6 +45,10 @@
           handler: () => !showDeleteConfirm && (showDeleteConfirm = true),
         },
         { key: "Escape", handler: () => (showDeleteConfirm = false) },
+        {
+          key: "q",
+          handler: () => (showQRDialog = true),
+        },
         {
           key: "c",
           handler: () =>
@@ -100,7 +105,9 @@
           <div
             class="absolute -right-1 -top-1 rounded-full bg-white p-1 shadow-sm dark:bg-slate-800"
           >
-            <Clock class="size-3.5 text-gray-500 group-hover:text-amber-950 dark:group-hover:text-amber-400" />
+            <Clock
+              class="size-3.5 text-gray-500 group-hover:text-amber-950 dark:group-hover:text-amber-400"
+            />
           </div>
         {/if}
       </div>
@@ -210,12 +217,26 @@
         class:invisible={showDeleteConfirm}
       >
         <Button
+          id={`copy-${url.id}`}
+          on:click={() =>
+            navigator.clipboard
+              .writeText(`${env.PUBLIC_APPLICATION_URL}/${url.slug}`)
+              .then(() => toast.success("Copied to clipboard"))}
+          class="group/btn relative rounded-full p-2 text-gray-600 opacity-0 transition-opacity duration-200 hover:bg-gray-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          variant="ghost"
+          size="icon"
+          title="Copy URL (press 'c')"
+        >
+          <Copy class="h-4 w-4" />
+        </Button>
+
+        <Button
           id={`qr-${url.id}`}
           on:click={() => (showQRDialog = true)}
           class="group/btn relative rounded-full p-2 text-gray-600 opacity-0 transition-opacity duration-200 hover:bg-gray-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-800"
           variant="ghost"
           size="icon"
-          title="Show QR Code"
+          title="Show QR Code (press 'q')"
         >
           <QrCode class="h-4 w-4" />
         </Button>
