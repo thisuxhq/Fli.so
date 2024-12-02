@@ -123,6 +123,9 @@
             } else if (!isLogin && result.type === "success") {
               toast.success(
                 "Account created successfully! Please check your email to verify your account. It may take a few minutes to arrive or you may need to check your spam folder.",
+                {
+                  duration: 10000,
+                },
               );
             }
             await update();
