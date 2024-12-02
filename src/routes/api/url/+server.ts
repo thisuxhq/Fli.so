@@ -52,11 +52,10 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
       ...(data.meta_image_url !== null && {
         meta_image_url: data.meta_image_url,
       }),
-      ...(typeof data.password_hash !== "undefined"
-        ? {
-            password_hash: await hashPassword(data.password_hash, HASH_SECRET),
-          }
-        : {}),
+      // Fix password handling
+      ...(typeof data.password_hash !== "undefined" && {
+        password_hash: data.password_hash ? await hashPassword(data.password_hash, HASH_SECRET) : null
+      }),
       ...(data.expiration !== null
         ? { expiration: convertExpirationToDate(data.expiration) }
         : { expiration: null }),
@@ -64,6 +63,8 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
         ? { expiration_url: data.expiration_url }
         : { expiration_url: null }),
     };
+
+    console.log("[PUT] Update data:", { ...updateData, password_hash: updateData.password_hash ? '[REDACTED]' : null });
 
     const updatedUrl = await locals.pb
       .collection("urls")
@@ -147,6 +148,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
       );
     }
 
+    console.log("password_hash", data.password_hash);
+
     const urlData = {
       url: data.url,
       slug: data.slug || generateSlug(),
@@ -154,7 +157,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
       created_by: locals.user?.id,
       tags_id: data.tags || [],
       ...(data.password_hash && {
-        password_hash: await hashPassword(data.password_hash, env.HASH_SECRET),
+        password_hash: await hashPassword(data.password_hash, env.HASH_SECRET!),
       }),
       ...(data.expiration && {
         expiration: convertExpirationToDate(data.expiration),
@@ -166,10 +169,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
     };
 
     const record = await locals.pb.collection("urls").create(urlData);
-    return json({
-      ...record,
-      shortUrl: `https://dun.sh/${record.slug}`,
-    });
+    return json(record);
   } catch (error) {
     console.error("Failed to create URL", error);
     return json({ error: "Failed to create URL" }, { status: 500 });

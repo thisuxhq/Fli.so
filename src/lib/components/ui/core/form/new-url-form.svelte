@@ -4,7 +4,7 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { env } from "$env/dynamic/public";
   import { urlSchema, type UrlSchema } from "$lib/schema/url";
-  import { generateSlug, generatePassword } from "$lib";
+  import { generateWordSlug } from "$lib/utils/slug-generator";
   import { toast } from "svelte-sonner";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Drawer from "$lib/components/ui/drawer/index.js";
@@ -29,6 +29,7 @@
   import { Label } from "$lib/components/ui/label";
   import type { TagsResponse } from "$lib/types";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
+  import { generateMemorablePassword } from "$lib/utils/password-generator";
 
   interface Props {
     user_id: string;
@@ -160,18 +161,20 @@
   }
 
   async function suggestSlug() {
-    console.log("Generating slug");
-    $formData.slug = generateSlug();
+    console.log("Generating word-based slug");
+    $formData.slug = generateWordSlug();
   }
 
   async function suggestPasswordAndCopy() {
-    const password = generatePassword();
-    $formData.password_hash = password;
+    const password = generateMemorablePassword();
+    console.log("[suggestPasswordAndCopy] Generated memorable password:", password);
+    
     try {
       await navigator.clipboard.writeText(password);
+      $formData.password_hash = password; // Store raw password, server will hash it
       toast.success("Password copied to clipboard");
     } catch (err) {
-      console.error("Failed to copy password:", err);
+      console.error("[suggestPasswordAndCopy] Error:", err);
       toast.error("Failed to copy password to clipboard");
     }
   }

@@ -19,7 +19,8 @@
     convertExpirationToHumanReadable,
   } from "$lib/utils/datetime";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
-  import { generatePassword, generateSlug } from "$lib";
+  import { generateMemorablePassword } from "$lib/utils/password-generator";
+  import { generateWordSlug } from "$lib/utils/slug-generator";
   import { scrapeMetadata } from "$lib/utils/index";
 
   type Tab = "edit-data" | "meta-data";
@@ -72,17 +73,22 @@
   let passwordChanged = $state(false);
 
   async function suggestSlug() {
-    if (localUrl) localUrl.slug = generateSlug();
+    if (localUrl) localUrl.slug = generateWordSlug();
   }
 
   async function suggestPasswordAndCopy() {
-    const password = generatePassword();
-    if (localUrl) localUrl.password_hash = password;
+    const password = generateMemorablePassword();
+    console.log("[suggestPasswordAndCopy] Generated memorable password:", password);
+    
     try {
       await navigator.clipboard.writeText(password);
+      if (localUrl) {
+        localUrl.password_hash = password; // Store raw password, server will hash it
+        passwordChanged = true;
+      }
       toast.success("Password copied to clipboard");
     } catch (err) {
-      console.error("Failed to copy password:", err);
+      console.error("[suggestPasswordAndCopy] Error:", err);
       toast.error("Failed to copy password to clipboard");
     }
   }
@@ -107,7 +113,9 @@
         // Convert to ISO and store in localUrl
         localUrl.expiration = convertExpirationToDate(rawExpirationInput);
         // Update display
-        expirationDisplay = convertExpirationToHumanReadable(localUrl.expiration);
+        expirationDisplay = convertExpirationToHumanReadable(
+          localUrl.expiration,
+        );
         rawExpirationInput = expirationDisplay;
       } else if (localUrl) {
         // Clear expiration if input is empty
@@ -139,6 +147,7 @@
 
   // Modify the password input handler to track changes
   function handlePasswordChange(e: Event) {
+    console.log("Password changed:", (e.target as HTMLInputElement).value);
     passwordChanged = true;
     if (localUrl) {
       localUrl.password_hash = (e.target as HTMLInputElement).value;
@@ -151,28 +160,36 @@
     if (!localUrl?.id) return;
 
     isSubmitting = true;
+    console.log("Password changed flag:", passwordChanged);
+    console.log("Current password value:", localUrl.password_hash);
+    
     try {
+      const payload = {
+        id: localUrl.id,
+        url: localUrl.url,
+        slug: localUrl.slug,
+        password_hash: passwordChanged ? (localUrl.password_hash || null) : undefined,
+        expiration: expiration_date || null,
+        expiration_url: expiration_url || null,
+        meta_title: localUrl.meta_title || null,
+        meta_description: localUrl.meta_description || null,
+        meta_image_url: localUrl.meta_image_url || null,
+        tags_id: localUrl.tags_id || [],
+      };
+      
+      console.log("Sending payload:", payload);
+
       const response = await fetch(`/api/url`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          id: localUrl.id,
-          url: localUrl.url,
-          slug: localUrl.slug,
-          password_hash: passwordChanged ? localUrl.password_hash : undefined,
-          expiration: expiration_date || null,
-          expiration_url: expiration_url || null,
-          meta_title: localUrl.meta_title || null,
-          meta_description: localUrl.meta_description || null,
-          meta_image_url: localUrl.meta_image_url || null,
-          tags_id: localUrl.tags_id || [],
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
-      
+      console.log("Response:", data);
+
       if (!response.ok) {
         throw new Error(data.error || "Failed to update URL");
       }
@@ -181,7 +198,9 @@
       onOpenChange?.(false);
     } catch (error) {
       console.error("Error updating URL:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to update URL");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update URL",
+      );
     } finally {
       isSubmitting = false;
     }
