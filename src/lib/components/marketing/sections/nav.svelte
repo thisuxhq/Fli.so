@@ -8,7 +8,6 @@
   const links = [
     { href: "#features", label: "Features" },
     { href: "#pricing", label: "Pricing" },
-    { href: "#about", label: "About" },
   ];
 
   function toggleMenu() {
@@ -40,9 +39,12 @@
 
     <!-- Mobile Menu Button -->
     <Button
-      size='icon'
-      variant='ghost'
-      class={cn("p-2 hover:bg-gray-100 md:hidden transition-all duration-100 ease-in-out", isMenuOpen && "bg-gray-100")}
+      size="icon"
+      variant="ghost"
+      class={cn(
+        "p-2 transition-all duration-100 ease-in-out hover:bg-gray-100 md:hidden",
+        isMenuOpen && "bg-gray-100",
+      )}
       onclick={toggleMenu}
       aria-label="Toggle menu"
     >

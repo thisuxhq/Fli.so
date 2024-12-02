@@ -1,5 +1,7 @@
 import { fontFamily } from "tailwindcss/defaultTheme";
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -68,8 +70,22 @@ const config: Config = {
         mild: "0px 0px 12px 0px rgba(0, 0, 0, 0.04)",
         subtle: "0px 0px 20px 0px rgba(0, 0, 0, 0.04)",
       },
+      // duration upto 2000ms
+      transitionDuration: {
+        "200": "200ms",
+        "400": "400ms",
+        "600": "600ms",
+        "800": "800ms",
+        "1000": "1000ms",
+        "1200": "1200ms",
+        "1400": "1400ms",
+        "1600": "1600ms",
+        "1800": "1800ms",
+        "2000": "2000ms",
+      },
     },
   },
+  plugins: [typography, tailwindcssAnimate],
 };
 
 export default config;

@@ -54,11 +54,13 @@
 </script>
 
 <section id="features" class="flex w-full flex-col gap-8">
-  <h1 class="text-5xl font-semibold tracking-tighter text-[#712C05]">
+  <h1 class="text-5xl font-semibold tracking-tighter text-[#712C05] duration-300 animate-in slide-in-from-bottom-60">
     Features that <span class="text-[#552A1B]">you'll love</span>
   </h1>
 
-  <div class="grid grid-cols-2 gap-5">
+  <div
+    class="grid grid-cols-2 gap-5 duration-300 animate-in slide-in-from-bottom-60"
+  >
     {#each features as feature}
       <FeatureCard {feature} />
     {/each}

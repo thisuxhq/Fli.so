@@ -3,34 +3,34 @@
   "version": "1.0.0",
   "private": false,
   "description": "A privacy-focused, open-source URL shortener with custom slugs, analytics, and organization features",
-    "type": "module",
-    "author": {
-      "name": "THISUX PRIVATE LIMITED",
-      "email": "hi@thisux.com",
-      "url": "https://thisux.com"
-    },
-    "license": "AGPL-3.0",
-    "homepage": "https://fli.so",
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/thisuxhq/fli.so.git"
-    },
-    "bugs": {
-      "url": "https://github.com/thisuxhq/fli.so/issues",
-      "email": "support@fli.so"
-    },
-    "keywords": [
-      "url-shortener",
-      "link-shortener",
-      "sveltekit",
-      "pocketbase",
-      "open-source",
-      "privacy-focused",
-      "analytics",
-      "custom-slugs",
-      "qr-codes",
-      "link-management"
-    ],
+  "type": "module",
+  "author": {
+    "name": "THISUX PRIVATE LIMITED",
+    "email": "hi@thisux.com",
+    "url": "https://thisux.com"
+  },
+  "license": "AGPL-3.0",
+  "homepage": "https://fli.so",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thisuxhq/fli.so.git"
+  },
+  "bugs": {
+    "url": "https://github.com/thisuxhq/fli.so/issues",
+    "email": "support@fli.so"
+  },
+  "keywords": [
+    "url-shortener",
+    "link-shortener",
+    "sveltekit",
+    "pocketbase",
+    "open-source",
+    "privacy-focused",
+    "analytics",
+    "custom-slugs",
+    "qr-codes",
+    "link-management"
+  ],
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -104,10 +104,10 @@
     "svelte-sonner": "^0.3.28"
   },
   "contributors": [
-     {
-       "name": "Sanjay Sivalingam",
-       "email": "work@sanju.sh",
-       "url": "https://sanju.sh"
-     }
-   ]
+    {
+      "name": "Sanjay Sivalingam",
+      "email": "work@sanju.sh",
+      "url": "https://sanju.sh"
+    }
+  ]
 }
