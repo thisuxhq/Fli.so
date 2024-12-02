@@ -89,7 +89,7 @@ export const actions: Actions = {
       console.log(`User created successfully: ${user.email}`); // Log for debugging
 
       // Request verification for the new user
-      // await locals.pb.collection("users").requestVerification(user.email);
+      await locals.pb.collection("users").requestVerification(user.email);
       console.log(`Verification request sent for: ${user.email}`); // Log for debugging
 
       // Create or retrieve a Stripe customer for the new user
