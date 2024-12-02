@@ -184,7 +184,7 @@ export const actions: Actions = {
         meta_title: formData.get("meta_title"),
         meta_description: formData.get("meta_description"),
         meta_image_url: formData.get("meta_image_url"),
-        ...(password
+        ...(password !== undefined
           ? {
               password_hash: await hashPassword(password, HASH_SECRET),
             }
@@ -194,7 +194,7 @@ export const actions: Actions = {
               expiration: convertExpirationToDate(expiration),
             }
           : {}),
-        ...(expiration_url ? { expiration_url: expiration_url } : {}),
+        ...(expiration_url ? { expiration_url } : {}),
       };
 
       const result = await locals.pb.collection("urls").update(id, updateData);

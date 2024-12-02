@@ -68,6 +68,9 @@
   let expiration_url = $state("");
   let expiration_date = $state("");
 
+  // Add this state to track if password was changed
+  let passwordChanged = $state(false);
+
   async function suggestSlug() {
     if (localUrl) localUrl.slug = generateSlug();
   }
@@ -146,6 +149,15 @@
   let size = windowSize.getSize();
   const isDesktop = $derived($size.width > 768);
 
+  // Modify the password input handler to track changes
+  function handlePasswordChange(e: Event) {
+    passwordChanged = true;
+    if (localUrl) {
+      localUrl.password_hash = (e.target as HTMLInputElement).value;
+    }
+  }
+
+  // Update the handleSubmit function
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault();
     if (!localUrl?.id) return;
@@ -161,7 +173,7 @@
           id: localUrl.id,
           url: localUrl.url,
           slug: localUrl.slug,
-          password_hash: localUrl.password_hash || null,
+          password_hash: passwordChanged ? localUrl.password_hash : undefined, // Only send if changed
           expiration: expiration_date || null,
           expiration_url: expiration_url || null,
           meta_title: localUrl.meta_title || null,
@@ -268,6 +280,7 @@
             }
           : { tags_id: [] },
       };
+      passwordChanged = false; // Reset the password changed flag
     }
   });
 </script>
@@ -351,8 +364,8 @@
                   on:input={(e) => {
                     // Replace spaces with hyphens and remove other special characters
                     e.currentTarget.value = e.currentTarget.value
-                      .replace(/\s+/g, '-')  // Replace one or more spaces with single hyphen
-                      .replace(/[^a-zA-Z0-9-]/g, ''); // Remove remaining special chars
+                      .replace(/\s+/g, "-") // Replace one or more spaces with single hyphen
+                      .replace(/[^a-zA-Z0-9-]/g, ""); // Remove remaining special chars
                     localUrl.slug = e.currentTarget.value;
                   }}
                   on:keydown={(e) => {
@@ -396,9 +409,10 @@
               <Input
                 name="password_hash"
                 type={showPassword ? "text" : "password"}
-                bind:value={localUrl.password_hash}
+                value={localUrl.password_hash}
                 placeholder="••••••••"
                 class="h-12 rounded-r-none bg-input/20"
+                on:input={handlePasswordChange}
               />
               <Button
                 type="button"
@@ -711,8 +725,8 @@
                           on:input={(e) => {
                             // Replace spaces with hyphens and remove other special characters
                             e.currentTarget.value = e.currentTarget.value
-                              .replace(/\s+/g, '-')  // Replace one or more spaces with single hyphen
-                              .replace(/[^a-zA-Z0-9-]/g, ''); // Remove remaining special chars
+                              .replace(/\s+/g, "-") // Replace one or more spaces with single hyphen
+                              .replace(/[^a-zA-Z0-9-]/g, ""); // Remove remaining special chars
                             localUrl.slug = e.currentTarget.value;
                           }}
                           on:keydown={(e) => {
@@ -756,9 +770,10 @@
                       <Input
                         name="password_hash"
                         type={showPassword ? "text" : "password"}
-                        bind:value={localUrl.password_hash}
+                        value={localUrl.password_hash}
                         placeholder="••••••••"
                         class="h-12 rounded-r-none bg-input/20"
+                        on:input={handlePasswordChange}
                       />
                       <Button
                         type="button"
@@ -877,7 +892,11 @@
                   </div>
 
                   <div class="flex justify-end">
-                    <Button type="submit" class="w-full rounded-2xl" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      class="w-full rounded-2xl"
+                      disabled={isSubmitting}
+                    >
                       {#if isSubmitting}
                         Updating...
                       {:else}

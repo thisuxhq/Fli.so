@@ -43,11 +43,11 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
       ...(data.meta_image_url !== null && {
         meta_image_url: data.meta_image_url,
       }),
-      ...(data.password_hash !== null
+      ...(typeof data.password_hash !== 'undefined'
         ? {
             password_hash: await hashPassword(data.password_hash, HASH_SECRET),
           }
-        : { password_hash: null }),
+        : {}),
       ...(data.expiration !== null
         ? { expiration: convertExpirationToDate(data.expiration) }
         : { expiration: null }),
