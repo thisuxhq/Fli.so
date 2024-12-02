@@ -39,5 +39,5 @@ export function generateMemorablePassword(): string {
   const capitalizedObject = object.charAt(0).toUpperCase() + object.slice(1);
   const capitalizedAction = action.charAt(0).toUpperCase() + action.slice(1);
   
-  return `${capitalizedDescriptor}${capitalizedObject}${capitalizedAction}${number}`;
+  return `${capitalizedDescriptor}${capitalizedObject}${capitalizedAction}${number}`; // e.g. "RedRiverRuns1234"
 } 

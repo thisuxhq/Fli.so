@@ -262,5 +262,5 @@ export function generateWordSlug(): string {
   // Generate a smaller number (100-999) for better readability
   const number = Math.floor(Math.random() * 900) + 100;
 
-  return `${adjective}-${noun}-${number}`; // e.g. "happy-river-345"
+  return `${adjective}-${noun}-${number}`; // e.g. "happy-river-345" or "red-tiger-789"
 }

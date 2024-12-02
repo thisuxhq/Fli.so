@@ -54,7 +54,9 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
       }),
       // Fix password handling
       ...(typeof data.password_hash !== "undefined" && {
-        password_hash: data.password_hash ? await hashPassword(data.password_hash, HASH_SECRET) : null
+        password_hash: data.password_hash
+          ? await hashPassword(data.password_hash, HASH_SECRET)
+          : null,
       }),
       ...(data.expiration !== null
         ? { expiration: convertExpirationToDate(data.expiration) }
@@ -64,7 +66,10 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
         : { expiration_url: null }),
     };
 
-    console.log("[PUT] Update data:", { ...updateData, password_hash: updateData.password_hash ? '[REDACTED]' : null });
+    console.log("[PUT] Update data:", {
+      ...updateData,
+      password_hash: updateData.password_hash ? "[REDACTED]" : null,
+    });
 
     const updatedUrl = await locals.pb
       .collection("urls")
@@ -104,6 +109,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 
   const data = await request.json();
   const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "25");
+  const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
   try {
     const exists = await locals.pb
@@ -156,8 +162,10 @@ export const POST: RequestHandler = async ({ locals, request }) => {
       clicks: 0,
       created_by: locals.user?.id,
       tags_id: data.tags || [],
-      ...(data.password_hash && {
-        password_hash: await hashPassword(data.password_hash, env.HASH_SECRET!),
+      ...(typeof data.password_hash !== "undefined" && {
+        password_hash: data.password_hash
+          ? await hashPassword(data.password_hash, HASH_SECRET)
+          : null,
       }),
       ...(data.expiration && {
         expiration: convertExpirationToDate(data.expiration),

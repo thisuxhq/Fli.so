@@ -78,7 +78,6 @@
 
   async function suggestPasswordAndCopy() {
     const password = generateMemorablePassword();
-    console.log("[suggestPasswordAndCopy] Generated memorable password:", password);
     
     try {
       await navigator.clipboard.writeText(password);
@@ -88,7 +87,6 @@
       }
       toast.success("Password copied to clipboard");
     } catch (err) {
-      console.error("[suggestPasswordAndCopy] Error:", err);
       toast.error("Failed to copy password to clipboard");
     }
   }
@@ -147,7 +145,6 @@
 
   // Modify the password input handler to track changes
   function handlePasswordChange(e: Event) {
-    console.log("Password changed:", (e.target as HTMLInputElement).value);
     passwordChanged = true;
     if (localUrl) {
       localUrl.password_hash = (e.target as HTMLInputElement).value;
@@ -160,8 +157,6 @@
     if (!localUrl?.id) return;
 
     isSubmitting = true;
-    console.log("Password changed flag:", passwordChanged);
-    console.log("Current password value:", localUrl.password_hash);
     
     try {
       const payload = {
@@ -177,8 +172,6 @@
         tags_id: localUrl.tags_id || [],
       };
       
-      console.log("Sending payload:", payload);
-
       const response = await fetch(`/api/url`, {
         method: "PUT",
         headers: {
@@ -188,7 +181,6 @@
       });
 
       const data = await response.json();
-      console.log("Response:", data);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to update URL");
@@ -525,11 +517,8 @@
               onSelect={handleTagsSelect}
               selectedTags={localUrl.tags_id}
               onRefreshTags={async () => {
-                console.log("Refreshing tags");
                 const response = await fetch("/api/tags");
-                console.log("response from fetch", response);
                 url_tags = await response.json();
-                console.log("tags", url_tags);
               }}
             />
           </div>
