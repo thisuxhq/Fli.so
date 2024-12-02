@@ -1,7 +1,4 @@
-Here's a punchier, more startup-friendly README:
-
-```markdown
-# 🚀 fli.so
+# Fli.so
 
 > Shorten, Brand, Track. All in One.
 
