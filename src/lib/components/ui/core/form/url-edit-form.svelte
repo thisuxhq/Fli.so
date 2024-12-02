@@ -98,36 +98,24 @@
   });
 
   function handleExpirationInput(e: Event) {
-    // Just update the raw input without processing
     rawExpirationInput = (e.target as HTMLInputElement).value;
   }
 
   function processExpiration() {
     try {
-      if (localUrl) {
-        if (rawExpirationInput) {
-          // Convert to ISO and store in localUrl
-          localUrl.expiration = convertExpirationToDate(rawExpirationInput);
-          // Update display
-          expirationDisplay = convertExpirationToHumanReadable(
-            localUrl.expiration,
-          );
-          rawExpirationInput = expirationDisplay;
-        } else {
-          // Clear expiration if input is empty
-          localUrl.expiration = "";
-          expirationDisplay = "";
-        }
+      if (localUrl && rawExpirationInput) {
+        // Convert to ISO and store in localUrl
+        localUrl.expiration = convertExpirationToDate(rawExpirationInput);
+        // Update display
+        expirationDisplay = convertExpirationToHumanReadable(localUrl.expiration);
+        rawExpirationInput = expirationDisplay;
+      } else if (localUrl) {
+        // Clear expiration if input is empty
+        localUrl.expiration = "";
+        expirationDisplay = "";
       }
     } catch (error) {
       console.error("Failed to parse date:", error);
-    }
-  }
-
-  function handleExpirationKeyDown(e: KeyboardEvent) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      processExpiration();
     }
   }
 
@@ -476,11 +464,10 @@
               <Input
                 type="text"
                 name="expiration"
-                bind:value={expiration_date}
+                bind:value={rawExpirationInput}
                 placeholder="tomorrow at 5pm"
                 class="h-12 rounded-2xl bg-input/20"
                 on:input={handleExpirationInput}
-                on:keydown={handleExpirationKeyDown}
                 on:blur={handleExpirationBlur}
               />
             </div>
@@ -837,11 +824,10 @@
                       <Input
                         type="text"
                         name="expiration"
-                        bind:value={expiration_date}
+                        bind:value={rawExpirationInput}
                         placeholder="tomorrow at 5pm"
                         class="h-12 rounded-2xl bg-input/20"
                         on:input={handleExpirationInput}
-                        on:keydown={handleExpirationKeyDown}
                         on:blur={handleExpirationBlur}
                       />
                     </div>

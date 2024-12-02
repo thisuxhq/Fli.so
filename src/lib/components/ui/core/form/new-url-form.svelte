@@ -22,7 +22,7 @@
   } from "sveltekit-superforms";
   import { zodClient } from "sveltekit-superforms/adapters";
   import { Shuffle, Copy, Eye, EyeOff, AlertCircleIcon } from "lucide-svelte";
-  import * as chrono from "chrono-node";
+  import { convertExpirationToDate, convertExpirationToHumanReadable } from "$lib/utils/datetime";
   import { Label } from "$lib/components/ui/label";
   import type { TagsResponse } from "$lib/types";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
@@ -84,27 +84,33 @@
     }
   });
 
+  let rawExpirationInput = $state<string>("");
+  let expirationDisplay = $state<string>("");
+
   function handleExpirationInput(e: Event) {
-    const input = (e.target as HTMLInputElement).value;
-    const parsed = chrono.parseDate(input);
-    if (parsed) {
-      $formData.expiration = parsed.toISOString().slice(0, 16);
-      (e.target as HTMLInputElement).value = parsed.toLocaleString("en-US", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      });
+    rawExpirationInput = (e.target as HTMLInputElement).value;
+  }
+
+  function processExpiration() {
+    try {
+      if (rawExpirationInput) {
+        // Convert to ISO and store in formData
+        $formData.expiration = convertExpirationToDate(rawExpirationInput);
+        // Update display
+        expirationDisplay = convertExpirationToHumanReadable($formData.expiration);
+        rawExpirationInput = expirationDisplay;
+      } else {
+        // Clear expiration if input is empty
+        $formData.expiration = "";
+        expirationDisplay = "";
+      }
+    } catch (error) {
+      console.error("Failed to parse date:", error);
     }
   }
 
-  function handleExpirationBlur(e: Event) {
-    const input = e.target as HTMLInputElement;
-    if ($formData.expiration) {
-      const date = new Date($formData.expiration);
-      input.value = date.toLocaleString("en-US", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      });
-    }
+  function handleExpirationBlur() {
+    processExpiration();
   }
 
   async function handleMetaFetch() {
@@ -415,6 +421,7 @@
                   type="text"
                   placeholder="tomorrow at 5pm"
                   class="h-12 rounded-2xl bg-input/20"
+                  bind:value={rawExpirationInput}
                   on:input={handleExpirationInput}
                   on:blur={handleExpirationBlur}
                   on:keydown={(e) => {
@@ -855,6 +862,7 @@
                           type="text"
                           placeholder="tomorrow at 5pm"
                           class="h-12 rounded-2xl bg-input/20"
+                          bind:value={rawExpirationInput}
                           on:input={handleExpirationInput}
                           on:blur={handleExpirationBlur}
                           on:keydown={(e) => {
