@@ -214,6 +214,67 @@
       return initKeyboardShortcuts(shortcuts);
     }
   });
+
+  function resetForm() {
+    $formData = {
+      url: "",
+      slug: "",
+      password_hash: "",
+      expiration: "",
+      expiration_url: "",
+      meta_title: "",
+      meta_description: "",
+      meta_image_url: "",
+      tags: [],
+      created_by: user_id,
+    };
+    rawExpirationInput = "";
+    expirationDisplay = "";
+    metaDataEnabled = false;
+    showPassword = false;
+  }
+
+  async function handleSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    isSubmitting = true;
+
+    try {
+      const response = await fetch("/api/url", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: $formData.url,
+          slug: $formData.slug,
+          password_hash: $formData.password_hash,
+          expiration: $formData.expiration,
+          expiration_url: $formData.expiration_url,
+          meta_title: $formData.meta_title,
+          meta_description: $formData.meta_description,
+          meta_image_url: $formData.meta_image_url,
+          tags: $formData.tags,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create URL");
+      }
+
+      toast.success("URL created successfully");
+      resetForm();
+      onOpenChange?.(false);
+    } catch (error) {
+      console.error("Error creating URL:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create URL",
+      );
+    } finally {
+      isSubmitting = false;
+    }
+  }
 </script>
 
 {#if isDesktop}
@@ -225,16 +286,7 @@
         id="left-section"
         class="z-10 space-y-6 rounded-2xl bg-white p-8 shadow-right"
       >
-        <form
-          id="new-url-form"
-          method="POST"
-          action="?/shorten"
-          use:enhance={() => {
-            isSubmitting = true;
-            return {};
-          }}
-          class="space-y-6"
-        >
+        <form id="new-url-form" onsubmit={handleSubmit} class="space-y-6">
           <Dialog.Header>
             <Dialog.Title class="text-2xl font-medium">New link</Dialog.Title>
           </Dialog.Header>
@@ -534,7 +586,7 @@
               {#if isSubmitting}
                 <div
                   class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-                />
+                ></div>
                 Creating...
               {:else}
                 Create Link
@@ -659,15 +711,7 @@
 
             <div class="h-auto w-full p-5">
               <Tabs.Content value="edit-data" class="h-auto w-full space-y-6">
-                <form
-                  method="POST"
-                  action="?/shorten"
-                  use:enhance={() => {
-                    isSubmitting = true;
-                    return {};
-                  }}
-                  class="space-y-6"
-                >
+                <form onsubmit={handleSubmit} class="space-y-6">
                   <Dialog.Header>
                     <Dialog.Title class="w-full text-start text-2xl font-medium"
                       >New link</Dialog.Title
