@@ -116,10 +116,6 @@ export const actions: Actions = {
 
     // Verify password hash matches
     if (url.password_hash !== hashedPassword) {
-      console.table({
-        server: url.password_hash,
-        client: hashedPassword,
-      });
       console.error("Password hash does not match for URL ID:", url_id);
 
       return fail(401, { message: "Invalid password" });
