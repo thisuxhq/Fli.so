@@ -27,7 +27,7 @@
 
   onMount(() => {
     if (data.meta?.url && !data.isProtected) {
-      window.location.href = data.meta.url;
+      window.location.href = data?.meta?.url;
     }
   });
 </script>
@@ -141,7 +141,7 @@
           {#if isLoading}
             <div
               class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-            />
+            ></div>
           {/if}
           Open link
           <KbdShortcut shortcut="⌘O" />
