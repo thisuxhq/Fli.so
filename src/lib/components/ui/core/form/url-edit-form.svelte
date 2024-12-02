@@ -161,7 +161,7 @@
           id: localUrl.id,
           url: localUrl.url,
           slug: localUrl.slug,
-          password_hash: passwordChanged ? localUrl.password_hash : undefined, // Only send if changed
+          password_hash: passwordChanged ? localUrl.password_hash : undefined,
           expiration: expiration_date || null,
           expiration_url: expiration_url || null,
           meta_title: localUrl.meta_title || null,
@@ -171,18 +171,17 @@
         }),
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to update URL");
+        throw new Error(data.error || "Failed to update URL");
       }
 
       toast.success("URL updated successfully");
       onOpenChange?.(false);
     } catch (error) {
       console.error("Error updating URL:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update URL",
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to update URL");
     } finally {
       isSubmitting = false;
     }

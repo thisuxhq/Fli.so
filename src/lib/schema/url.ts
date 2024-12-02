@@ -1,3 +1,4 @@
+import { isReservedKeyword } from '$lib/utils/validation';
 import { z } from "zod";
 
 export const urlSchema = z.object({
@@ -7,11 +8,11 @@ export const urlSchema = z.object({
     .max(500, "URL is too long"),
   slug: z
     .string()
-    .min(2, "Custom URL is too short")
-    .max(50, "Custom URL is too long")
-    .regex(
-      /^[a-zA-Z0-9-]+$/,
-      "The custom URL can only contain letters, numbers, and hyphens",
+    .min(1, "Slug is required")
+    .regex(/^[a-zA-Z0-9-]+$/, "Only letters, numbers, and hyphens are allowed")
+    .refine(
+      (slug) => !isReservedKeyword(slug),
+      "This URL is reserved for system use"
     ),
   created_by: z.string(),
   tags: z.array(z.string()).optional(),

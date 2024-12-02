@@ -55,7 +55,7 @@
         toast.success("URL shortened successfully!");
         onOpenChange?.(false);
       } else {
-        toast.error(result.data?.message);
+        toast.error(result.data?.message || "Failed to create URL");
       }
     },
   });

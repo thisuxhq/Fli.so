@@ -2,6 +2,7 @@ import type { RequestHandler } from "./$types";
 import { json, redirect } from "@sveltejs/kit";
 import { convertExpirationToDate, hashPassword } from "$lib/utils/index";
 import { env } from "$env/dynamic/private";
+import { isReservedKeyword } from '$lib/utils/validation';
 
 export const PUT: RequestHandler = async ({ locals, request }) => {
   if (!locals.pb.authStore.isValid) {
@@ -16,6 +17,13 @@ export const PUT: RequestHandler = async ({ locals, request }) => {
     return json(
       { error: "Slug can only contain letters, numbers, and hyphens" },
       { status: 400 },
+    );
+  }
+
+  if (isReservedKeyword(slug)) {
+    return json(
+      { error: "This URL is reserved for system use" },
+      { status: 400 }
     );
   }
 

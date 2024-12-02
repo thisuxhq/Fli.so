@@ -12,6 +12,7 @@ import { urlSchema } from "$lib/schema/url";
 import { zod } from "sveltekit-superforms/adapters";
 import { convertExpirationToDate, hashPassword } from "$lib/utils/index";
 import { env } from "$env/dynamic/private";
+import { isReservedKeyword } from '$lib/utils/validation';
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
@@ -129,6 +130,13 @@ export const actions: Actions = {
         urlData.meta_image_url = form.data.meta_image_url;
       }
 
+      if (isReservedKeyword(form.data.slug)) {
+        return fail(400, {
+          form,
+          message: "This URL is reserved for system use"
+        });
+      }
+
       const record = await locals.pb.collection("urls").create(urlData);
 
       return {
@@ -196,6 +204,12 @@ export const actions: Actions = {
           : {}),
         ...(expiration_url ? { expiration_url } : {}),
       };
+
+      if (isReservedKeyword(slug)) {
+        return fail(400, {
+          message: "This URL is reserved for system use"
+        });
+      }
 
       const result = await locals.pb.collection("urls").update(id, updateData);
 
