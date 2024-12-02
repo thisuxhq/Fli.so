@@ -25,7 +25,7 @@
       name: "Follow for updates",
       description: "Deploy your own instance easily in minutes",
       icon: X,
-      href: "https://x.com/thisuxhq",
+      href: "https://x.com/flidotso",
     },
   ];
 </script>

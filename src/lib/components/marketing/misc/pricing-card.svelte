@@ -55,7 +55,7 @@
         class="w-full"
         href={details.plan === "Self-hosting"
           ? "https://github.com/thisuxhq/fli.so"
-          : "/"}
+          : "/app/login"}
       >
         {#if details.plan === "Self-hosting"}
           <Github class="mr-2 h-4 w-4" />
