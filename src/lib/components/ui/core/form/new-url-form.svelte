@@ -63,7 +63,7 @@
     },
   });
 
-  const { form: formData, enhance } = form;
+  const { form: formData } = form;
 
   let longUrlInput = $state<HTMLInputElement | null>(null);
   let showPassword = $state(false);
@@ -1035,7 +1035,7 @@
                       {#if isSubmitting}
                         <div
                           class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-                        />
+                        ></div>
                         Creating...
                       {:else}
                         Create Link
