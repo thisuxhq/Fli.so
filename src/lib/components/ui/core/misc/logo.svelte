@@ -11,7 +11,7 @@
 <Button
   {href}
   variant="ghost"
-  class="flex items-center gap-2 hover:bg-transparent"
+  class="flex items-center gap-2 hover:bg-transparent px-0"
 >
   <div>
     <svg
@@ -33,5 +33,5 @@
     </svg>
   </div>
 
-  <span class="text-2xl font-medium">fli.so</span>
+  <span class="text-2xl font-medium">Fli.so</span>
 </Button>

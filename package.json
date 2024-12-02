@@ -2,7 +2,7 @@
   "name": "fli.so",
   "version": "1.0.0",
   "private": false,
-  "description": "A privacy-focused, open-source URL shortener with custom slugs, analytics, and organization features",
+  "description": "Shorten, customize, and track your links with Fli.so. The easiest way to manage your links, all in one platform.",
   "type": "module",
   "author": {
     "name": "THISUX PRIVATE LIMITED",
@@ -20,16 +20,15 @@
     "email": "support@fli.so"
   },
   "keywords": [
-    "url-shortener",
-    "link-shortener",
-    "sveltekit",
-    "pocketbase",
-    "open-source",
-    "privacy-focused",
-    "analytics",
-    "custom-slugs",
-    "qr-codes",
-    "link-management"
+    "link-management",
+    "URL-shortener",
+    "custom-links",
+    "branded-links",
+    "track-links",
+    "link-tracker",
+    "link-analytics",
+    "link-shortening",
+    "Fli.so"
   ],
   "scripts": {
     "dev": "vite dev",

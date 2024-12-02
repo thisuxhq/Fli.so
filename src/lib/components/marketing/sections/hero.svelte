@@ -9,21 +9,22 @@
     <h1
       class="leading-tighter text-balance text-start text-7xl font-semibold tracking-tighter text-[#712C05] duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
     >
-      Your links speak before you do. <br />
-      Make them <span class="text-[#552A1B]">unforgettable.</span>
+      Shorten, Brand, Track. All in One with
+      <span class="text-[#552A1B]">Fli.so</span>
     </h1>
 
     <p
-      class="max-w-md text-balance text-start text-lg text-gray-700 duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
+      class="max-w-md text-balance text-start text-lg text-[#552A1B] duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
     >
-      Link management for people who want to do more than just shrink a URL – we
-      help you track, brand, and shine.
+      Fli.so makes link management simple. Shorten your links, brand them with
+      your name, and track how they perform—all in one place. No hassle, just
+      smarter links.
     </p>
 
     <Button
       href="/app/login"
-      class="duration-400 w-fit animate-in slide-in-from-bottom-60"
-      >Get started it's FREE</Button
+      class="w-fit duration-400 animate-in slide-in-from-bottom-60"
+      >Get started – it's FREE</Button
     >
   </div>
 
