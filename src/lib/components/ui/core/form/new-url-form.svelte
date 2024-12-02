@@ -22,7 +22,10 @@
   } from "sveltekit-superforms";
   import { zodClient } from "sveltekit-superforms/adapters";
   import { Shuffle, Copy, Eye, EyeOff, AlertCircleIcon } from "lucide-svelte";
-  import { convertExpirationToDate, convertExpirationToHumanReadable } from "$lib/utils/datetime";
+  import {
+    convertExpirationToDate,
+    convertExpirationToHumanReadable,
+  } from "$lib/utils/datetime";
   import { Label } from "$lib/components/ui/label";
   import type { TagsResponse } from "$lib/types";
   import { initKeyboardShortcuts, type Shortcut } from "$lib/keyboard";
@@ -97,7 +100,9 @@
         // Convert to ISO and store in formData
         $formData.expiration = convertExpirationToDate(rawExpirationInput);
         // Update display
-        expirationDisplay = convertExpirationToHumanReadable($formData.expiration);
+        expirationDisplay = convertExpirationToHumanReadable(
+          $formData.expiration,
+        );
         rawExpirationInput = expirationDisplay;
       } else {
         // Clear expiration if input is empty
@@ -115,7 +120,7 @@
 
   async function handleMetaFetch() {
     if (!$formData.url || isSubmitting) return;
-    
+
     try {
       const response = await scrapeMetadata($formData.url);
       if (response) {
@@ -302,8 +307,8 @@
                     on:input={(e) => {
                       // Replace spaces with hyphens and remove other special characters
                       e.currentTarget.value = e.currentTarget.value
-                        .replace(/\s+/g, '-')  // Replace one or more spaces with single hyphen
-                        .replace(/[^a-zA-Z0-9-]/g, ''); // Remove remaining special chars
+                        .replace(/\s+/g, "-") // Replace one or more spaces with single hyphen
+                        .replace(/[^a-zA-Z0-9-]/g, ""); // Remove remaining special chars
                       $formData.slug = e.currentTarget.value;
                     }}
                     on:keydown={(e) => {
@@ -527,7 +532,9 @@
             <!-- Create link button -->
             <Button type="submit" class="rounded-2xl" disabled={isSubmitting}>
               {#if isSubmitting}
-                <div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <div
+                  class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                />
                 Creating...
               {:else}
                 Create Link
@@ -740,8 +747,8 @@
                             on:input={(e) => {
                               // Replace spaces with hyphens and remove other special characters
                               e.currentTarget.value = e.currentTarget.value
-                                .replace(/\s+/g, '-')  // Replace one or more spaces with single hyphen
-                                .replace(/[^a-zA-Z0-9-]/g, ''); // Remove remaining special chars
+                                .replace(/\s+/g, "-") // Replace one or more spaces with single hyphen
+                                .replace(/[^a-zA-Z0-9-]/g, ""); // Remove remaining special chars
                               $formData.slug = e.currentTarget.value;
                             }}
                             on:keydown={(e) => {
@@ -852,7 +859,12 @@
                               <AlertCircleIcon class="ml-2 size-4" />
                             </Tooltip.Trigger>
                             <Tooltip.Content>
-                              <p>Enter an expiration date for your link.</p>
+                              <p>
+                                Enter an expiration date for your link. You can
+                                use relative dates like "tomorrow at 5pm" or "10
+                                minutes from now" or "Next week" or absolute
+                                dates like "2024-01-01".
+                              </p>
                             </Tooltip.Content>
                           </Tooltip.Root>
                         </Form.Label>
@@ -887,8 +899,8 @@
                             <Tooltip.Content>
                               <p>
                                 Enter an expiration link for your link. When the
-                                link is visited, it will redirect to the
-                                secondary URL.
+                                link is expired and visited, it will redirect to
+                                the secondary URL.
                               </p>
                             </Tooltip.Content>
                           </Tooltip.Root>
@@ -971,9 +983,15 @@
 
                   <div class="flex justify-end">
                     <!-- Create link button -->
-                    <Button type="submit" class="w-full rounded-2xl" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      class="w-full rounded-2xl"
+                      disabled={isSubmitting}
+                    >
                       {#if isSubmitting}
-                        <div class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        <div
+                          class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                        />
                         Creating...
                       {:else}
                         Create Link
