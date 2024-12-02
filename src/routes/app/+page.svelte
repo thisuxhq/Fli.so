@@ -413,7 +413,7 @@
         <!-- Add URL Button -->
         <Button
           class="rounded-2xl"
-          href={isAtLimit ? "/billing" : undefined}
+          href={isAtLimit ? "/app/billing" : undefined}
           onclick={() => {
             if (!isAtLimit) {
               showAddForm = !showAddForm;
