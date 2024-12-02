@@ -37,7 +37,7 @@
 
   type Tab = "edit-data" | "meta-data";
 
-  let currentTab = $state<Tab>("meta-data");
+  let currentTab = $state<Tab>("edit-data");
   let { data, user_id, show = false, onOpenChange, tags }: Props = $props();
   let url_tags = $state<TagsResponse[]>(tags);
   let isSubmitting = $state(false);
