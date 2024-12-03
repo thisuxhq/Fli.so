@@ -18,7 +18,7 @@ const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.pb.authStore.isValid) {
-    throw redirect(302, "/login");
+    throw redirect(302, "/app/login");
   }
   
 
@@ -58,7 +58,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
   shorten: async ({ request, locals }) => {
     if (!locals.pb.authStore.isValid) {
-      throw redirect(302, "/login");
+      throw redirect(302, "/app/login");
     }
 
     const form = await superValidate(request, zod(urlSchema));
@@ -157,7 +157,7 @@ export const actions: Actions = {
 
   update: async ({ request, locals }) => {
     if (!locals.pb.authStore.isValid) {
-      throw redirect(302, "/login");
+      throw redirect(302, "/app/login");
     }
 
     const formData = await request.formData();
@@ -228,7 +228,7 @@ export const actions: Actions = {
 
   delete: async ({ request, locals }) => {
     if (!locals.pb.authStore.isValid) {
-      throw redirect(302, "/login");
+      throw redirect(302, "/app/login");
     }
 
     const formData = await request.formData();
@@ -260,7 +260,7 @@ export const actions: Actions = {
 
   create_tag: async ({ request, locals }) => {
     if (!locals.pb.authStore.isValid) {
-      throw redirect(302, "/login");
+      throw redirect(302, "/app/login");
     }
 
     const formData = await request.formData();
