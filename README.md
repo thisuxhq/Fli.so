@@ -79,5 +79,3 @@ AGPL-3.0 © 2024 [THISUX PRIVATE LIMITED](https://thisux.com)
 ---
 
 Built with ❤️ by [ThisUX](https://thisux.com) – Design Led Product Studio
-
-
