@@ -89,8 +89,8 @@
       <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
     </Button>
   </Popover.Trigger>
-  <Popover.Content class="w-[200px] p-0">
-    <Command.Root>
+  <Popover.Content class="w-[200px] p-0 bg-white">
+    <Command.Root class="bg-input/20">
       <Command.Input placeholder="Search tags..." bind:value={searchQuery} />
       <Command.Empty>
         <div class="flex flex-col items-center gap-2 p-4">

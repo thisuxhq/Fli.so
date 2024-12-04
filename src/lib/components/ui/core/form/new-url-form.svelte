@@ -6,6 +6,7 @@
   import { urlSchema, type UrlSchema } from "$lib/schema/url";
   import { generateWordSlug } from "$lib/utils/slug-generator";
   import { toast } from "svelte-sonner";
+  import * as HoverCard from "$lib/components/ui/hover-card";
   import * as Dialog from "$lib/components/ui/dialog/index.js";
   import * as Drawer from "$lib/components/ui/drawer/index.js";
   import { Switch } from "$lib/components/ui/switch";
@@ -167,8 +168,11 @@
 
   async function suggestPasswordAndCopy() {
     const password = generateMemorablePassword();
-    console.log("[suggestPasswordAndCopy] Generated memorable password:", password);
-    
+    console.log(
+      "[suggestPasswordAndCopy] Generated memorable password:",
+      password,
+    );
+
     try {
       await navigator.clipboard.writeText(password);
       $formData.password_hash = password; // Store raw password, server will hash it
@@ -301,14 +305,19 @@
                 <Form.Label class="flex items-center text-muted-foreground">
                   Destination URL <span class="text-destructive">*</span>
                 </Form.Label>
-                <Tooltip.Root openDelay={200}>
-                  <Tooltip.Trigger>
+                <HoverCard.Root openDelay={75}>
+                  <HoverCard.Trigger>
                     <AlertCircleIcon class="ml-2 size-4" />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    <p>Enter the URL you want to shorten</p>
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                  </HoverCard.Trigger>
+                  <HoverCard.Content
+                    side="top"
+                    class="w-fit bg-white px-4 py-2 text-black"
+                  >
+                    <p class="w-full text-sm font-medium">
+                      Enter the URL you want to shorten
+                    </p>
+                  </HoverCard.Content>
+                </HoverCard.Root>
               </div>
               <Input
                 {...attrs}
@@ -335,14 +344,17 @@
             <Form.Control let:attrs>
               <Form.Label class="flex items-center text-muted-foreground">
                 Custom URL
-                <Tooltip.Root openDelay={200}>
-                  <Tooltip.Trigger>
+                <HoverCard.Root openDelay={75}>
+                  <HoverCard.Trigger>
                     <AlertCircleIcon class="ml-2 size-4 " />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    <p>Enter a custom URL</p>
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                  </HoverCard.Trigger>
+                  <HoverCard.Content
+                    side="top"
+                    class="w-fit bg-white px-4 py-2 text-black"
+                  >
+                    <p class="w-full text-sm font-medium">Enter a custom URL</p>
+                  </HoverCard.Content>
+                </HoverCard.Root>
               </Form.Label>
               <div class="flex rounded-2xl">
                 <div
@@ -392,14 +404,19 @@
             <Form.Control let:attrs>
               <Form.Label class="flex items-center text-muted-foreground">
                 Password
-                <Tooltip.Root openDelay={200}>
-                  <Tooltip.Trigger>
+                <HoverCard.Root openDelay={75}>
+                  <HoverCard.Trigger>
                     <AlertCircleIcon class="ml-2 size-4" />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    <p>Enter a password to protect your link</p>
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                  </HoverCard.Trigger>
+                  <HoverCard.Content
+                    side="top"
+                    class="w-fit bg-white px-4 py-2 text-black"
+                  >
+                    <p class="w-full text-sm font-medium">
+                      Enter a password to protect your link
+                    </p>
+                  </HoverCard.Content>
+                </HoverCard.Root>
               </Form.Label>
               <div class="flex">
                 <Input
@@ -466,14 +483,60 @@
               <Form.Control let:attrs>
                 <Form.Label class="flex items-center text-muted-foreground"
                   >Expiration date
-                  <Tooltip.Root openDelay={200}>
-                    <Tooltip.Trigger>
+                  <HoverCard.Root openDelay={75}>
+                    <HoverCard.Trigger>
                       <AlertCircleIcon class="ml-2 size-4" />
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>
-                      <p>Enter an expiration date for your link.</p>
-                    </Tooltip.Content>
-                  </Tooltip.Root>
+                    </HoverCard.Trigger>
+                    <HoverCard.Content
+                      side="top"
+                      class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
+                    >
+                      <div class="rounded-lg px-0 py-2">
+                        <p class="mb-3 text-sm text-black">
+                          Specify an expiration date using natural language:
+                        </p>
+
+                        <div class="space-y-2">
+                          <div class="flex items-center gap-2">
+                            <span
+                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                            >
+                              "tomorrow at 5pm"
+                            </span>
+                            <span
+                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                            >
+                              "10 minutes from now"
+                            </span>
+                          </div>
+
+                          <div class="flex items-center gap-2">
+                            <span
+                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                            >
+                              "1 week from now"
+                            </span>
+                            <span
+                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                            >
+                              "after 1 week at 1pm"
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="mt-3 border-t border-border pt-3">
+                          <p class="text-xs text-muted-foreground">
+                            Or use absolute dates like
+                            <span
+                              class="rounded-md bg-secondary/50 px-1.5 py-0.5 font-mono text-secondary-foreground"
+                            >
+                              2024-01-01
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </HoverCard.Content>
+                  </HoverCard.Root>
                 </Form.Label>
 
                 <Input
@@ -497,22 +560,25 @@
               <Form.Control let:attrs>
                 <Form.Label class="flex items-center text-muted-foreground">
                   Expiration link
-                  <Tooltip.Root openDelay={200}>
-                    <Tooltip.Trigger>
+                  <HoverCard.Root openDelay={75}>
+                    <HoverCard.Trigger>
                       <AlertCircleIcon class="ml-2 size-4" />
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>
-                      <p>
+                    </HoverCard.Trigger>
+                    <HoverCard.Content
+                      side="top"
+                      class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
+                    >
+                      <p class="text-sm font-medium text-black">
                         Enter an expiration link for your link. When the link is
-                        visited, it will redirect to the secondary URL.
+                        visited, it will redirect to the expiration link.
                       </p>
-                    </Tooltip.Content>
-                  </Tooltip.Root>
+                    </HoverCard.Content>
+                  </HoverCard.Root>
                 </Form.Label>
                 <Input
                   {...attrs}
                   type="text"
-                  placeholder="Secondary-URL"
+                  placeholder="Expiration redirect URL"
                   bind:value={$formData.expiration_url}
                   class="h-12 rounded-2xl bg-input/20"
                   on:keydown={(e) => {

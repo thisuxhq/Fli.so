@@ -10,7 +10,7 @@
   import { windowSize } from "$lib/window-size";
   import { Label } from "$lib/components/ui/label";
   import { Shuffle, Copy, Eye, EyeOff, AlertCircleIcon } from "lucide-svelte";
-  import * as Tooltip from "$lib/components/ui/tooltip";
+  import * as HoverCard from "$lib/components/ui/hover-card";
   import { TagsSelector, QRCode } from "$lib/components/ui/core/misc";
   import type { TagsResponse, UrlsResponseWithTags } from "$lib/types";
   import { toast } from "svelte-sonner";
@@ -78,7 +78,7 @@
 
   async function suggestPasswordAndCopy() {
     const password = generateMemorablePassword();
-    
+
     try {
       await navigator.clipboard.writeText(password);
       if (localUrl) {
@@ -157,13 +157,15 @@
     if (!localUrl?.id) return;
 
     isSubmitting = true;
-    
+
     try {
       const payload = {
         id: localUrl.id,
         url: localUrl.url,
         slug: localUrl.slug,
-        password_hash: passwordChanged ? (localUrl.password_hash || null) : undefined,
+        password_hash: passwordChanged
+          ? localUrl.password_hash || null
+          : undefined,
         expiration: expiration_date || null,
         expiration_url: expiration_url || null,
         meta_title: localUrl.meta_title || null,
@@ -171,7 +173,7 @@
         meta_image_url: localUrl.meta_image_url || null,
         tags_id: localUrl.tags_id || [],
       };
-      
+
       const response = await fetch(`/api/url`, {
         method: "PUT",
         headers: {
@@ -305,14 +307,19 @@
               <Label for="url" class="flex items-center text-muted-foreground">
                 Destination URL <span class="text-destructive">*</span>
               </Label>
-              <Tooltip.Root openDelay={200}>
-                <Tooltip.Trigger>
+              <HoverCard.Root>
+                <HoverCard.Trigger>
                   <AlertCircleIcon class="ml-2 size-4" />
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  <p>Enter the URL you want to shorten</p>
-                </Tooltip.Content>
-              </Tooltip.Root>
+                </HoverCard.Trigger>
+                <HoverCard.Content
+                  side="top"
+                  class="w-fit bg-white px-4 py-2 text-black"
+                >
+                  <p class="w-full text-sm font-medium">
+                    Enter the URL you want to shorten
+                  </p>
+                </HoverCard.Content>
+              </HoverCard.Root>
             </div>
             <Input
               id="url"
@@ -335,14 +342,17 @@
               <Label for="slug" class="flex items-center text-muted-foreground"
                 >Custom URL</Label
               >
-              <Tooltip.Root openDelay={200}>
-                <Tooltip.Trigger>
+              <HoverCard.Root>
+                <HoverCard.Trigger>
                   <AlertCircleIcon class="ml-2 size-4" />
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  <p>Enter a custom URL</p>
-                </Tooltip.Content>
-              </Tooltip.Root>
+                </HoverCard.Trigger>
+                <HoverCard.Content
+                  side="top"
+                  class="w-fit bg-white px-4 py-2 text-black"
+                >
+                  <p class="w-full text-sm font-medium">Enter a custom URL</p>
+                </HoverCard.Content>
+              </HoverCard.Root>
             </div>
             <div class="flex rounded-2xl">
               <div
@@ -394,14 +404,19 @@
               <Label class="flex items-center text-muted-foreground"
                 >Password</Label
               >
-              <Tooltip.Root openDelay={200}>
-                <Tooltip.Trigger>
+              <HoverCard.Root>
+                <HoverCard.Trigger>
                   <AlertCircleIcon class="ml-2 size-4" />
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  <p>Enter a password to protect your link</p>
-                </Tooltip.Content>
-              </Tooltip.Root>
+                </HoverCard.Trigger>
+                <HoverCard.Content
+                  side="top"
+                  class="w-fit bg-white px-4 py-2 text-black"
+                >
+                  <p class="w-full text-sm font-medium">
+                    Enter a password to protect your link
+                  </p>
+                </HoverCard.Content>
+              </HoverCard.Root>
             </div>
             <div class="flex">
               <Input
@@ -462,14 +477,60 @@
                 <Label class="flex items-center text-muted-foreground"
                   >Expiration date</Label
                 >
-                <Tooltip.Root openDelay={200}>
-                  <Tooltip.Trigger>
-                    <AlertCircleIcon class="ml-2 size-4" />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    <p>Enter an expiration date for your link.</p>
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                <HoverCard.Root openDelay={75}>
+                    <HoverCard.Trigger>
+                      <AlertCircleIcon class="ml-2 size-4" />
+                    </HoverCard.Trigger>
+                    <HoverCard.Content
+                      side="top"
+                      class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
+                    >
+                      <div class="rounded-lg px-0 py-2">
+                        <p class="mb-3 text-sm text-black">
+                          Specify an expiration date using natural language:
+                        </p>
+
+                        <div class="space-y-2">
+                          <div class="flex items-center gap-2">
+                            <span
+                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                            >
+                              "tomorrow at 5pm"
+                            </span>
+                            <span
+                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                            >
+                              "10 minutes from now"
+                            </span>
+                          </div>
+
+                          <div class="flex items-center gap-2">
+                            <span
+                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                            >
+                              "1 week from now"
+                            </span>
+                            <span
+                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                            >
+                              "after 1 week at 1pm"
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="mt-3 border-t border-border pt-3">
+                          <p class="text-xs text-muted-foreground">
+                            Or use absolute dates like
+                            <span
+                              class="rounded-md bg-secondary/50 px-1.5 py-0.5 font-mono text-secondary-foreground"
+                            >
+                              2024-01-01
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </HoverCard.Content>
+                  </HoverCard.Root>
               </div>
               <Input
                 type="text"
@@ -487,17 +548,19 @@
                 <Label class="flex items-center text-muted-foreground"
                   >Expiration link</Label
                 >
-                <Tooltip.Root openDelay={200}>
-                  <Tooltip.Trigger>
+                <HoverCard.Root>
+                  <HoverCard.Trigger>
                     <AlertCircleIcon class="ml-2 size-4" />
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>
-                    <p>
-                      Enter an expiration link for your link. When the link is
-                      visited, it will redirect to the secondary URL.
+                  </HoverCard.Trigger>
+                  <HoverCard.Content
+                    side="top"
+                    class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
+                  >
+                    <p class="text-sm font-medium text-black">
+                      Enter an expiration link for your link. When the link is expired and visited, it will redirect to the secondary URL.
                     </p>
-                  </Tooltip.Content>
-                </Tooltip.Root>
+                  </HoverCard.Content>
+                </HoverCard.Root>
               </div>
               <Input
                 type="text"
@@ -660,14 +723,19 @@
                       >
                         Destination URL <span class="text-destructive">*</span>
                       </Label>
-                      <Tooltip.Root openDelay={200}>
-                        <Tooltip.Trigger>
+                      <HoverCard.Root>
+                        <HoverCard.Trigger>
                           <AlertCircleIcon class="ml-2 size-4" />
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>
-                          <p>Enter the URL you want to shorten</p>
-                        </Tooltip.Content>
-                      </Tooltip.Root>
+                        </HoverCard.Trigger>
+                        <HoverCard.Content
+                          side="top"
+                          class="w-fit bg-white px-4 py-2 text-black"
+                        >
+                          <p class="w-full text-sm font-medium">
+                            Enter the URL you want to shorten
+                          </p>
+                        </HoverCard.Content>
+                      </HoverCard.Root>
                     </div>
                     <Input
                       id="url"
@@ -692,14 +760,17 @@
                         class="flex items-center text-muted-foreground"
                         >Custom URL</Label
                       >
-                      <Tooltip.Root openDelay={200}>
-                        <Tooltip.Trigger>
+                      <HoverCard.Root>
+                        <HoverCard.Trigger>
                           <AlertCircleIcon class="ml-2 size-4" />
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>
-                          <p>Enter a custom URL</p>
-                        </Tooltip.Content>
-                      </Tooltip.Root>
+                        </HoverCard.Trigger>
+                        <HoverCard.Content
+                          side="top"
+                          class="w-fit bg-white px-4 py-2 text-black"
+                        >
+                          <p class="w-full text-sm font-medium">Enter a custom URL</p>
+                        </HoverCard.Content>
+                      </HoverCard.Root>
                     </div>
                     <div class="flex rounded-2xl">
                       <div
@@ -751,14 +822,19 @@
                       <Label class="flex items-center text-muted-foreground"
                         >Password</Label
                       >
-                      <Tooltip.Root openDelay={200}>
-                        <Tooltip.Trigger>
+                      <HoverCard.Root>
+                        <HoverCard.Trigger>
                           <AlertCircleIcon class="ml-2 size-4" />
-                        </Tooltip.Trigger>
-                        <Tooltip.Content>
-                          <p>Enter a password to protect your link</p>
-                        </Tooltip.Content>
-                      </Tooltip.Root>
+                        </HoverCard.Trigger>
+                        <HoverCard.Content
+                          side="top"
+                          class="w-fit bg-white px-4 py-2 text-black"
+                        >
+                          <p class="w-full text-sm font-medium">
+                            Enter a password to protect your link
+                          </p>
+                        </HoverCard.Content>
+                      </HoverCard.Root>
                     </div>
                     <div class="flex">
                       <Input
@@ -819,14 +895,19 @@
                         <Label class="flex items-center text-muted-foreground"
                           >Expiration date</Label
                         >
-                        <Tooltip.Root openDelay={200}>
-                          <Tooltip.Trigger>
+                        <HoverCard.Root>
+                          <HoverCard.Trigger>
                             <AlertCircleIcon class="ml-2 size-4" />
-                          </Tooltip.Trigger>
-                          <Tooltip.Content>
-                            <p>Enter an expiration date for your link.</p>
-                          </Tooltip.Content>
-                        </Tooltip.Root>
+                          </HoverCard.Trigger>
+                          <HoverCard.Content
+                            side="top"
+                            class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
+                          >
+                            <p class="text-sm font-medium text-black">
+                              Enter an expiration date for your link. You can use relative dates like "tomorrow at 5pm" or "10 minutes from now" or "Next week" or absolute dates like "2024-01-01".
+                            </p>
+                          </HoverCard.Content>
+                        </HoverCard.Root>
                       </div>
                       <Input
                         type="text"
@@ -844,18 +925,19 @@
                         <Label class="flex items-center text-muted-foreground"
                           >Expiration link</Label
                         >
-                        <Tooltip.Root openDelay={200}>
-                          <Tooltip.Trigger>
+                        <HoverCard.Root>
+                          <HoverCard.Trigger>
                             <AlertCircleIcon class="ml-2 size-4" />
-                          </Tooltip.Trigger>
-                          <Tooltip.Content>
-                            <p>
-                              Enter an expiration link for your link. When the
-                              link is visited, it will redirect to the secondary
-                              URL.
+                          </HoverCard.Trigger>
+                          <HoverCard.Content
+                            side="top"
+                            class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
+                          >
+                            <p class="text-sm font-medium text-black">
+                              Enter an expiration link for your link. When the link is expired and visited, it will redirect to the secondary URL.
                             </p>
-                          </Tooltip.Content>
-                        </Tooltip.Root>
+                          </HoverCard.Content>
+                        </HoverCard.Root>
                       </div>
                       <Input
                         type="text"
