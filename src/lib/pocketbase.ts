@@ -1,12 +1,14 @@
 import { env } from "$env/dynamic/public";
 import PocketBase, { ClientResponseError } from "pocketbase";
 import type { TypedPocketBase } from "./types";
+import type { TypedPocketBase as TypedCmsPocketBase } from "./types/cms-generated-types";
 
-export function createInstance() {
-  return new PocketBase(env.PUBLIC_POCKETBASE_URL) as TypedPocketBase;
-}
+export const createInstance = <T extends "app" | "cms">(url: string) => {
+  return new PocketBase(url) as T extends "app" ? TypedPocketBase : TypedCmsPocketBase;
+};
 
-export const pb = createInstance() as TypedPocketBase;
+export const pb = createInstance(env.PUBLIC_POCKETBASE_URL);
+export const cmsPb = createInstance(env.PUBLIC_POCKETBASE_CMS_URL);
 
 export function handlePocketBaseError(error: unknown) {
   if (error instanceof ClientResponseError) {
