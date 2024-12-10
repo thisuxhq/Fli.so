@@ -1,3 +1,6 @@
+CREATE TYPE "public"."account_status" AS ENUM('active', 'inactive', 'suspended', 'deleted');--> statement-breakpoint
+CREATE TYPE "public"."role" AS ENUM('admin', 'user');--> statement-breakpoint
+CREATE TYPE "public"."subscription_status" AS ENUM('incomplete', 'incomplete_expired', 'trialing', 'active', 'past_due', 'canceled', 'unpaid', 'pause');--> statement-breakpoint
 CREATE TABLE "customers" (
 	"id" text PRIMARY KEY NOT NULL,
 	"stripe_customer_id" text NOT NULL,
@@ -29,7 +32,7 @@ CREATE TABLE "subscriptions" (
 	"stripe_subscription_id" text,
 	"stripe_price_id" text,
 	"plan_name" text,
-	"status" varchar(50),
+	"status" "subscription_status" DEFAULT 'incomplete',
 	"current_period_start" date,
 	"current_period_end" date,
 	"customer_id" text NOT NULL,
@@ -72,8 +75,10 @@ CREATE TABLE "users" (
 	"email" text NOT NULL,
 	"password_hash" text NOT NULL,
 	"username" text NOT NULL,
+	"status" "account_status" DEFAULT 'active',
 	"is_verified" boolean DEFAULT false,
 	"created_at" timestamp with time zone NOT NULL,
+	"role" "role" DEFAULT 'user',
 	"updated_at" timestamp with time zone NOT NULL,
 	CONSTRAINT "users_email_unique" UNIQUE("email"),
 	CONSTRAINT "users_username_unique" UNIQUE("username")

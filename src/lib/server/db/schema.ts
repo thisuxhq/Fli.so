@@ -6,19 +6,45 @@ import {
   varchar,
   boolean,
   integer,
+  pgEnum,
   date,
 } from "drizzle-orm/pg-core";
+
+// role
+export const roleEnum = pgEnum("role", ["admin", "user"]);
+
+// subscription status
+export const subscriptionStatusEnum = pgEnum("subscription_status", [
+  "incomplete",
+  "incomplete_expired",
+  "trialing",
+  "active",
+  "past_due",
+  "canceled",
+  "unpaid",
+  "pause",
+]);
+
+// account status
+export const accountStatusEnum = pgEnum("account_status", [
+  "active",
+  "inactive",
+  "suspended",
+  "deleted",
+]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   username: text("username").notNull().unique(),
+  status: accountStatusEnum("status").default("active"),
   isVerified: boolean("is_verified").default(false),
   createdAt: timestamp("created_at", {
     withTimezone: true,
     mode: "date",
   }).notNull(),
+  role: roleEnum("role").default("user"),
   updatedAt: timestamp("updated_at", {
     withTimezone: true,
     mode: "date",
@@ -100,7 +126,7 @@ export const subscriptions = pgTable("subscriptions", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   stripePriceId: text("stripe_price_id"),
   planName: text("plan_name"),
-  status: varchar("status", { length: 50 }),
+  status: subscriptionStatusEnum("status").default("incomplete"),
   currentPeriodStart: date("current_period_start"),
   currentPeriodEnd: date("current_period_end"),
   customerId: text("customer_id")

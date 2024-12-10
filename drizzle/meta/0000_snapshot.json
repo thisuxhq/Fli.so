@@ -1,5 +1,5 @@
 {
-  "id": "9658d166-2d74-419e-8c5c-244b0b2ec306",
+  "id": "d9fe8624-2170-433e-9ecc-3100f27e299a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -217,9 +217,11 @@
         },
         "status": {
           "name": "status",
-          "type": "varchar(50)",
+          "type": "subscription_status",
+          "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "'incomplete'"
         },
         "current_period_start": {
           "name": "current_period_start",
@@ -527,6 +529,14 @@
           "primaryKey": false,
           "notNull": true
         },
+        "status": {
+          "name": "status",
+          "type": "account_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'active'"
+        },
         "is_verified": {
           "name": "is_verified",
           "type": "boolean",
@@ -539,6 +549,14 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'user'"
         },
         "updated_at": {
           "name": "updated_at",
@@ -571,7 +589,40 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.account_status": {
+      "name": "account_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive",
+        "suspended",
+        "deleted"
+      ]
+    },
+    "public.role": {
+      "name": "role",
+      "schema": "public",
+      "values": [
+        "admin",
+        "user"
+      ]
+    },
+    "public.subscription_status": {
+      "name": "subscription_status",
+      "schema": "public",
+      "values": [
+        "incomplete",
+        "incomplete_expired",
+        "trialing",
+        "active",
+        "past_due",
+        "canceled",
+        "unpaid",
+        "pause"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},
