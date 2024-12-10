@@ -1,7 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
   pgTable,
-  serial,
   text,
   timestamp,
   varchar,
@@ -50,7 +49,7 @@ export const sessionRelations = relations(session, ({ one }) => ({
 }));
 
 export const customers = pgTable("customers", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   stripeCustomerId: text("stripe_customer_id").notNull(),
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade" })
@@ -70,7 +69,7 @@ export const customersRelations = relations(customers, ({ one }) => ({
 }));
 
 export const domains = pgTable("domains", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   domain: text("domain"),
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade" })
@@ -97,14 +96,16 @@ export const domainsRelations = relations(domains, ({ one }) => ({
 }));
 
 export const subscriptions = pgTable("subscriptions", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   stripeSubscriptionId: text("stripe_subscription_id"),
   stripePriceId: text("stripe_price_id"),
   planName: text("plan_name"),
   status: varchar("status", { length: 50 }),
   currentPeriodStart: date("current_period_start"),
   currentPeriodEnd: date("current_period_end"),
-  customerId: integer("customer_id").references(() => customers.id),
+  customerId: text("customer_id")
+    .references(() => customers.id)
+    .notNull(),
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
@@ -122,10 +123,14 @@ export const subscriptions = pgTable("subscriptions", {
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   user: one(users, { fields: [subscriptions.userId], references: [users.id] }),
+  customer: one(customers, {
+    fields: [subscriptions.customerId],
+    references: [customers.id],
+  }),
 }));
 
 export const tags = pgTable("tags", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   name: text("name"),
   color: text("color"),
   createdBy: text("created_by")
@@ -146,7 +151,7 @@ export const tagsRelations = relations(tags, ({ one }) => ({
 }));
 
 export const urls = pgTable("urls", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   url: text("url").notNull(),
   slug: text("slug").notNull(),
   clicks: integer("clicks").default(0),
@@ -163,7 +168,7 @@ export const urls = pgTable("urls", {
     withTimezone: true,
     mode: "date",
   }),
-  domainId: integer("domain_id").references(() => domains.id),
+  domainId: text("domain_id").references(() => domains.id),
   createdAt: timestamp("created_at", {
     withTimezone: true,
     mode: "date",

@@ -3,6 +3,7 @@ import { db } from "./db";
 import { customers } from "./db/schema";
 import { eq } from "drizzle-orm";
 import type { User } from "./db/schema";
+import { nanoid } from "$lib";
 
 export async function createOrRetrieveStripeCustomer(user: User) {
   try {
@@ -38,7 +39,7 @@ export async function createOrRetrieveStripeCustomer(user: User) {
     const [customer] = await db
       .insert(customers)
       .values({
-        id: crypto.randomUUID(),
+        id: nanoid(8),
         userId: user.id,
         stripeCustomerId: stripeCustomer.id,
         createdAt: new Date(),

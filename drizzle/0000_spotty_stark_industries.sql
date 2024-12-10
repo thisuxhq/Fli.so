@@ -1,16 +1,21 @@
 CREATE TABLE "customers" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"stripe_customer_id" text NOT NULL,
-	"user_id" text NOT NULL
+	"user_id" text NOT NULL,
+	"created_at" timestamp with time zone NOT NULL,
+	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "domains" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"domain" text,
 	"user_id" text NOT NULL,
 	"status" varchar(50),
 	"verification_token" text,
-	"verification_method" varchar(50)
+	"verification_method" varchar(50),
+	"verified_at" timestamp with time zone,
+	"created_at" timestamp with time zone NOT NULL,
+	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
@@ -20,28 +25,32 @@ CREATE TABLE "session" (
 );
 --> statement-breakpoint
 CREATE TABLE "subscriptions" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"stripe_subscription_id" text,
 	"stripe_price_id" text,
 	"plan_name" text,
 	"status" varchar(50),
 	"current_period_start" date,
 	"current_period_end" date,
-	"customer_id" integer,
+	"customer_id" text NOT NULL,
 	"user_id" text NOT NULL,
 	"cancel_at_period_end" boolean,
-	"canceled_at" date
+	"canceled_at" date,
+	"created_at" timestamp with time zone NOT NULL,
+	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "tags" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"name" text,
 	"color" text,
-	"created_by" text NOT NULL
+	"created_by" text NOT NULL,
+	"created_at" timestamp with time zone NOT NULL,
+	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "urls" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
 	"url" text NOT NULL,
 	"slug" text NOT NULL,
 	"clicks" integer DEFAULT 0,
@@ -53,7 +62,9 @@ CREATE TABLE "urls" (
 	"qr_code" text,
 	"expiration_url" text,
 	"expires_at" timestamp with time zone,
-	"domain_id" integer
+	"domain_id" text,
+	"created_at" timestamp with time zone NOT NULL,
+	"updated_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
