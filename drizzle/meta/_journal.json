@@ -8,6 +8,13 @@
       "when": 1733831337260,
       "tag": "0000_famous_thunderbolt_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1733832960415,
+      "tag": "0001_rare_fat_cobra",
+      "breakpoints": true
     }
   ]
 }
