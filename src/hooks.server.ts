@@ -3,12 +3,18 @@ export let requestIp: string;
 import { type Handle } from "@sveltejs/kit";
 import { dev } from "$app/environment";
 import { createInstance } from "$lib/pocketbase";
+import type { TypedPocketBase } from '$lib/types';
+import { env } from "$env/dynamic/public";
+import PocketBase from "pocketbase";
 
 export const handle: Handle = async ({ event, resolve }) => {
   event.locals.pb = createInstance();
   event.locals.pb.autoCancellation(false);
   const cookie = event.request.headers.get("cookie") || "";
   event.locals.pb.authStore.loadFromCookie(cookie);
+
+  event.locals.cmsPb = new PocketBase(env.PUBLIC_POCKETBASE_CMS_URL) as TypedPocketBase;
+  event.locals.cmsPb.autoCancellation(false);
 
   try {
     if (event.locals.pb.authStore.isValid) {
