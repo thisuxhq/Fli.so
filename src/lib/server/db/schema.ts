@@ -10,10 +10,11 @@ import {
   date,
 } from "drizzle-orm/pg-core";
 
-export const user = pgTable("user", {
+export const users = pgTable("users", {
   id: text("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  username: text("username").notNull().unique(),
   isVerified: boolean("is_verified").default(false),
   createdAt: timestamp("created_at", {
     withTimezone: true,
@@ -25,7 +26,7 @@ export const user = pgTable("user", {
   }).notNull(),
 });
 
-export const usersRelations = relations(user, ({ many }) => ({
+export const usersRelations = relations(users, ({ many }) => ({
   customers: many(customers),
   domains: many(domains),
   subscriptions: many(subscriptions),
@@ -37,7 +38,7 @@ export const session = pgTable("session", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
-    .references(() => user.id),
+    .references(() => users.id),
   expiresAt: timestamp("expires_at", {
     withTimezone: true,
     mode: "date",
@@ -45,34 +46,54 @@ export const session = pgTable("session", {
 });
 
 export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, { fields: [session.userId], references: [user.id] }),
+  user: one(users, { fields: [session.userId], references: [users.id] }),
 }));
 
 export const customers = pgTable("customers", {
   id: serial("id").primaryKey(),
   stripeCustomerId: text("stripe_customer_id").notNull(),
   userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
 });
 
 export const customersRelations = relations(customers, ({ one }) => ({
-  user: one(user, { fields: [customers.userId], references: [user.id] }),
+  user: one(users, { fields: [customers.userId], references: [users.id] }),
 }));
 
 export const domains = pgTable("domains", {
   id: serial("id").primaryKey(),
   domain: text("domain"),
   userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   status: varchar("status", { length: 50 }),
   verificationToken: text("verification_token"),
   verificationMethod: varchar("verification_method", { length: 50 }),
+  verifiedAt: timestamp("verified_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
 });
 
 export const domainsRelations = relations(domains, ({ one }) => ({
-  user: one(user, { fields: [domains.userId], references: [user.id] }),
+  user: one(users, { fields: [domains.userId], references: [users.id] }),
 }));
 
 export const subscriptions = pgTable("subscriptions", {
@@ -85,14 +106,22 @@ export const subscriptions = pgTable("subscriptions", {
   currentPeriodEnd: date("current_period_end"),
   customerId: integer("customer_id").references(() => customers.id),
   userId: text("user_id")
-    .references(() => user.id, { onDelete: "cascade" })
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   cancelAtPeriodEnd: boolean("cancel_at_period_end"),
   canceledAt: date("canceled_at"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
 });
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
-  user: one(user, { fields: [subscriptions.userId], references: [user.id] }),
+  user: one(users, { fields: [subscriptions.userId], references: [users.id] }),
 }));
 
 export const tags = pgTable("tags", {
@@ -100,12 +129,20 @@ export const tags = pgTable("tags", {
   name: text("name"),
   color: text("color"),
   createdBy: text("created_by")
-    .references(() => user.id, { onDelete: "cascade" })
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
 });
 
 export const tagsRelations = relations(tags, ({ one }) => ({
-  user: one(user, { fields: [tags.createdBy], references: [user.id] }),
+  user: one(users, { fields: [tags.createdBy], references: [users.id] }),
 }));
 
 export const urls = pgTable("urls", {
@@ -114,7 +151,7 @@ export const urls = pgTable("urls", {
   slug: text("slug").notNull(),
   clicks: integer("clicks").default(0),
   createdBy: text("created_by")
-    .references(() => user.id, { onDelete: "cascade" })
+    .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
   passwordHash: text("password_hash"),
   metaTitle: text("meta_title"),
@@ -127,13 +164,21 @@ export const urls = pgTable("urls", {
     mode: "date",
   }),
   domainId: integer("domain_id").references(() => domains.id),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
 });
 
 export const urlsRelations = relations(urls, ({ one }) => ({
-  user: one(user, { fields: [urls.createdBy], references: [user.id] }),
+  user: one(users, { fields: [urls.createdBy], references: [users.id] }),
 }));
 
-export type User = typeof user.$inferSelect;
+export type User = typeof users.$inferSelect;
 export type Session = typeof session.$inferSelect;
 export type Customer = typeof customers.$inferSelect;
 export type Domain = typeof domains.$inferSelect;

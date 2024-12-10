@@ -1,56 +1,52 @@
 import { stripe } from "./stripe";
-import type { UsersResponse } from "$lib/types";
-import { env } from "$env/dynamic/private";
-import { createInstance } from "$lib/pocketbase";
+import { db } from "./db";
+import { customers } from "./db/schema";
+import { eq } from "drizzle-orm";
+import type { User } from "./db/schema";
 
-export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
+export async function createOrRetrieveStripeCustomer(user: User) {
   try {
     console.log(
       "Attempting to create or retrieve Stripe customer for user:",
       user.id,
     );
 
-    // Create new pocketbase client as admin
-    const pb = createInstance();
+    // Check if customer already exists in database
+    const existingCustomer = await db
+      .select()
+      .from(customers)
+      .where(eq(customers.userId, user.id))
+      .limit(1);
 
-    // Authenticate as admin
-    await pb.admins.authWithPassword(
-      env.POCKETBASE_ADMIN_EMAIL!,
-      env.POCKETBASE_ADMIN_PASSWORD!,
-    );
-
-    // Check if customer already exists in PocketBase
-    const existingCustomer = await pb
-      .collection("customers")
-      .getFirstListItem(`user_id="${user.id}"`)
-      .catch(() => {
-        console.log("No customer found for user:", user.id);
-        return null;
-      });
-
-    if (existingCustomer) {
+    if (existingCustomer.length > 0) {
       console.log("Existing customer found for user:", user.id);
-      return existingCustomer;
+      return existingCustomer[0];
     }
 
     // Create new customer in Stripe
     const stripeCustomer = await stripe.customers.create({
-      name: user.name,
+      name: user.username,
       email: user.email,
       metadata: {
-        pocketbaseUserId: user.id,
+        userId: user.id,
       },
     });
 
     console.log("Stripe customer created successfully:", stripeCustomer.id);
 
-    // Create customer record in PocketBase using authenticated client
-    const customer = await pb.collection("customers").create({
-      user_id: user.id,
-      stripe_customer_id: stripeCustomer.id,
-    });
+    // Create customer record in database
+    const [customer] = await db
+      .insert(customers)
+      .values({
+        id: crypto.randomUUID(),
+        userId: user.id,
+        stripeCustomerId: stripeCustomer.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
 
-    console.log("Customer record created in PocketBase:", customer.id);
+    console.log("Customer record created in database:", customer.id);
     return customer;
   } catch (error) {
     console.error("Error in createOrRetrieveStripeCustomer:", error);

@@ -1,21 +1,23 @@
 import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { createOrRetrieveStripeCustomer } from "$lib/server/stripe-utils";
-import type { UsersResponse } from "$lib/types";
-import { createInstance } from "$lib/pocketbase";
-import { env } from "$env/dynamic/private";
+import { hash, verify } from "@node-rs/argon2";
+import * as auth from "$lib/server/auth";
+import { db } from "$lib/server/db";
+import { eq } from "drizzle-orm";
+import { users } from "$lib/server/db/schema";
+import { nanoid } from "$lib";
 
 export const load = (async ({ locals }) => {
   // Redirect to the home page if the user is already authenticated
-  if (locals.pb.authStore.isValid) {
-    throw redirect(302, "/app");
+  if (locals.user) {
+    return redirect(302, "/app");
   }
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-  // Action to handle login form submission
-  login: async ({ request, locals }) => {
-    const formData = await request.formData();
+  login: async (event) => {
+    const formData = await event.request.formData();
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
@@ -24,116 +26,117 @@ export const actions: Actions = {
       return fail(400, { message: "Please provide both email and password." });
     }
 
-    try {
-      // Attempt to authenticate the user
-      const authData = await locals.pb
-        .collection("users")
-        .authWithPassword(email, password);
-
-      // Check if user is verified
-      if (!authData.record.verified) {
-        // Clear auth store since we don't want unverified users to remain logged in
-        locals.pb.authStore.clear();
-        
-        // Send another verification email
-        await locals.pb.collection("users").requestVerification(email);
-        
-        return fail(403, {
-          message: "Please verify your email address. A new verification email has been sent.",
-          unverified: true
-        });
-      }
-    } catch (err) {
-      // Handle authentication failure
-      return fail(401, {
-        message: "Login failed. Please check your email and password.",
-      });
+    if (!validateEmail(email)) {
+      return fail(400, { message: "Invalid email" });
+    }
+    if (!validatePassword(password)) {
+      return fail(400, { message: "Invalid password" });
     }
 
-    // Redirect to the home page on successful login
-    throw redirect(303, "/app");
+    const results = await db.select().from(users).where(eq(users.email, email));
+
+    const existingUser = results.at(0);
+    if (!existingUser) {
+      return fail(400, { message: "Incorrect username or password" });
+    }
+
+    const validPassword = await verify(existingUser.passwordHash, password, {
+      memoryCost: 19456,
+      timeCost: 2,
+      outputLen: 32,
+      parallelism: 1,
+    });
+    if (!validPassword) {
+      return fail(400, { message: "Incorrect username or password" });
+    }
+
+    const sessionToken = auth.generateSessionToken();
+    const session = await auth.createSession(sessionToken, existingUser.id);
+    auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+
+    return redirect(302, "/app");
   },
-
-  // Action to handle signup form submission
-  signup: async ({ request, locals }) => {
-    const formData = await request.formData();
+  signup: async (event) => {
+    const formData = await event.request.formData();
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    console.log(`Attempting signup with email: ${email}`); // Log for debugging
-
-    // Validate form data
-    if (!email || !password) {
-      console.error("Missing email or password during signup"); // Log for debugging
-      return fail(400, { message: "Please provide both email and password." });
+    if (!validateEmail(email)) {
+      return fail(400, { message: "Invalid email format" });
+    }
+    if (!validatePassword(password)) {
+      return fail(400, {
+        message: "Password must be between 6 and 255 characters long",
+      });
     }
 
-    const pb = createInstance();
+    // Check if user already exists
+    const existingUsers = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
 
-    await pb.admins.authWithPassword(
-      env.POCKETBASE_ADMIN_EMAIL!,
-      env.POCKETBASE_ADMIN_PASSWORD!,
-    );
-
-    try {
-      // Check if user already exists
-      const existingUsers = await pb.collection("users").getList(1, 1, {
-        filter: `email = "${email}"`,
+    if (existingUsers.length > 0) {
+      return fail(400, {
+        message: "An account with this email already exists",
       });
+    }
 
-      if (existingUsers.items.length > 0) {
-        console.log(`User already exists: ${email}`); // Log for debugging
-        return fail(400, {
-          message:
-            "An account with this email already exists. Please login instead.",
-        });
-      }
+    const userId = nanoid(8);
 
-      // Create a new user
-      const user: UsersResponse = await locals.pb.collection("users").create({
-        username:
-          email.split("@")[0].length <= 2
-            ? `${email.split("@")[0]}-${Math.random().toString(36).slice(2, 11)}`
-            : email.split("@")[0],
+    console.log("Generating password hash...");
+    const passwordHash = await hash(password, {
+      memoryCost: 19456,
+      timeCost: 2,
+      outputLen: 32,
+      parallelism: 1,
+    });
+    console.log("Password hash generated successfully");
+
+    console.log("Creating user in database...");
+    const newUser = await db
+      .insert(users)
+      .values({
+        id: userId,
         email: email,
-        password: password,
-        passwordConfirm: password,
-        name: email.split("@")[0], // Add default name
-        emailVisibility: true,
+        passwordHash: passwordHash,
+        username: email.split("@")[0],
+        isVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    console.log("User created successfully:", userId);
+
+    if (!newUser || newUser.length === 0) {
+      console.error("User creation failed - no user returned");
+      return fail(500, {
+        message: "Failed to create user account - database error",
       });
-
-      console.log(`User created successfully: ${user.email}`); // Log for debugging
-
-      // Request verification for the new user
-      await locals.pb.collection("users").requestVerification(user.email);
-      console.log(`Verification request sent for: ${user.email}`); // Log for debugging
-
-      // Create or retrieve a Stripe customer for the new user
-      await createOrRetrieveStripeCustomer(user);
-      console.log(`Stripe customer created or retrieved for: ${user.email}`); // Log for debugging
-
-      // Return success response
-      return { success: true };
-    } catch (err) {
-      console.error(`Signup failed: ${err}`); // Log for debugging
-      // Handle signup failure
-      return fail(400, { message: "Signup failed" });
-    }
-  },
-
-  forgotPassword: async ({ request, locals }) => {
-    const formData = await request.formData();
-    const email = formData.get("email") as string;
-
-    if (!email) {
-      return fail(400, { message: "Please provide an email address." });
     }
 
-    try {
-      await locals.pb.collection("users").requestPasswordReset(email);
-      return { success: true };
-    } catch (err) {
-      return fail(400, { message: "Failed to send reset email" });
-    }
+    console.log("Generating session token...");
+    const sessionToken = auth.generateSessionToken();
+    console.log("Creating session...");
+    const session = await auth.createSession(sessionToken, userId);
+    auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+    console.log("Session created successfully");
+
+    // Create Stripe customer
+    await createOrRetrieveStripeCustomer(newUser[0]);
+
+    throw redirect(302, "/app");
   },
 };
+
+function validateEmail(email: unknown): email is string {
+  return typeof email === "string" && email.includes("@");
+}
+
+function validatePassword(password: unknown): password is string {
+  return (
+    typeof password === "string" &&
+    password.length >= 6 &&
+    password.length <= 255
+  );
+}
