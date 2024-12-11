@@ -12,7 +12,7 @@
     QrCode,
     Clock,
   } from "lucide-svelte";
-  import type { UrlsResponseWithTags } from "$lib/types";
+  import type { UrlsWithTagsResponse } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
   import { initKeyboardShortcuts } from "$lib/keyboard";
   import { cn } from "$lib/utils";
@@ -22,8 +22,8 @@
   import type { TailwindColor } from "$lib/types/colors";
 
   interface Props {
-    url: UrlsResponseWithTags;
-    onEdit: (url: UrlsResponseWithTags) => void;
+    url: UrlsWithTagsResponse;
+    onEdit: (url: UrlsWithTagsResponse) => void;
     onDelete: (id: string) => void;
   }
 
@@ -32,14 +32,14 @@
   let showDeleteConfirm = $state(false);
   let showQRDialog = $state(false);
   let isExpired = $derived(
-    url.expiration && new Date(url.expiration) < new Date(),
+    url.expiresAt && new Date(url.expiresAt) < new Date(),
   );
 
   // Handle keyboard shortcuts when card is hovered
   $effect(() => {
     if (hoveredUrl === url.id) {
       return initKeyboardShortcuts([
-        { key: "e", handler: () => !showDeleteConfirm && onEdit(url) },
+        { key: "e", handler: () => !showDeleteConfirm && onEdit(url.id) },
         {
           key: "d",
           handler: () => !showDeleteConfirm && (showDeleteConfirm = true),
@@ -94,14 +94,14 @@
         >
           <Earth class="size-5" />
         </div>
-        {#if url.password_hash}
+        {#if url.passwordHash}
           <div
             class="absolute -bottom-1 -right-1 rounded-full bg-white p-0.5 shadow-sm dark:bg-slate-800"
           >
             <Lock class="size-3.5 text-gray-500 group-hover:text-amber-950" />
           </div>
         {/if}
-        {#if url.expiration}
+        {#if url.expirationUrl}
           <div
             class="absolute -right-1 -top-1 rounded-full bg-white p-1 shadow-sm dark:bg-slate-800"
           >
@@ -156,7 +156,7 @@
     <!-- Tags and Actions -->
     <div class="relative flex items-center justify-end gap-2">
       <!-- Tags -->
-      {#if url.expand?.tags_id}
+      {#if url.tags && url.tags.length > 0}
         <div
           class="group/tags relative min-w-0 flex-1 transition-all duration-300 ease-out"
           class:translate-x-[-150%]={showDeleteConfirm}
@@ -166,8 +166,10 @@
           <div
             class="flex items-center gap-x-1 transition-opacity duration-200 group-hover:opacity-0"
           >
-            {#each url.expand.tags_id as tag}
-              {@const styles = getTagStyles(tag.color as TailwindColor)}
+            {#each url.tags as tagRelation}
+              {@const styles = getTagStyles(
+                tagRelation.tag.color as TailwindColor,
+              )}
               <span
                 class={cn(
                   "inline-flex max-w-[150px] items-center gap-1 rounded-full border-[0.5px] border-gray-200  px-2 py-0.5 text-xs first:ml-0 hover:z-10",
@@ -176,7 +178,7 @@
               >
                 <span class={cn("h-2 w-2 shrink-0 rounded-full", styles.dot)}
                 ></span>
-                <span class="truncate">{tag.name}</span>
+                <span class="truncate">{tagRelation.tag.name}</span>
               </span>
             {/each}
           </div>
@@ -185,9 +187,9 @@
           <div
             class="absolute inset-0 flex items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100"
           >
-            {#if url.expand.tags_id.length > 0}
+            {#if url.tags.length > 0}
               {@const styles = getTagStyles(
-                url.expand.tags_id[0].color as TailwindColor,
+                url.tags[0].tag.color as TailwindColor,
               )}
               <span
                 class={cn(
@@ -197,10 +199,10 @@
               >
                 <span class={cn("h-2 w-2 shrink-0 rounded-full", styles.dot)}
                 ></span>
-                <span class="truncate">{url.expand.tags_id[0].name}</span>
-                {#if url.expand.tags_id.length > 1}
+                <span class="truncate">{url.tags[0].tag.name}</span>
+                {#if url.tags.length > 1}
                   <span class="ml-1 shrink-0 text-slate-500"
-                    >+{url.expand.tags_id.length - 1}</span
+                    >+{url.tags.length - 1}</span
                   >
                 {/if}
               </span>
@@ -243,7 +245,7 @@
 
         <Button
           id={`edit-${url.id}`}
-          on:click={() => onEdit(url)}
+          on:click={() => onEdit(url.id)}
           class="group/btn relative rounded-full p-2 text-gray-600 opacity-0 transition-opacity duration-200 hover:bg-gray-100 group-hover:opacity-100 dark:text-gray-400 dark:hover:bg-gray-800"
           variant="ghost"
           size="icon"

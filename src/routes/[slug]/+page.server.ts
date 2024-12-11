@@ -1,35 +1,25 @@
 import { error, fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { env } from "$env/dynamic/private";
-import type { UrlsResponse } from "$lib/types";
-import { createInstance } from "$lib/pocketbase";
 import { hashPassword } from "$lib/utils/hash-password";
+import { db } from "$lib/server/db";
+import { urls } from "$lib/server/db/schema";
+import { eq } from "drizzle-orm";
 
 const HASH_SECRET = env.HASH_SECRET || "your-fallback-secret-key";
 
 export const load: PageServerLoad = async ({ params }) => {
-  // Authenticate as admin because we have api rules that prevent unauthenticated access
-  console.log("Starting load function with params:", params);
-  const pb = createInstance();
-  await pb.admins.authWithPassword(
-    env.POCKETBASE_ADMIN_EMAIL!,
-    env.POCKETBASE_ADMIN_PASSWORD!,
-  );
-  console.log("Successfully authenticated with PocketBase");
-
   if (!params.slug) {
     console.log("No slug provided in params");
     throw error(400, "Slug is required");
   }
 
   console.log("Attempting to fetch URL with slug:", params.slug);
-  const url = await pb
-    .collection("urls")
-    .getFirstListItem<UrlsResponse>(`slug = "${params.slug}"`)
-    .catch(() => {
-      console.log("URL not found for slug:", params.slug);
-      return null;
-    });
+  const [url] = await db
+    .select()
+    .from(urls)
+    .where(eq(urls.slug, params.slug))
+    .limit(1);
 
   if (!url) {
     throw error(404, "Not found");
@@ -38,22 +28,23 @@ export const load: PageServerLoad = async ({ params }) => {
 
   // Increment clicks
   console.log("Incrementing clicks for URL ID:", url.id);
-  await pb.collection("urls").update(url.id, {
-    clicks: url.clicks + 1,
-  });
+  await db
+    .update(urls)
+    .set({ clicks: (url.clicks || 0) + 1, updatedAt: new Date() })
+    .where(eq(urls.id, url.id));
 
   // Check if the url is expired and redirect to expiration URL if needed
-  if (url.expiration && new Date(url.expiration) < new Date()) {
-    console.log("URL is expired. Expiration date:", url.expiration);
-    if (url.expiration_url) {
-      console.log("Redirecting to expiration URL:", url.expiration_url);
-      throw redirect(302, url.expiration_url);
+  if (url.expiresAt && new Date(url.expiresAt) < new Date()) {
+    console.log("URL is expired. Expiration date:", url.expiresAt);
+    if (url.expirationUrl) {
+      console.log("Redirecting to expiration URL:", url.expirationUrl);
+      throw redirect(302, url.expirationUrl);
     }
     throw error(410, "This link has expired");
   }
 
   // If URL has password
-  if (url.password_hash) {
+  if (url.passwordHash) {
     console.log("URL is password protected");
     return {
       isProtected: true,
@@ -62,13 +53,13 @@ export const load: PageServerLoad = async ({ params }) => {
   }
 
   // If URL has meta data, return for brief display
-  if (url.meta_title || url.meta_description || url.meta_image_url) {
+  if (url.metaTitle || url.metaDescription || url.metaImageUrl) {
     console.log("URL has meta data, returning meta information");
     return {
       meta: {
-        title: url.meta_title,
-        description: url.meta_description || "not working",
-        image: url.meta_image_url,
+        title: url.metaTitle,
+        description: url.metaDescription || "not working",
+        image: url.metaImageUrl,
         url: url.url,
       },
     };
@@ -81,12 +72,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 export const actions: Actions = {
   verify_password: async ({ request }) => {
-    const pb = createInstance();
-    await pb.admins.authWithPassword(
-      env.POCKETBASE_ADMIN_EMAIL!,
-      env.POCKETBASE_ADMIN_PASSWORD!,
-    );
-
     // Get form data from request
     const formData = await request.formData();
     const url_id = formData.get("url_id") as string;
@@ -105,7 +90,12 @@ export const actions: Actions = {
     console.log("Hashed password for comparison:", hashedPassword);
 
     // Get URL from database
-    const url = await pb.collection("urls").getOne(url_id);
+    const [url] = await db
+      .select()
+      .from(urls)
+      .where(eq(urls.id, url_id))
+      .limit(1);
+
     console.log("Fetched URL:", url);
 
     // Verify URL exists
@@ -115,9 +105,8 @@ export const actions: Actions = {
     }
 
     // Verify password hash matches
-    if (url.password_hash !== hashedPassword) {
+    if (url.passwordHash !== hashedPassword) {
       console.error("Password hash does not match for URL ID:", url_id);
-
       return fail(401, { message: "Invalid password" });
     }
 

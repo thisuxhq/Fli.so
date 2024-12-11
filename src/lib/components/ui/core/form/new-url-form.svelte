@@ -60,7 +60,7 @@
         toast.success("URL shortened successfully!");
         onOpenChange?.(false);
       } else {
-        toast.error(result.data?.message || "Failed to create URL");
+        toast.error(result?.data?.message || "Failed to create URL");
       }
     },
   });
@@ -99,13 +99,20 @@
   function processExpiration() {
     try {
       if (rawExpirationInput) {
-        // Convert to ISO and store in formData
-        $formData.expiration = convertExpirationToDate(rawExpirationInput);
-        // Update display
-        expirationDisplay = convertExpirationToHumanReadable(
-          $formData.expiration,
-        );
-        rawExpirationInput = expirationDisplay;
+        // Convert to Date object
+        const date = convertExpirationToDate(rawExpirationInput);
+        if (date) {
+          $formData.expiration = date.toISOString();
+          // Update display
+          expirationDisplay = convertExpirationToHumanReadable(date);
+          rawExpirationInput = expirationDisplay;
+        } else {
+          // Clear expiration if conversion failed
+          $formData.expiration = "";
+          expirationDisplay = "";
+          rawExpirationInput = "";
+          toast.error("Invalid date format");
+        }
       } else {
         // Clear expiration if input is empty
         $formData.expiration = "";
@@ -113,6 +120,7 @@
       }
     } catch (error) {
       console.error("Failed to parse date:", error);
+      toast.error("Failed to parse date");
     }
   }
 

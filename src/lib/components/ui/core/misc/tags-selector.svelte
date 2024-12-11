@@ -115,7 +115,7 @@
       <Command.List>
         <Command.Group>
           {#each tags.filter(tag => 
-            tag.name.toLowerCase().includes(searchQuery.toLowerCase())
+            tag.name?.toLowerCase().includes(searchQuery.toLowerCase())
           ) as tag}
             <Command.Item
               value={tag.name}

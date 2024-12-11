@@ -82,7 +82,7 @@
     try {
       await navigator.clipboard.writeText(password);
       if (localUrl) {
-        localUrl.password_hash = password; // Store raw password, server will hash it
+        localUrl.passwordHash = password; // Store raw password, server will hash it
         passwordChanged = true;
       }
       toast.success("Password copied to clipboard");
@@ -92,8 +92,8 @@
   }
 
   $effect(() => {
-    if (localUrl?.expiration) {
-      expirationDisplay = convertExpirationToHumanReadable(localUrl.expiration);
+    if (localUrl?.expiresAt) {
+      expirationDisplay = convertExpirationToHumanReadable(localUrl.expiresAt);
       rawExpirationInput = expirationDisplay;
     } else {
       expirationDisplay = "";
@@ -108,20 +108,28 @@
   function processExpiration() {
     try {
       if (localUrl && rawExpirationInput) {
-        // Convert to ISO and store in localUrl
-        localUrl.expiration = convertExpirationToDate(rawExpirationInput);
-        // Update display
-        expirationDisplay = convertExpirationToHumanReadable(
-          localUrl.expiration,
-        );
-        rawExpirationInput = expirationDisplay;
+        // Convert to Date object
+        const date = convertExpirationToDate(rawExpirationInput);
+        if (date) {
+          localUrl.expiresAt = date.toISOString();
+          // Update display
+          expirationDisplay = convertExpirationToHumanReadable(date);
+          rawExpirationInput = expirationDisplay;
+        } else {
+          // Clear expiration if conversion failed
+          localUrl.expiresAt = null;
+          expirationDisplay = "";
+          rawExpirationInput = "";
+          toast.error("Invalid date format");
+        }
       } else if (localUrl) {
         // Clear expiration if input is empty
-        localUrl.expiration = "";
+        localUrl.expiresAt = null;
         expirationDisplay = "";
       }
     } catch (error) {
       console.error("Failed to parse date:", error);
+      toast.error("Failed to parse date");
     }
   }
 
@@ -133,9 +141,9 @@
   let metaDataEnabled = $state(
     show ||
       !!(
-        localUrl?.meta_title ||
-        localUrl?.meta_description ||
-        localUrl?.meta_image_url
+        localUrl?.metaTitle ||
+        localUrl?.metaDescription ||
+        localUrl?.metaImageUrl
       ),
   );
 
@@ -147,7 +155,8 @@
   function handlePasswordChange(e: Event) {
     passwordChanged = true;
     if (localUrl) {
-      localUrl.password_hash = (e.target as HTMLInputElement).value;
+      const value = (e.target as HTMLInputElement).value;
+      localUrl.passwordHash = value === "" ? null : value;  // Set to null when cleared
     }
   }
 
@@ -163,15 +172,15 @@
         id: localUrl.id,
         url: localUrl.url,
         slug: localUrl.slug,
-        password_hash: passwordChanged
-          ? localUrl.password_hash || null
+        passwordHash: passwordChanged
+          ? localUrl.passwordHash || null
           : undefined,
-        expiration: expiration_date || null,
-        expiration_url: expiration_url || null,
-        meta_title: localUrl.meta_title || null,
-        meta_description: localUrl.meta_description || null,
-        meta_image_url: localUrl.meta_image_url || null,
-        tags_id: localUrl.tags_id || [],
+        expiresAt: expiration_date || null,
+        expirationUrl: expiration_url || null,
+        metaTitle: localUrl.metaTitle || null,
+        metaDescription: localUrl.metaDescription || null,
+        metaImageUrl: localUrl.metaImageUrl || null,
+        tags: localUrl.tags_id || [],
       };
 
       const response = await fetch(`/api/url`, {
@@ -241,9 +250,9 @@
 
   $effect(() => {
     if (localUrl) {
-      expiration_url = localUrl.expiration_url || "";
-      expiration_date = localUrl.expiration
-        ? convertExpirationToHumanReadable(localUrl.expiration)
+      expiration_url = localUrl.expirationUrl || "";
+      expiration_date = localUrl.expiresAt
+        ? convertExpirationToHumanReadable(localUrl.expiresAt)
         : "";
     }
   });
@@ -262,9 +271,9 @@
 
     if (response) {
       metaDataEnabled = true;
-      localUrl.meta_title = response.title;
-      localUrl.meta_description = response.description;
-      localUrl.meta_image_url = response.imageUrl;
+      localUrl.metaTitle = response.title;
+      localUrl.metaDescription = response.description;
+      localUrl.metaImageUrl = response.imageUrl;
     }
   }
 
@@ -422,7 +431,7 @@
               <Input
                 name="password_hash"
                 type={showPassword ? "text" : "password"}
-                value={localUrl.password_hash}
+                value={localUrl.passwordHash}
                 placeholder="••••••••"
                 class="h-12 rounded-r-none bg-input/20"
                 on:input={handlePasswordChange}
@@ -459,7 +468,7 @@
                 on:click={() => {
                   if (localUrl)
                     navigator.clipboard
-                      .writeText(localUrl.password_hash)
+                      .writeText(localUrl.passwordHash)
                       .then(() => {
                         toast.success("Password copied to clipboard");
                       });
@@ -644,7 +653,7 @@
               <Label class="text-sm font-medium text-amber-900">Title</Label>
               <Input
                 name="meta_title"
-                bind:value={localUrl.meta_title}
+                bind:value={localUrl.metaTitle}
                 placeholder="Title"
                 class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
               />
@@ -655,7 +664,7 @@
               >
               <Textarea
                 name="meta_description"
-                bind:value={localUrl.meta_description}
+                bind:value={localUrl.metaDescription}
                 placeholder="Description"
                 class="rounded-2xl border-preview-border bg-preview-foreground"
               />
@@ -665,7 +674,7 @@
               >
               <Input
                 name="meta_image_url"
-                bind:value={localUrl.meta_image_url}
+                bind:value={localUrl.metaImageUrl}
                 placeholder="Meta Image URL"
                 class="h-12 rounded-2xl border-preview-border bg-preview-foreground"
               />
@@ -840,7 +849,7 @@
                       <Input
                         name="password_hash"
                         type={showPassword ? "text" : "password"}
-                        value={localUrl.password_hash}
+                        value={localUrl.passwordHash}
                         placeholder="••••••••"
                         class="h-12 rounded-r-none bg-input/20"
                         on:input={handlePasswordChange}
@@ -877,7 +886,7 @@
                         on:click={() => {
                           if (localUrl)
                             navigator.clipboard
-                              .writeText(localUrl.password_hash)
+                              .writeText(localUrl.passwordHash)
                               .then(() => {
                                 toast.success("Password copied to clipboard");
                               });
@@ -1018,7 +1027,7 @@
                       <Label class="text-muted-foreground">Title</Label>
                       <Input
                         name="meta_title"
-                        bind:value={localUrl.meta_title}
+                        bind:value={localUrl.metaTitle}
                         placeholder="Title"
                         class="h-12 rounded-2xl bg-input/20"
                       />
@@ -1029,7 +1038,7 @@
                       <Label class="text-muted-foreground">Description</Label>
                       <Textarea
                         name="meta_description"
-                        bind:value={localUrl.meta_description}
+                        bind:value={localUrl.metaDescription}
                         placeholder="Description"
                         class="h-12 rounded-2xl bg-input/20"
                       />
@@ -1040,7 +1049,7 @@
                       <Label class="text-muted-foreground">Image URL</Label>
                       <Input
                         name="meta_image_url"
-                        bind:value={localUrl.meta_image_url}
+                        bind:value={localUrl.metaImageUrl}
                         placeholder="Meta Image URL"
                         class="h-12 rounded-2xl bg-input/20"
                       />

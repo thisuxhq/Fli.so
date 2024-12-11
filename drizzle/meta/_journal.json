@@ -8,6 +8,20 @@
       "when": 1733835078252,
       "tag": "0000_remarkable_goblin_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1733902972878,
+      "tag": "0001_aspiring_rick_jones",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1733913397084,
+      "tag": "0002_clumsy_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }

@@ -2,75 +2,45 @@ import { stripe } from "$lib/server/stripe";
 import type { PageServerLoad } from "./$types";
 import { env } from "$env/dynamic/private";
 import { redirect } from "@sveltejs/kit";
+import { db } from "$lib/server/db";
+import { customers, subscriptions } from "$lib/server/db/schema";
+import { eq } from "drizzle-orm";
 
-export const load: PageServerLoad = async ({ url, locals }) => {
-  console.log('Loading subscription page for user:', locals?.user?.id);
-
-  // Check if the user is authenticated
-  if (!locals.pb.authStore.isValid) {
-    console.log('User not authenticated, redirecting to login');
+export const load = (async ({ locals }) => {
+  if (!locals.user) {
     throw redirect(302, "/login");
   }
 
-  // Extract tab and token from URL search parameters
-  const tab = url.searchParams.get("tab"); // To persist the tab in the URL
-  console.log('Tab:', tab);
+  const customer = await db
+    .select()
+    .from(customers)
+    .where(eq(customers.userId, locals.user.id))
+    .limit(1);
 
-  try {
-    // Attempt to find an active subscription for the user in PocketBase
-    console.log('Searching for active subscription for user:', locals?.user?.id);
-    const subscription = await locals.pb
-      .collection("subscriptions")
-      .getFirstListItem(
-        `user_id = "${locals?.user?.id}" && status = "active"`,
-        {
-          expand: "user_id",
-        },
-      );
-
-    // If a subscription is found, return it along with tab and token
-    if (subscription) {
-      console.log('Active subscription found:', subscription);
-      return {
-        subscription,
-        tab,
-        hasSubscription: true,
-      };
-    }
-
-    console.log('No active subscription found, fetching plans from Stripe');
-    // If no subscription is found, fetch available plans from Stripe
-    const plans = await stripe.prices.list({
-      product: env.STRIPE_PRODUCT_ID,
-    });
-
-    console.log('Stripe plans fetched:', plans.data);
-    // Return plans along with tab and token
+  if (!customer.length) {
     return {
-      plans: plans.data,
-      tab,
-      hasSubscription: false,
+      subscription: null,
+      portalUrl: null,
     };
-  } catch (error) {
-    // Handle errors, specifically checking for a 404 error indicating no subscription found
-    if (error.status === 404) {
-      console.log('404 error - No subscription found, fetching Stripe plans');
-      // Fetch plans from Stripe if no subscription is found
-      const plans = await stripe.prices.list({
-        product: env.STRIPE_PRODUCT_ID,
-      });
-
-      console.log('Stripe plans fetched after 404:', plans.data);
-      // Return plans along with tab and token
-      return {
-        plans: plans.data,
-        tab,
-        hasSubscription: false,
-      };
-    }
-
-    // Log any other errors and rethrow them
-    console.error("Error retrieving subscription/prices:", error);
-    throw error;
   }
-};
+
+  const subscription = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.userId, locals.user.id))
+    .limit(1);
+
+  let portalUrl = null;
+  if (customer[0].stripeCustomerId) {
+    const { url } = await stripe.billingPortal.sessions.create({
+      customer: customer[0].stripeCustomerId,
+      return_url: `${env.PUBLIC_APP_URL}/app/billing`,
+    });
+    portalUrl = url;
+  }
+
+  return {
+    subscription: subscription[0] || null,
+    portalUrl,
+  };
+}) satisfies PageServerLoad;

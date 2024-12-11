@@ -1,18 +1,31 @@
 import * as chrono from "chrono-node";
 
 // Converts any date string (including natural language) to ISO format in UTC
-function convertExpirationToDate(expiration: string): string {
-  const referenceDate = new Date();
-  const parsed = chrono.parseDate(expiration, referenceDate, { 
-    forwardDate: true,
-    timezoneOffset: -referenceDate.getTimezoneOffset()
-  });
-  
-  if (!parsed) {
-    throw new Error("Invalid date format");
-  }
+function convertExpirationToDate(input: string): Date | null {
+  if (!input) return null;
 
-  return parsed.toISOString();
+  try {
+    // If input is already a Date or ISO string, return it
+    if (input instanceof Date) return input;
+    if (
+      typeof input === "string" &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(input)
+    ) {
+      return new Date(input);
+    }
+
+    // Parse relative dates using Chrono
+    const results = chrono.parse(input);
+    if (results.length > 0) {
+      const date = results[0].start.date();
+      return date;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Failed to parse date:", error);
+    return null;
+  }
 }
 
 // Converts ISO date string to human-readable format in the user's local timezone
@@ -25,7 +38,7 @@ function convertExpirationToHumanReadable(expiration: string): string {
     hour: "numeric",
     minute: "numeric",
     hour12: true,
-    timeZoneName: "short"
+    timeZoneName: "short",
   });
 }
 

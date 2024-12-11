@@ -14,15 +14,15 @@ export const urlSchema = z.object({
       (slug) => !isReservedKeyword(slug),
       "This URL is reserved for system use"
     ),
-  created_by: z.string(),
+  createdBy: z.string(),
   tags: z.array(z.string()).optional(),
-  password_hash: z.string().optional(),
-  expiration: z.string().optional(),
-  expiration_url: z.string().optional(),
-  meta_title: z.string().optional(),
-  meta_description: z.string().optional(),
-  meta_image_url: z.string().optional(),
-  qr_code: z.string().optional(),
+  passwordHash: z.string().optional(),
+  expiresAt: z.string().optional(),
+  expirationUrl: z.string().optional(),
+  metaTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  metaImageUrl: z.string().optional(),
+  qrCode: z.string().optional(),
 });
 
 export type UrlSchema = typeof urlSchema;

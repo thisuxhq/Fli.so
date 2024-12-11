@@ -2,7 +2,7 @@
   import { fly, fade } from "svelte/transition";
   import { quintOut } from "svelte/easing";
   import { Plus } from "lucide-svelte";
-  import type { TagsResponse, UrlsResponseWithTags } from "$lib/types";
+  import type { TagsResponse, UrlsWithTagsResponse } from "$lib/types";
   import { Button } from "$lib/components/ui/button";
   import { KbdShortcut } from "$lib/components/ui/core/misc";
   import {
@@ -12,8 +12,8 @@
   } from "$lib/components/ui/core";
 
   interface Props {
-    urls: UrlsResponseWithTags[];
-    onEdit: (url: UrlsResponseWithTags) => void;
+    urls: UrlsWithTagsResponse[];
+    onEdit: (url: string) => void;
     onDelete: (id: string) => void;
     showAddForm: boolean;
     setShowAddForm: (show: boolean) => void;
@@ -30,7 +30,7 @@
       const slugMatch = url.slug.toLowerCase().includes(searchLower);
       // Check tags
       const tagMatch = url.expand?.tags_id?.some((tag: TagsResponse) =>
-        tag.name.toLowerCase().includes(searchLower),
+        tag.name?.toLowerCase().includes(searchLower),
       );
 
       return urlMatch || slugMatch || tagMatch;

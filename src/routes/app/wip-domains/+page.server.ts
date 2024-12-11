@@ -2,6 +2,9 @@ import { redirect, fail, type Actions } from "@sveltejs/kit";
 import { superValidate } from "sveltekit-superforms";
 import { domainSchema } from "$lib/schema/domain";
 import { zod } from "sveltekit-superforms/adapters";
+import { db } from "$lib/server/db";
+import { domains } from "$lib/server/db/schema";
+import { eq, desc } from "drizzle-orm";
 import {
   removeCustomDomainFromCloudflare,
   verifyDomain,
@@ -9,17 +12,18 @@ import {
 import { nanoid } from "$lib";
 
 export const load = async ({ locals }) => {
-  if (!locals.pb.authStore.isValid) {
-    throw redirect(302, "/login");
+  if (!locals.user) {
+    throw redirect(302, "/app/login");
   }
 
-  const domains = await locals.pb.collection("domains").getList(1, 50, {
-    filter: `user_id = "${locals.user?.id}"`,
-    sort: "-created",
-  });
+  const all_domains = await db
+    .select()
+    .from(domains)
+    .where(eq(domains.userId, locals.user?.id))
+    .orderBy(desc(domains.createdAt));
 
   return {
-    domains: domains.items,
+    domains: all_domains,
     form: await superValidate(zod(domainSchema)),
   };
 };
@@ -35,12 +39,12 @@ export const actions: Actions = {
     const verificationToken = nanoid(32);
 
     try {
-      await locals.pb.collection("domains").create({
+      await db.insert(domains).values({
         domain: form.data.domain,
-        user_id: locals.user?.id,
+        userId: locals.user?.id,
         status: "pending",
-        verification_token: verificationToken,
-        verification_method: form.data.verification_method,
+        verificationToken: verificationToken,
+        verificationMethod: form.data.verification_method,
       });
 
       return { form };
@@ -65,28 +69,31 @@ export const actions: Actions = {
     const isVerified = await verifyDomain(domain);
 
     if (isVerified) {
-      await locals.pb.collection("domains").update(id, {
-        status: "verified",
-      });
+      await db
+        .update(domains)
+        .set({
+          status: "verified",
+        })
+        .where(eq(domains.id, id));
       return { success: true };
     }
 
     return fail(400, { error: "Verification failed" });
   },
 
-  remove: async ({ request, locals }) => {
+  remove: async ({ request }) => {
     const data = await request.formData();
     const id = data.get("id") as string;
     const domainName = data.get("domain") as string;
-    
+
     if (!id) {
       return fail(400, { error: "Invalid domain id" });
     }
 
     try {
-      await locals.pb
-        .collection("domains")
-        .delete(id)
+      await db
+        .delete(domains)
+        .where(eq(domains.id, id))
         .then(() => {
           console.log("Domain deleted");
           removeCustomDomainFromCloudflare(domainName);

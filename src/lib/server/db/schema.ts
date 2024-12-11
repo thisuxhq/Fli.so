@@ -8,6 +8,8 @@ import {
   integer,
   pgEnum,
   date,
+  primaryKey,
+  index,
 } from "drizzle-orm/pg-core";
 
 // role
@@ -155,58 +157,92 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   }),
 }));
 
-export const tags = pgTable("tags", {
-  id: text("id").primaryKey(),
-  name: text("name"),
-  color: text("color"),
-  createdBy: text("created_by")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
-  updatedAt: timestamp("updated_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
-});
+// Define the tags table
+export const tags = pgTable(
+  "tags",
+  {
+    id: text("id").primaryKey(),
+    name: text("name"),
+    color: text("color"),
+    createdBy: text("created_by")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+  },
+  (t) => [index("tags_created_by_idx").on(t.createdBy)],
+);
 
-export const tagsRelations = relations(tags, ({ one }) => ({
+export const tagsRelations = relations(tags, ({ many, one }) => ({
+  urls: many(urlsToTags),
   user: one(users, { fields: [tags.createdBy], references: [users.id] }),
 }));
 
-export const urls = pgTable("urls", {
-  id: text("id").primaryKey(),
-  url: text("url").notNull(),
-  slug: text("slug").notNull(),
-  clicks: integer("clicks").default(0),
-  createdBy: text("created_by")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  passwordHash: text("password_hash"),
-  metaTitle: text("meta_title"),
-  metaDescription: text("meta_description"),
-  metaImageUrl: text("meta_image_url"),
-  qrCode: text("qr_code"),
-  expirationUrl: text("expiration_url"),
-  expiresAt: timestamp("expires_at", {
-    withTimezone: true,
-    mode: "date",
-  }),
-  domainId: text("domain_id").references(() => domains.id),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
-  updatedAt: timestamp("updated_at", {
-    withTimezone: true,
-    mode: "date",
-  }).notNull(),
-});
+// Define the urls table
+export const urls = pgTable(
+  "urls",
+  {
+    id: text("id").primaryKey(),
+    url: text("url").notNull(),
+    slug: text("slug").notNull(),
+    clicks: integer("clicks").default(0),
+    createdBy: text("created_by")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    passwordHash: text("password_hash"),
+    metaTitle: text("meta_title"),
+    metaDescription: text("meta_description"),
+    metaImageUrl: text("meta_image_url"),
+    qrCode: text("qr_code"),
+    expirationUrl: text("expiration_url"),
+    expiresAt: timestamp("expires_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    domainId: text("domain_id").references(() => domains.id),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+  },
+  (t) => [
+    index("urls_created_by_idx").on(t.createdBy),
+    index("urls_slug_idx").on(t.slug),
+  ],
+);
 
-export const urlsRelations = relations(urls, ({ one }) => ({
+export const urlsRelations = relations(urls, ({ many, one }) => ({
+  tags: many(urlsToTags),
   user: one(users, { fields: [urls.createdBy], references: [users.id] }),
+}));
+
+// Define the junction table for many-to-many relationship
+export const urlsToTags = pgTable(
+  "urls_to_tags",
+  {
+    urlId: text("url_id")
+      .references(() => urls.id, { onDelete: "cascade" })
+      .notNull(),
+    tagId: text("tag_id")
+      .references(() => tags.id, { onDelete: "cascade" })
+      .notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.urlId, t.tagId] })],
+);
+
+export const urlsToTagsRelations = relations(urlsToTags, ({ one }) => ({
+  url: one(urls, { fields: [urlsToTags.urlId], references: [urls.id] }),
+  tag: one(tags, { fields: [urlsToTags.tagId], references: [tags.id] }),
 }));
 
 export type User = typeof users.$inferSelect;
@@ -216,3 +252,18 @@ export type Domain = typeof domains.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type Tag = typeof tags.$inferSelect;
 export type Url = typeof urls.$inferSelect;
+export type UrlToTag = typeof urlsToTags.$inferSelect;
+
+// Response types that match the component expectations
+export type TagsResponse = Tag & {
+  createdBy: string;
+};
+
+export type UrlsResponseWithTags = Url & {
+  tags?: TagsResponse[];
+};
+
+export type SubscriptionsStatusOptions =
+  (typeof subscriptions.status.enumValues)[number];
+export type AccountStatusOptions = (typeof users.status.enumValues)[number];
+export type RoleOptions = (typeof users.role.enumValues)[number];

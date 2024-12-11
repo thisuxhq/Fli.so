@@ -1,6 +1,9 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-import { pb } from "$lib/pocketbase";
+import { db } from "$lib/server/db";
+import { tags } from "$lib/server/db/schema";
+import { eq, asc, and } from "drizzle-orm";
+import { nanoid } from "$lib";
 
 export const GET: RequestHandler = async ({ locals }) => {
   try {
@@ -8,14 +11,13 @@ export const GET: RequestHandler = async ({ locals }) => {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    // Fetching tags for the current user, sorted by name and including the creator
-    const tags = await pb.collection("tags").getFullList({
-      sort: "name",
-      filter: `created_by = "${locals.user.id}"`,
-      expand: "created_by",
-    });
+    const userTags = await db
+      .select()
+      .from(tags)
+      .where(eq(tags.createdBy, locals.user.id))
+      .orderBy(asc(tags.name));
 
-    return json(tags);
+    return json(userTags);
   } catch (error) {
     console.error("Error fetching tags:", error);
     return new Response("Failed to fetch tags", { status: 500 });
@@ -25,43 +27,43 @@ export const GET: RequestHandler = async ({ locals }) => {
 export const POST: RequestHandler = async ({ request, locals }) => {
   try {
     if (!locals.user) {
-      console.log("Unauthorized request");
       return new Response("Unauthorized", { status: 401 });
     }
 
     const body = await request.json();
     const { name, color } = body;
 
-    console.log("POST /api/tags", { name, color, created_by: locals.user.id });
-
     if (!name || !color) {
-      console.log("Name and color are required");
       return new Response("Name and color are required", { status: 400 });
     }
 
-    // Check if tag with same name already exists for this user
-    const existingTags = await pb.collection("tags").getFullList({
-      filter: `name = "${name}" && created_by = "${locals.user.id}"`,
-    });
+    // Check for existing tag
+    const existingTag = await db
+      .select()
+      .from(tags)
+      .where(
+        and(eq(tags.name, name.trim()), eq(tags.createdBy, locals.user.id)),
+      )
+      .limit(1);
 
-    if (existingTags.length > 0) {
-      console.log("Tag with this name already exists");
+    if (existingTag.length > 0) {
       return new Response("Tag with this name already exists", { status: 409 });
     }
 
-    // Creating a new tag
-    try {
-      const tag = await locals.pb.collection("tags").create({
+    // Create new tag
+    const [newTag] = await db
+      .insert(tags)
+      .values({
+        id: nanoid(8),
         name: name.trim(),
         color: color.trim(),
-        created_by: locals.user.id,
-      });
-      console.log("Tag created successfully");
-      return json(tag);
-    } catch (error) {
-      console.error("PocketBase Error:", error.response?.data || error);
-      return new Response("Failed to create tag", { status: 500 });
-    }
+        createdBy: locals.user.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return json(newTag);
   } catch (error) {
     console.error("Error creating tag:", error);
     return new Response("Failed to create tag", { status: 500 });
@@ -82,27 +84,40 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
     }
 
     // Check if tag exists and belongs to user
-    const tag = await pb.collection("tags").getOne(id);
-    if (tag.created_by !== locals.user.id) {
+    const tag = await db.select().from(tags).where(eq(tags.id, id)).limit(1);
+    if (tag[0].createdBy !== locals.user.id) {
       return new Response("Unauthorized", { status: 401 });
     }
 
     // Check if another tag with same name exists for this user
-    const existingTags = await pb.collection("tags").getFullList({
-      filter: `name = "${name}" && created_by = "${locals.user.id}" && id != "${id}"`,
-    });
+    const existingTags = await db
+      .select()
+      .from(tags)
+      .where(
+        and(
+          eq(tags.name, name.trim()),
+          eq(tags.createdBy, locals.user.id),
+          eq(tags.id, id),
+        ),
+      )
+      .limit(1);
 
     if (existingTags.length > 0) {
       return new Response("Tag with this name already exists", { status: 409 });
     }
 
     // Updating the tag
-    const updatedTag = await pb.collection("tags").update(id, {
-      name,
-      color,
-    });
+    const updatedTag = await db
+      .update(tags)
+      .set({
+        name: name.trim(),
+        color: color.trim(),
+        updatedAt: new Date(),
+      })
+      .where(eq(tags.id, id))
+      .returning();
 
-    return json(updatedTag);
+    return json(updatedTag[0]);
   } catch (error) {
     console.error("Error updating tag:", error);
     return new Response("Failed to update tag", { status: 500 });
@@ -123,13 +138,13 @@ export const DELETE: RequestHandler = async ({ request, locals }) => {
     }
 
     // Check if tag exists and belongs to user
-    const tag = await pb.collection("tags").getOne(id);
-    if (tag.created_by !== locals.user.id) {
+    const tag = await db.select().from(tags).where(eq(tags.id, id)).limit(1);
+    if (tag[0].createdBy !== locals.user.id) {
       return new Response("Unauthorized", { status: 401 });
     }
 
     // Deleting the tag
-    await pb.collection("tags").delete(id);
+    await db.delete(tags).where(eq(tags.id, id));
 
     return new Response(null, { status: 204 });
   } catch (error) {

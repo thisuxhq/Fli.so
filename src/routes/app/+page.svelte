@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
   import {
     UrlList,
@@ -13,10 +12,9 @@
   import { CircleHelp, Search, X, Plus } from "lucide-svelte";
   import type {
     UrlsResponseWithTags,
-    UsersResponse,
     SubscriptionsResponse,
     TagsResponse,
-    SubscriptionsStatusOptions,
+    UrlsWithTagsResponse,
   } from "$lib/types";
   import { type UrlSchema } from "$lib/schema/url";
   import type { Infer, SuperValidated } from "sveltekit-superforms";
@@ -25,13 +23,19 @@
   import SettingsMenu from "$lib/components/ui/core/misc/settings-menu.svelte";
   import { env } from "$env/dynamic/public";
   import UpgradeDialog from "$lib/components/ui/core/misc/upgrade-dialog.svelte";
-  import { pbClient } from "../../hooks.client";
+  import type { SubscriptionsStatusOptions } from "$lib/server/db/schema";
+
+  interface User {
+    id: string;
+    username: string;
+    email: string;
+  }
 
   // Defining the structure of the page data
   interface PageData {
     form: SuperValidated<Infer<UrlSchema>>;
     urls: UrlsResponseWithTags[] | [];
-    user: UsersResponse;
+    user: User;
     userWithSubscription: SubscriptionsResponse[];
     tags: TagsResponse[] | [];
     totalUrls: number;
@@ -50,15 +54,17 @@
   // State for the search query
   let searchQuery = $state("");
 
-  // State for the URLs
-  let updatedUrls = $state<UrlsResponseWithTags[]>(data.urls);
+  // State for the URLs - initialize with empty array if data.urls is undefined
+  let updatedUrls = $state<UrlsWithTagsResponse[]>(data.urls ?? []);
 
   // URL limit from env
   const URL_LIMIT = parseInt(env.PUBLIC_FREE_URL_LIMIT ?? "10");
   const isPremium = $derived(
-    data?.userWithSubscription[0]?.status === "active",
+    data?.userWithSubscription?.[0]?.status === "active",
   );
-  const isAtLimit = $derived(updatedUrls.length >= URL_LIMIT && !isPremium);
+  const isAtLimit = $derived(
+    (updatedUrls?.length ?? 0) >= URL_LIMIT && !isPremium,
+  );
 
   // State for the search input
   let searchInput = $state<HTMLInputElement | null>(null);
@@ -98,103 +104,6 @@
       active instanceof HTMLTextAreaElement
     );
   };
-
-  // Move keyboard shortcuts setup into onMount
-  onMount(async () => {
-    try {
-      // Use the singleton pb instance for realtime
-      pbClient.authStore.loadFromCookie(document.cookie); //get cookie pb_auth
-      pbClient.authStore.onChange(() => {
-        document.cookie = pbClient.authStore.exportToCookie({
-          httpOnly: false,
-        });
-      });
-
-      // Subscribe to the 'urls' collection
-      await pbClient.collection("urls").subscribe("*", async (e) => {
-        try {
-          switch (e.action) {
-            case "create": {
-              console.log("[CREATE] Processing create event");
-              updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls];
-
-              console.log("[CREATE] Tags_id from record:", e.record.tags_id);
-
-              // Only fetch tags if they exist
-              if (e.record.tags_id?.length) {
-                const tags = await fetch("/api/tags/by_ids", {
-                  method: "POST",
-                  body: JSON.stringify({ tags_ids: e.record.tags_id }),
-                });
-                const data = await tags.json();
-                console.log("[CREATE] Received tags data:", data);
-                updatedUrls = updatedUrls.map((url) =>
-                  url.id === e.record.id
-                    ? { ...url, expand: { tags_id: data } }
-                    : url,
-                );
-                console.log("[CREATE] Final updatedUrls state:", updatedUrls);
-              }
-              break;
-            }
-            case "update": {
-              console.log("[UPDATE] Processing update event");
-              console.log("[UPDATE] Current updatedUrls:", updatedUrls);
-              // First update the basic URL data
-              updatedUrls = updatedUrls.map((url) =>
-                url.id === e.record.id
-                  ? {
-                      ...url,
-                      ...e.record,
-                      // Clear tags if none exist
-                      expand: {
-                        tags_id: e.record.tags_id?.length
-                          ? url.expand?.tags_id
-                          : [],
-                      },
-                    }
-                  : url,
-              );
-
-              // Only fetch tags if they exist
-              if (e.record.tags_id?.length) {
-                const tags = await fetch("/api/tags/by_ids", {
-                  method: "POST",
-                  body: JSON.stringify({ tags_ids: e.record.tags_id }),
-                });
-                const data = await tags.json();
-
-                updatedUrls = updatedUrls.map((url) =>
-                  url.id === e.record.id
-                    ? { ...url, expand: { tags_id: data } }
-                    : url,
-                );
-              }
-
-              break;
-            }
-            case "delete":
-              console.log(
-                "[DELETE] Processing delete event for record:",
-                e.record.id,
-              );
-              console.log("[DELETE] Current updatedUrls:", updatedUrls);
-              updatedUrls = updatedUrls.filter((url) => url.id !== e.record.id);
-              console.log(
-                "[DELETE] Final updatedUrls state after deletion:",
-                updatedUrls,
-              );
-              break;
-          }
-        } catch (error) {
-          console.error("Error processing realtime event:", error);
-        }
-      });
-    } catch (error) {
-      console.error("Failed to setup realtime subscription:", error);
-      toast.error("Failed to setup realtime subscription");
-    }
-  });
 
   // Shortcuts
   const shortcuts: Shortcut[] = [
@@ -255,7 +164,7 @@
         if (!isInputFocused() && hoveredUrl) {
           e.preventDefault();
           const url = urls.find((u) => u.id === hoveredUrl);
-          if (url) handleEdit(url);
+          if (url) handleEdit(url.id);
         }
       },
     },
@@ -284,9 +193,27 @@
   });
 
   // Function to handle editing a URL
-  async function handleEdit(url: UrlsResponseWithTags) {
-    editingUrl = url;
-    showEditForm = true;
+  async function handleEdit(urlId: string) {
+    console.log("handleEdit called with ID:", urlId);
+    const urlToEdit = updatedUrls.find((u) => u.id === urlId);
+    console.log("Found URL:", urlToEdit);
+
+    if (urlToEdit) {
+      // Create a simplified version of the URL object
+      const simplifiedUrl = {
+        id: urlToEdit.id,
+        url: urlToEdit.url,
+        slug: urlToEdit.slug,
+        passwordHash: urlToEdit.passwordHash,
+        expiresAt: urlToEdit.expiresAt,
+        expirationUrl: urlToEdit.expirationUrl,
+        tags_id: urlToEdit.expand?.tags_id?.map((tag) => tag.id) || [],
+      };
+      console.log("Setting editingUrl to:", simplifiedUrl);
+      editingUrl = simplifiedUrl;
+      console.log("Setting showEditForm to true");
+      showEditForm = true;
+    }
   }
 
   // Function to handle deleting a URL!
@@ -330,6 +257,12 @@
       "link management, URL shortener, custom links, branded links, track links, link tracker, link analytics, link shortening, Fli.so",
     author: "THISUX PRIVATE LIMITED",
   };
+
+  // Also add a watch effect to monitor these state changes
+  $effect(() => {
+    console.log("editingUrl changed:", editingUrl);
+    console.log("showEditForm changed:", showEditForm);
+  });
 </script>
 
 <svelte:head>
@@ -452,9 +385,9 @@
         </Button>
 
         <SettingsMenu
-          name={data.user.name}
+          name={data.user.username}
           email={data.user.email}
-          avatar={data.user.avatar}
+          avatar={data.user.username}
           showUpgrade={data?.userWithSubscription[0]?.status !==
             ("active" as SubscriptionsStatusOptions)}
         />
@@ -479,8 +412,8 @@
     <!--Url list-->
     <UrlList
       urls={updatedUrls}
-      onEdit={(url: UrlsResponseWithTags) => {
-        handleEdit(url);
+      onEdit={(urlId: string) => {
+        handleEdit(urlId);
       }}
       onDelete={(id: string) => {
         handleDelete(id);

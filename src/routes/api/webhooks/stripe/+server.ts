@@ -1,20 +1,21 @@
-import { stripe } from "$lib/server/stripe";
-import { error, json } from "@sveltejs/kit";
+import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
+import { stripe } from "$lib/server/stripe";
+import { db } from "$lib/server/db";
+import { customers, subscriptions } from "$lib/server/db/schema";
+import { eq } from "drizzle-orm";
 import { env } from "$env/dynamic/private";
+import { nanoid } from "$lib";
 
-export const POST: RequestHandler = async ({ request, locals }) => {
+export const POST: RequestHandler = async ({ request }) => {
   const payload = await request.text();
   const signature = request.headers.get("stripe-signature");
 
-  if (!signature) throw error(400, "Missing stripe-signature header");
+  if (!signature) {
+    return new Response("Missing stripe-signature header", { status: 400 });
+  }
 
   try {
-    await locals.pb.admins.authWithPassword(
-      env.POCKETBASE_ADMIN_EMAIL!,
-      env.POCKETBASE_ADMIN_PASSWORD!
-    );
-
     const event = await stripe.webhooks.constructEventAsync(
       payload,
       signature,
@@ -26,76 +27,103 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         const session = event.data.object;
         if (!session.customer) break;
 
-        const customer = await locals.pb
-          .collection("customers")
-          .getFirstListItem(`stripe_customer_id="${session.customer}"`)
-          .catch(async () => {
-            return await locals.pb.collection("customers").create({
-              user_id: session.client_reference_id,
-              stripe_customer_id: session.customer,
-            });
-          });
+        // Find or create customer
+        let customer = await db
+          .select()
+          .from(customers)
+          .where(eq(customers.stripeCustomerId, session.customer.toString()))
+          .limit(1);
+
+        if (!customer.length) {
+          const [customer] = await db
+            .insert(customers)
+            .values({
+              id: nanoid(8),
+              userId: session.client_reference_id!,
+              stripeCustomerId: session.customer.toString(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .returning();
+        }
 
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription as string,
-          { expand: ["items.data.price.product"] }
+          { expand: ["items.data.price.product"] },
         );
 
-        await locals.pb.collection("subscriptions").create({
-          user_id: session.client_reference_id,
-          customer_id: customer?.id,
-          stripe_subscription_id: subscription.id,
-          stripe_price_id: subscription.items.data[0].price.id,
-          plan_name: subscription.items.data[0].price.nickname || "Default Plan",
+        await db.insert(subscriptions).values({
+          id: nanoid(8),
+          userId: session.client_reference_id!,
+          customerId: customer[0].id,
+          stripeSubscriptionId: subscription.id,
+          stripePriceId: subscription.items.data[0].price.id,
+          planName: subscription.items.data[0].price.nickname || "Default Plan",
           status: subscription.status,
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          cancel_at_period_end: subscription.cancel_at_period_end,
+          currentPeriodStart: new Date(
+            subscription.current_period_start * 1000,
+          ),
+          currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+          cancelAtPeriodEnd: subscription.cancel_at_period_end,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         });
         break;
       }
 
       case "customer.subscription.updated": {
         const subscription = event.data.object;
-        const existingSub = await locals.pb
-          .collection("subscriptions")
-          .getFirstListItem(`stripe_subscription_id="${subscription.id}"`)
-          .catch((err) => {
-            if (err.status === 404) return null;
-            throw err;
-          });
+        const existingSub = await db
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
+          .limit(1);
 
-        if (!existingSub) break;
+        if (!existingSub.length) break;
 
-        await locals.pb.collection("subscriptions").update(existingSub.id, {
-          status: subscription.status,
-          plan_name: subscription.items.data[0].price.nickname || existingSub.plan_name,
-          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          cancel_at_period_end: subscription.cancel_at_period_end,
-          canceled_at: subscription.cancel_at_period_end ? new Date().toISOString() : "",
-        });
+        await db
+          .update(subscriptions)
+          .set({
+            status: subscription.status,
+            planName:
+              subscription.items.data[0].price.nickname ||
+              existingSub[0].planName,
+            currentPeriodStart: new Date(
+              subscription.current_period_start * 1000,
+            ),
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            canceledAt: subscription.cancel_at_period_end ? new Date() : null,
+            updatedAt: new Date(),
+          })
+          .where(eq(subscriptions.id, existingSub[0].id));
         break;
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object;
-        const existingSub = await locals.pb
-          .collection("subscriptions")
-          .getFirstListItem(`stripe_subscription_id="${subscription.id}"`);
+        const existingSub = await db
+          .select()
+          .from(subscriptions)
+          .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
+          .limit(1);
 
-        await locals.pb.collection("subscriptions").update(existingSub.id, {
-          status: "canceled",
-        });
+        if (!existingSub.length) break;
+
+        await db
+          .update(subscriptions)
+          .set({
+            status: "canceled",
+            updatedAt: new Date(),
+          })
+          .where(eq(subscriptions.id, existingSub[0].id));
         break;
       }
     }
 
     return json({ received: true });
   } catch (err) {
-    if (err instanceof Error && (err as any).type?.includes('StripeSignatureVerificationError')) {
-      throw error(400, "Invalid Stripe signature");
-    }
-    throw error(500, err instanceof Error ? err.message : "Unknown error");
+    console.error("Error processing webhook:", err);
+    return new Response("Webhook Error", { status: 400 });
   }
 };

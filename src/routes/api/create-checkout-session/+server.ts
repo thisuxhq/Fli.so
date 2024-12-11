@@ -2,12 +2,11 @@ import { json, redirect } from "@sveltejs/kit";
 import { stripe } from "$lib/server/stripe";
 import type { RequestHandler } from "./$types";
 import { createOrRetrieveStripeCustomer } from "$lib/server/stripe-utils";
-import type { UsersResponse } from "$lib/types";
 
 export const POST: RequestHandler = async ({ request, url, locals }) => {
   try {
     // Check if the user is authenticated
-    if (!locals.pb.authStore.isValid) {
+    if (!locals.user) {
       throw redirect(303, "/login");
     }
 
@@ -20,9 +19,7 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
     }
 
     // Retrieve or create a Stripe customer for the user
-    const customer = await createOrRetrieveStripeCustomer(
-      locals.user as UsersResponse,
-    );
+    const customer = await createOrRetrieveStripeCustomer(locals.user);
 
     // Create a new checkout session for the user
     const session = await stripe.checkout.sessions.create({
