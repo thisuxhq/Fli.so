@@ -19,7 +19,7 @@
       name: "Join our community",
       description: "Join our Discord community for more updates",
       icon: Discord,
-      href: "https://discord.gg/SGkjHvhg",
+      href: "https://discord.gg/5U9BGxnRkG",
     },
     {
       name: "Follow for updates",
