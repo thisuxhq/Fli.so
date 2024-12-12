@@ -60,7 +60,7 @@
         toast.success("URL shortened successfully!");
         onOpenChange?.(false);
       } else {
-        toast.error(result.data?.message || "Failed to create URL");
+        toast.error(result?.error?.message || "Failed to create URL");
       }
     },
   });
@@ -138,7 +138,7 @@
             try {
               const baseUrl = new URL($formData.url);
               imageUrl = `${baseUrl.origin}${imageUrl}`;
-            } catch (e) {
+            } catch {
               console.warn("Invalid base URL:", $formData.url);
             }
           }
@@ -147,7 +147,7 @@
           try {
             new URL(imageUrl);
             $formData.meta_image_url = imageUrl;
-          } catch (e) {
+          } catch {
             console.warn("Invalid meta image URL:", imageUrl);
             $formData.meta_image_url = "";
           }

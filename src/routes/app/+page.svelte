@@ -1,13 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { toast } from "svelte-sonner";
+  import { NewUrlForm, UrlEditForm } from "$lib/components/ui/core";
+  import { UrlList } from "$lib/components/ui/core/misc";
   import {
-    UrlList,
-    NewUrlForm,
-    UrlEditForm,
     KeyboardShortcutsDialog,
     KbdShortcut,
-  } from "$lib/components/ui/core";
+  } from "$lib/components/ui/core/misc";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { CircleHelp, Search, X, Plus } from "lucide-svelte";
@@ -115,10 +114,7 @@
         try {
           switch (e.action) {
             case "create": {
-              console.log("[CREATE] Processing create event");
               updatedUrls = [e.record as UrlsResponseWithTags, ...updatedUrls];
-
-              console.log("[CREATE] Tags_id from record:", e.record.tags_id);
 
               // Only fetch tags if they exist
               if (e.record.tags_id?.length) {
@@ -133,15 +129,12 @@
                     ? { ...url, expand: { tags_id: data } }
                     : url,
                 );
-                console.log("[CREATE] Final updatedUrls state:", updatedUrls);
               }
               break;
             }
             case "update": {
-              console.log("[UPDATE] Processing update event");
-              console.log("[UPDATE] Current updatedUrls:", updatedUrls);
               // First update the basic URL data
-              updatedUrls = updatedUrls.map((url) =>
+              updatedUrls = updatedUrls.map((url: UrlsResponseWithTags) =>
                 url.id === e.record.id
                   ? {
                       ...url,
@@ -174,16 +167,7 @@
               break;
             }
             case "delete":
-              console.log(
-                "[DELETE] Processing delete event for record:",
-                e.record.id,
-              );
-              console.log("[DELETE] Current updatedUrls:", updatedUrls);
               updatedUrls = updatedUrls.filter((url) => url.id !== e.record.id);
-              console.log(
-                "[DELETE] Final updatedUrls state after deletion:",
-                updatedUrls,
-              );
               break;
           }
         } catch (error) {

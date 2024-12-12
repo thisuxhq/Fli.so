@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { NotFound, KbdShortcut } from "$lib/components/ui/core";
+  import { NotFound } from "$lib/components/ui/core/misc";
   import { Button } from "$lib/components/ui/button";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
+  import { KbdShortcut } from "$lib/components/ui/core/misc";
 
   const isExpired = $page.status === 410;
 </script>

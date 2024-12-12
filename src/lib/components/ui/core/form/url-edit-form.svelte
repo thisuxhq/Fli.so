@@ -86,7 +86,7 @@
         passwordChanged = true;
       }
       toast.success("Password copied to clipboard");
-    } catch (err) {
+    } catch {
       toast.error("Failed to copy password to clipboard");
     }
   }
@@ -130,14 +130,17 @@
   }
 
   let errors = $state<Record<string, string>>({});
-  let metaDataEnabled = $state(
-    show ||
+  let metaDataEnabled = $state(false);
+
+  $effect(() => {
+    metaDataEnabled =
+      show ||
       !!(
         localUrl?.meta_title ||
         localUrl?.meta_description ||
         localUrl?.meta_image_url
-      ),
-  );
+      );
+  });
 
   // window size
   let size = windowSize.getSize();
@@ -223,7 +226,7 @@
           e.preventDefault();
           isSubmitting = true;
           try {
-            await handleSubmit(new Event("submit", { cancelable: true }));
+            await handleSubmit(new SubmitEvent("submit", { cancelable: true }));
           } finally {
             isSubmitting = false;
           }
@@ -374,7 +377,7 @@
                     e.currentTarget.value = e.currentTarget.value
                       .replace(/\s+/g, "-") // Replace one or more spaces with single hyphen
                       .replace(/[^a-zA-Z0-9-]/g, ""); // Remove remaining special chars
-                    localUrl.slug = e.currentTarget.value;
+                    if (localUrl) localUrl.slug = e.currentTarget.value;
                   }}
                   on:keydown={(e) => {
                     if (e.key === "/") {
@@ -478,59 +481,59 @@
                   >Expiration date</Label
                 >
                 <HoverCard.Root openDelay={75}>
-                    <HoverCard.Trigger>
-                      <AlertCircleIcon class="ml-2 size-4" />
-                    </HoverCard.Trigger>
-                    <HoverCard.Content
-                      side="top"
-                      class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
-                    >
-                      <div class="rounded-lg px-0 py-2">
-                        <p class="mb-3 text-sm text-black">
-                          Specify an expiration date using natural language:
-                        </p>
+                  <HoverCard.Trigger>
+                    <AlertCircleIcon class="ml-2 size-4" />
+                  </HoverCard.Trigger>
+                  <HoverCard.Content
+                    side="top"
+                    class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
+                  >
+                    <div class="rounded-lg px-0 py-2">
+                      <p class="mb-3 text-sm text-black">
+                        Specify an expiration date using natural language:
+                      </p>
 
-                        <div class="space-y-2">
-                          <div class="flex items-center gap-2">
-                            <span
-                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
-                            >
-                              "tomorrow at 5pm"
-                            </span>
-                            <span
-                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
-                            >
-                              "10 minutes from now"
-                            </span>
-                          </div>
-
-                          <div class="flex items-center gap-2">
-                            <span
-                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
-                            >
-                              "1 week from now"
-                            </span>
-                            <span
-                              class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
-                            >
-                              "after 1 week at 1pm"
-                            </span>
-                          </div>
+                      <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                          <span
+                            class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                          >
+                            "tomorrow at 5pm"
+                          </span>
+                          <span
+                            class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                          >
+                            "10 minutes from now"
+                          </span>
                         </div>
 
-                        <div class="mt-3 border-t border-border pt-3">
-                          <p class="text-xs text-muted-foreground">
-                            Or use absolute dates like
-                            <span
-                              class="rounded-md bg-secondary/50 px-1.5 py-0.5 font-mono text-secondary-foreground"
-                            >
-                              2024-01-01
-                            </span>
-                          </p>
+                        <div class="flex items-center gap-2">
+                          <span
+                            class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                          >
+                            "1 week from now"
+                          </span>
+                          <span
+                            class="rounded-md bg-input/40 px-2 py-1 text-sm font-medium text-primary"
+                          >
+                            "after 1 week at 1pm"
+                          </span>
                         </div>
                       </div>
-                    </HoverCard.Content>
-                  </HoverCard.Root>
+
+                      <div class="mt-3 border-t border-border pt-3">
+                        <p class="text-xs text-muted-foreground">
+                          Or use absolute dates like
+                          <span
+                            class="rounded-md bg-secondary/50 px-1.5 py-0.5 font-mono text-secondary-foreground"
+                          >
+                            2024-01-01
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </HoverCard.Content>
+                </HoverCard.Root>
               </div>
               <Input
                 type="text"
@@ -557,7 +560,9 @@
                     class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
                   >
                     <p class="text-sm font-medium text-black">
-                      Enter an expiration link for your link. When the link is expired and visited, it will redirect to the secondary URL.
+                      Enter an expiration link for your link. When the link is
+                      expired and visited, it will redirect to the secondary
+                      URL.
                     </p>
                   </HoverCard.Content>
                 </HoverCard.Root>
@@ -768,7 +773,9 @@
                           side="top"
                           class="w-fit bg-white px-4 py-2 text-black"
                         >
-                          <p class="w-full text-sm font-medium">Enter a custom URL</p>
+                          <p class="w-full text-sm font-medium">
+                            Enter a custom URL
+                          </p>
                         </HoverCard.Content>
                       </HoverCard.Root>
                     </div>
@@ -792,7 +799,7 @@
                             e.currentTarget.value = e.currentTarget.value
                               .replace(/\s+/g, "-") // Replace one or more spaces with single hyphen
                               .replace(/[^a-zA-Z0-9-]/g, ""); // Remove remaining special chars
-                            localUrl.slug = e.currentTarget.value;
+                            if (localUrl) localUrl.slug = e.currentTarget.value;
                           }}
                           on:keydown={(e) => {
                             if (e.key === "/") {
@@ -904,7 +911,10 @@
                             class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
                           >
                             <p class="text-sm font-medium text-black">
-                              Enter an expiration date for your link. You can use relative dates like "tomorrow at 5pm" or "10 minutes from now" or "Next week" or absolute dates like "2024-01-01".
+                              Enter an expiration date for your link. You can
+                              use relative dates like "tomorrow at 5pm" or "10
+                              minutes from now" or "Next week" or absolute dates
+                              like "2024-01-01".
                             </p>
                           </HoverCard.Content>
                         </HoverCard.Root>
@@ -934,7 +944,9 @@
                             class="w-fit max-w-md rounded-2xl border bg-white px-4 py-2 text-muted-foreground"
                           >
                             <p class="text-sm font-medium text-black">
-                              Enter an expiration link for your link. When the link is expired and visited, it will redirect to the secondary URL.
+                              Enter an expiration link for your link. When the
+                              link is expired and visited, it will redirect to
+                              the secondary URL.
                             </p>
                           </HoverCard.Content>
                         </HoverCard.Root>
