@@ -287,7 +287,7 @@
 {#if isDesktop}
   <Dialog.Root open={show} {onOpenChange}>
     <Dialog.Content
-      class="-gap-4 grid max-w-5xl grid-cols-[3fr,2fr] overflow-scroll rounded-3xl border-2 border-white bg-[#ffd78d] p-0"
+      class="-gap-4 rounded-4xl grid max-w-5xl grid-cols-[3fr,2fr] overflow-scroll border-2 border-white bg-[#ffd78d] p-0"
     >
       <div
         id="left-section"

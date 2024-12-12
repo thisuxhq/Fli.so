@@ -54,9 +54,12 @@
 </script>
 
 <section id="features" class="flex w-full flex-col gap-8">
-  <h1 class="text-5xl font-semibold tracking-tighter text-[#712C05] duration-300 animate-in slide-in-from-bottom-60">
-    Features that <span class="text-[#552A1B]">you'll love</span>
-  </h1>
+  <h2
+    class="leading-tighter text-balance text-start text-7xl font-medium tracking-tighter text-[#712C05] duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
+  >
+    Features that <br class="hidden sm:block" />
+    you'll love
+  </h2>
 
   <div
     class="grid grid-cols-2 gap-5 duration-300 animate-in slide-in-from-bottom-60"

@@ -7,18 +7,18 @@
     class="flex w-full flex-col items-start justify-center gap-5 sm:items-center"
   >
     <h1
-      class="leading-tighter text-balance text-start text-7xl font-semibold tracking-tighter text-[#712C05] duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
+      class="leading-tighter text-balance text-start text-8xl font-medium tracking-tighter text-[#712C05] duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
     >
-      Shorten, Brand, Track. All in One with
-      <span class="text-[#552A1B]">Fli.so</span>
+      Home for your <br />
+      links, branding <br />
+      and tracking
     </h1>
 
     <p
-      class="max-w-md text-balance text-start text-lg text-[#552A1B] duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
+      class="max-w-sm text-balance text-start text-lg text-[#552A1B] duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
     >
-      Fli.so makes link management simple. Shorten your links, brand them with
-      your name, and track how they perform—all in one place. No hassle, just
-      smarter links.
+      Create, track, and brand links effortlessly. Stay organized and focused,
+      all in one spot with Fli.so.
     </p>
 
     <Button

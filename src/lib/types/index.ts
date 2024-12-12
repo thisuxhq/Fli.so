@@ -1,2 +1,1 @@
-export * from "./generated-types.js";
-export * from "./extented-types.js";
+export * from "./app/index.js";

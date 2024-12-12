@@ -25,7 +25,7 @@
 </script>
 
 <Dialog.Root {open} {onOpenChange}>
-  <Dialog.Content class="max-w-sm rounded-3xl bg-white p-6 sm:max-w-md">
+  <Dialog.Content class="rounded-4xl max-w-sm bg-white p-6 sm:max-w-md">
     <div class="flex flex-col gap-6">
       <!-- QR Code -->
       <div class="flex flex-col items-center justify-center gap-4">

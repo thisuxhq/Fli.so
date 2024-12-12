@@ -18,7 +18,7 @@
 
 <div
   class={cn(
-    "flex flex-col overflow-hidden rounded-3xl border-2 border-white/40 backdrop-blur-sm",
+    "rounded-4xl flex flex-col overflow-hidden border-2 border-white/40 backdrop-blur-sm",
     details.plan === "PRO"
       ? "border-[#FFD47C]/40 bg-amber-400/70"
       : "bg-gradient-to-br from-white/80 to-white/40",
@@ -26,7 +26,12 @@
     className,
   )}
 >
-  <div class={cn("flex flex-col p-8", details.plan === "Free forever & Open source" && "h-full")}>
+  <div
+    class={cn(
+      "flex flex-col p-8",
+      details.plan === "Free forever & Open source" && "h-full",
+    )}
+  >
     <!-- Header -->
     <div class="space-y-2">
       <p class="text-sm font-medium uppercase tracking-wide text-[#552A1B]/60">

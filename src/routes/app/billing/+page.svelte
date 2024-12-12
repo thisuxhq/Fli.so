@@ -144,7 +144,7 @@
   {#if data.hasSubscription}
     <div class="mx-auto w-full max-w-lg">
       <div
-        class="rounded-3xl bg-white/80 p-6 backdrop-blur-sm hover:bg-white hover:shadow-mild dark:bg-slate-800/80"
+        class="rounded-4xl bg-white/80 p-6 backdrop-blur-sm hover:bg-white hover:shadow-mild dark:bg-slate-800/80"
       >
         <h2 class="mb-4 text-xl font-medium">
           Your {data.subscription.plan_name} PRO plan expires on
@@ -190,7 +190,7 @@
       </Tabs.List>
       <Tabs.Content value="monthly" class="mx-auto w-full max-w-lg">
         <div
-          class="relative rounded-3xl bg-white/80 p-6 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
+          class="rounded-4xl relative bg-white/80 p-6 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
         >
           <div
             class="absolute -top-3 right-3 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white"
@@ -238,7 +238,7 @@
       </Tabs.Content>
       <Tabs.Content value="yearly" class="mx-auto w-full max-w-lg">
         <div
-          class="relative rounded-3xl bg-white/80 p-6 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
+          class="rounded-4xl relative bg-white/80 p-6 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50"
         >
           <div
             class="absolute -top-3 right-3 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white"

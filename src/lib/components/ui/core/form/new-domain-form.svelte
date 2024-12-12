@@ -82,7 +82,7 @@
 
 {#if isDesktop}
   <Dialog.Root open={show} {onOpenChange}>
-    <Dialog.Content class="max-w-md rounded-3xl bg-white p-6">
+    <Dialog.Content class="rounded-4xl max-w-md bg-white p-6">
       <form
         id="new-domain-form"
         method="POST"
@@ -94,7 +94,9 @@
         class="space-y-6"
       >
         <Dialog.Header>
-          <Dialog.Title class="text-2xl font-medium">Add new domain</Dialog.Title>
+          <Dialog.Title class="text-2xl font-medium"
+            >Add new domain</Dialog.Title
+          >
         </Dialog.Header>
 
         <!-- Domain Name -->
@@ -178,7 +180,9 @@
 {:else}
   <Drawer.Root open={show} {onOpenChange}>
     <Drawer.Portal>
-      <Drawer.Content class="fixed inset-x-0 bottom-0 h-[70%] rounded-t-3xl bg-white p-6">
+      <Drawer.Content
+        class="fixed inset-x-0 bottom-0 h-[70%] rounded-t-3xl bg-white p-6"
+      >
         <form
           id="new-domain-form"
           method="POST"

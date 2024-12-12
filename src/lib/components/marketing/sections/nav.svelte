@@ -17,8 +17,8 @@
 
 <header
   class={cn(
-    "sticky top-4 z-50 w-full bg-white/80 backdrop-blur-lg",
-    isMenuOpen ? "rounded-b-none rounded-t-3xl" : "rounded-3xl",
+    "sticky top-4 z-50 w-full max-w-md bg-white/80 backdrop-blur-lg",
+    isMenuOpen ? "rounded-b-none rounded-t-3xl" : "rounded-4xl",
   )}
 >
   <div class="container mx-auto flex h-16 items-center justify-between px-4">
@@ -62,7 +62,7 @@
       class={cn(
         "absolute left-0 right-0 top-16 border-b bg-white shadow-lg md:hidden",
         isMenuOpen && "block",
-        isMenuOpen ? "rounded-b-3xl" : "rounded-3xl",
+        isMenuOpen ? "rounded-b-3xl" : "rounded-4xl",
       )}
     >
       <div class="container mx-auto space-y-4 px-4 py-4">

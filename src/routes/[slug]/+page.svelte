@@ -78,7 +78,7 @@
 
 {#if data.isProtected}
   <div class="flex h-screen flex-col items-center justify-center p-4">
-    <div class="w-full max-w-md rounded-3xl bg-card/40 p-2 pt-8">
+    <div class="rounded-4xl w-full max-w-md bg-card/40 p-2 pt-8">
       <div class="mb-8 flex flex-col items-center gap-2 text-center">
         <div class="rounded-full border border-input bg-input/20 p-4">
           <Lock class="h-6 w-6" />
@@ -92,7 +92,7 @@
       <form
         method="POST"
         action="?/verify_password"
-        class="flex flex-col gap-4 rounded-3xl bg-white p-4"
+        class="rounded-4xl flex flex-col gap-4 bg-white p-4"
         use:enhance={() => {
           isLoading = true;
           return async ({ result, update }) => {

@@ -68,7 +68,7 @@
 
 <div
   class={cn(
-    "group relative overflow-hidden rounded-3xl bg-white/80 p-4 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50",
+    "rounded-4xl group relative overflow-hidden bg-white/80 p-4 shadow-mild backdrop-blur-sm transition-all duration-200 hover:translate-y-[-2px] hover:cursor-pointer hover:bg-white hover:shadow-subtle dark:bg-slate-800/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/50",
     isExpired && "grayscale-[0.5] hover:grayscale-0",
   )}
   in:fly|local={{ y: 10, duration: 200, delay: 50 }}

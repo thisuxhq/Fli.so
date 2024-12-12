@@ -24,7 +24,7 @@
 <Dialog.Root {open} {onOpenChange}>
   <Dialog.Content class="p-0 sm:max-w-lg">
     <div
-      class="relative rounded-3xl bg-white/80 p-6 shadow-mild backdrop-blur-sm dark:bg-slate-800/80"
+      class="rounded-4xl relative bg-white/80 p-6 shadow-mild backdrop-blur-sm dark:bg-slate-800/80"
     >
       <div
         class="absolute -top-3 left-3 rounded-full bg-orange-500 px-2 py-1 text-xs font-bold text-white"

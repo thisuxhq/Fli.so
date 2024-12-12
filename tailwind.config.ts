@@ -58,10 +58,16 @@ const config: Config = {
         "input-foreground": "hsl(var(--input-foreground) / <alpha-value>)",
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        "5xl": "32px",
+        "4xl": "24px",
+        "3xl": "20px",
+        "2xl": "16px",
+        xl: "12px",
+        lg: "8px",
+        md: "4px",
+        sm: "2px",
       },
+
       fontFamily: {
         sans: [...fontFamily.sans],
       },

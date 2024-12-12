@@ -14,7 +14,7 @@
 </script>
 
 <div class="flex h-screen flex-col items-center justify-center p-4">
-  <div class="w-full max-w-md rounded-3xl bg-card/40 p-2 pt-8">
+  <div class="rounded-4xl w-full max-w-md bg-card/40 p-2 pt-8">
     <div class="mb-8 flex flex-col items-center gap-2 text-center">
       <Logo href="/app/login" />
       <div class="mt-4 flex flex-col gap-2">
@@ -51,7 +51,7 @@
       <form
         method="POST"
         action="?/forgotPassword"
-        class="flex flex-col gap-4 rounded-3xl bg-white p-4"
+        class="rounded-4xl flex flex-col gap-4 bg-white p-4"
         use:enhance={() => {
           isLoading = true;
           return async ({ result, update }) => {
@@ -108,7 +108,7 @@
       <form
         method="POST"
         action={isLogin ? "?/login" : "?/signup"}
-        class="flex flex-col gap-4 rounded-3xl bg-white p-4"
+        class="rounded-4xl flex flex-col gap-4 bg-white p-4"
         use:enhance={() => {
           isLoading = true;
           return async ({ result, update }) => {
@@ -116,7 +116,8 @@
               if (result.data?.unverified) {
                 toast.error(result.data.message, {
                   duration: 10000,
-                  description: "Please check your inbox and spam folder for the verification email."
+                  description:
+                    "Please check your inbox and spam folder for the verification email.",
                 });
               } else if (result.data?.message) {
                 toast.error(result.data.message);
@@ -130,7 +131,7 @@
                 "Account created successfully! Please check your email to verify your account. It may take a few minutes to arrive or you may need to check your spam folder.",
                 {
                   duration: 10000,
-                }
+                },
               );
             }
             await update();

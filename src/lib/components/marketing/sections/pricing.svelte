@@ -55,27 +55,35 @@
   }
 </script>
 
-<section id="pricing" class="flex w-full flex-col gap-8">
+<section
+  id="pricing"
+  class="flex w-full flex-col items-center justify-center gap-8"
+>
   <div class="flex w-full flex-col items-center justify-between md:flex-row">
-    <h1
-      class="text-5xl font-semibold tracking-tighter text-[#552A1B] duration-300 animate-in slide-in-from-bottom-60"
-    >
-      Pricing
-    </h1>
+    <div class="flex w-full flex-col items-center justify-center gap-8">
+      <h2
+        id="pricing-title"
+        class="leading-tighter text-balance text-start text-7xl font-medium tracking-tighter text-[#712C05] duration-300 animate-in slide-in-from-bottom-60 sm:text-center"
+      >
+        Pricing, that fits <br class="hidden sm:block" /> your pocket!
+      </h2>
+      <div>
+        <div
+          id="pricing-toggle"
+          class="flex w-full items-center gap-6 p-4 text-lg text-[#552A1B] duration-300 animate-in slide-in-from-bottom-60"
+        >
+          <div class="flex w-fit flex-col items-center">
+            <CloudIcon />
+            Cloud Software
+          </div>
 
-    <div
-      class="flex w-fit items-center gap-6 p-4 text-lg text-[#552A1B] duration-300 animate-in slide-in-from-bottom-60"
-    >
-      <div class="flex w-fit flex-col items-center">
-        <CloudIcon />
-        Cloud Software
-      </div>
+          <Switch {checked} onCheckedChange={(e) => changeToggle(e)} />
 
-      <Switch {checked} onCheckedChange={(e) => changeToggle(e)} />
-
-      <div class="flex w-fit flex-col items-center">
-        <SelfHostIcon />
-        Host it yourself
+          <div class="flex w-fit flex-col items-center">
+            <SelfHostIcon />
+            Host it yourself
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -83,7 +91,7 @@
   {#if checked}
     <div
       id="self-hosting"
-      class="flex h-fit flex-col overflow-hidden rounded-3xl border-2 border-white/40 bg-gradient-to-br from-white/80 to-white/40 shadow-lg backdrop-blur-sm sm:flex-row duration-300 animate-in slide-in-from-bottom-60"
+      class="rounded-4xl flex h-fit flex-col overflow-hidden border-2 border-white/40 bg-gradient-to-br from-white/80 to-white/40 shadow-lg backdrop-blur-sm duration-300 animate-in slide-in-from-bottom-60 sm:flex-row"
     >
       <PricingCard details={details[2]} showMessage={true} />
       <div class="flex flex-col justify-center gap-6 p-8 sm:w-1/2">
@@ -113,7 +121,7 @@
   {:else}
     <div
       id="cloud-software"
-      class="g-3 flex h-fit flex-col rounded-3xl border-4 border-white bg-[#FAF7F4] shadow-lg sm:flex-row duration-300 animate-in slide-in-from-bottom-60"
+      class="g-3 rounded-4xl flex h-fit w-full flex-col border-4 border-white bg-[#FAF7F4] shadow-lg duration-300 animate-in slide-in-from-bottom-60 sm:flex-row"
     >
       {#each details.slice(0, 2) as item}
         <PricingCard details={item} class="flex-1" />

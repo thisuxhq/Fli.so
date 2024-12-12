@@ -66,7 +66,7 @@
   <meta name="author" content="THISUX PRIVATE LIMITED" />
 </svelte:head>
 
-<div class="flex flex-col gap-16 px-4 md:px-8">
+<div class="flex flex-col gap-16 px-4 md:px-8 items-center">
   <NavSection />
   <HeroSection />
   <FeaturesSection />
