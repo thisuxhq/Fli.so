@@ -2,17 +2,13 @@ export let requestIp: string;
 
 import { type Handle } from "@sveltejs/kit";
 import { dev } from "$app/environment";
-import { env } from "$env/dynamic/public";
 import { createInstance } from "./lib/pocketbase";
 
 export const handle: Handle = async ({ event, resolve }) => {
-  event.locals.pb = createInstance(env.PUBLIC_POCKETBASE_URL);
+  event.locals.pb = createInstance();
   event.locals.pb.autoCancellation(false);
   const cookie = event.request.headers.get("cookie") || "";
   event.locals.pb.authStore.loadFromCookie(cookie);
-
-  event.locals.cmsPb = createInstance(env.PUBLIC_POCKETBASE_CMS_URL);
-  event.locals.cmsPb.autoCancellation(false);
 
   try {
     if (event.locals.pb.authStore.isValid) {
@@ -30,7 +26,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   const setCookie = event.locals.pb.authStore.exportToCookie({
     sameSite: "lax",
     secure: !dev,
-    httpOnly: false,
+    httpOnly: fals`e,
     path: "/",
     maxAge: 7 * 24 * 60 * 60,
   });

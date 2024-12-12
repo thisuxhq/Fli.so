@@ -34,13 +34,14 @@ export const actions: Actions = {
       if (!authData.record.verified) {
         // Clear auth store since we don't want unverified users to remain logged in
         locals.pb.authStore.clear();
-        
+
         // Send another verification email
         await locals.pb.collection("users").requestVerification(email);
-        
+
         return fail(403, {
-          message: "Please verify your email address. A new verification email has been sent.",
-          unverified: true
+          message:
+            "Please verify your email address. A new verification email has been sent.",
+          unverified: true,
         });
       }
     } catch (err) {
