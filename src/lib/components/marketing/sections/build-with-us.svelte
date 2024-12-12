@@ -60,10 +60,10 @@
     building together
   </h2>
 
-  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 mt-3">
+  <div class="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2">
     {#each buildFeatures as feature}
       <div
-        class="flex flex-col gap-3 rounded-4xl bg-white p-5 duration-300 animate-in slide-in-from-bottom-60 md:p-8"
+        class="rounded-4xl flex flex-col gap-3 bg-white p-5 duration-300 animate-in slide-in-from-bottom-60 md:p-8"
       >
         <div
           class={cn(
@@ -72,10 +72,13 @@
         >
           <feature.icon.name />
         </div>
-        <h3 class="text-balance text-2xl font-semibold text-[#4A2410]">
-          {feature.name}
-        </h3>
-        <p class="text-lg text-[#6B4D3D]">{feature.description}</p>
+
+        <div class="flex flex-col gap-1">
+          <h3 class="text-balance text-2xl font-medium text-[#4A2410]">
+            {feature.name}
+          </h3>
+          <p class="text-lg text-[#6B4D3D]">{feature.description}</p>
+        </div>
       </div>
     {/each}
   </div>

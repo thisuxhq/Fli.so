@@ -8,7 +8,7 @@
   <h2
     class="max-w-xl text-center text-3xl font-medium tracking-tighter text-[#552A1B] duration-300 animate-in slide-in-from-bottom-60 md:text-left md:text-5xl"
   >
-    Shorten your links with fli.so and level up your branding!
+    Shorten your links with li.so and level up your branding!
   </h2>
 
   <div
