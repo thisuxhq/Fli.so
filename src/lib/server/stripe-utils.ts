@@ -1,9 +1,11 @@
 import { stripe } from "./stripe";
 import type { UsersResponse } from "$lib/types";
 import { env } from "$env/dynamic/private";
-import { createInstance } from "$lib/pocketbase";
 
-export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
+export async function createOrRetrieveStripeCustomer(
+  user: UsersResponse,
+  locals: any,
+) {
   try {
     console.log(
       "Attempting to create or retrieve Stripe customer for user:",
@@ -11,16 +13,14 @@ export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
     );
 
     // Create new pocketbase client as admin
-    const pb = createInstance();
-
     // Authenticate as admin
-    await pb.admins.authWithPassword(
+    await locals.pb.admins.authWithPassword(
       env.POCKETBASE_ADMIN_EMAIL!,
       env.POCKETBASE_ADMIN_PASSWORD!,
     );
 
     // Check if customer already exists in PocketBase
-    const existingCustomer = await pb
+    const existingCustomer = await locals.pb
       .collection("customers")
       .getFirstListItem(`user_id="${user.id}"`)
       .catch(() => {
@@ -45,7 +45,7 @@ export async function createOrRetrieveStripeCustomer(user: UsersResponse) {
     console.log("Stripe customer created successfully:", stripeCustomer.id);
 
     // Create customer record in PocketBase using authenticated client
-    const customer = await pb.collection("customers").create({
+    const customer = await locals.pb.collection("customers").create({
       user_id: user.id,
       stripe_customer_id: stripeCustomer.id,
     });

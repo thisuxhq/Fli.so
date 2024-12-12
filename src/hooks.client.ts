@@ -1,12 +1,9 @@
 import type { Handle, HandleClientError } from "@sveltejs/kit";
 import PocketBase from "pocketbase";
-import { dev } from "$app/environment";
 import { env } from "$env/dynamic/public";
 
 // Create a singleton instance
-export const pbClient = new PocketBase(
-  dev ? "http://localhost:8090" : env.PUBLIC_POCKETBASE_URL,
-);
+export const pbClient = new PocketBase(env.PUBLIC_POCKETBASE_URL);
 
 export const handleError: HandleClientError = async ({ error }) => {
   // Handle client-side errors here

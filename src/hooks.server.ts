@@ -2,7 +2,7 @@ export let requestIp: string;
 
 import { type Handle } from "@sveltejs/kit";
 import { dev } from "$app/environment";
-import { createInstance } from "$lib/pocketbase";
+import { createInstance } from "./lib/pocketbase";
 
 export const handle: Handle = async ({ event, resolve }) => {
   event.locals.pb = createInstance();
