@@ -30,6 +30,7 @@ export const POST: RequestHandler = async ({ request, url, locals }) => {
       payment_method_types: ["card"],
       customer: customer.stripe_customer_id,
       client_reference_id: locals.user.id,
+      allow_promotion_codes: true,
       line_items: [
         {
           price: priceId,
